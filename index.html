@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgenticLearn - Dashboard Mahasiswa</title>
+    <meta name="description" content="Dashboard pembelajaran adaptif dengan AI">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    
+    <style>
+        :root {
+            --primary: #2563eb; --success: #059669; --gray-50: #f9fafb;
+            --gray-100: #f3f4f6; --gray-800: #1f2937; --shadow: 0 1px 3px rgba(0,0,0,0.12);
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--gray-50); line-height: 1.6; color: var(--gray-800);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .card { 
+            background: white; border-radius: var(--radius); padding: 1.5rem; 
+            box-shadow: var(--shadow); margin-bottom: 1rem;
+        }
+        .progress-bar { 
+            background: var(--gray-100); height: 8px; border-radius: 4px; 
+            overflow: hidden; margin: 1rem 0;
+        }
+        .progress-fill { 
+            background: linear-gradient(90deg, var(--primary), #3b82f6);
+            height: 100%; transition: width 0.5s ease;
+        }
+        .btn { 
+            padding: 0.5rem 1rem; border: none; border-radius: var(--radius); 
+            cursor: pointer; background: var(--primary); color: white;
+            font-size: 0.875rem; transition: all 0.2s ease;
+        }
+        .btn:hover { background: #3b82f6; }
+        .grid { 
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 1rem; 
+        }
+        .green-indicator { 
+            position: fixed; bottom: 20px; right: 20px; background: var(--success); 
+            color: white; padding: 0.5rem 1rem; border-radius: 20px; 
+            font-size: 0.75rem; font-weight: 500;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+            .grid { grid-template-columns: 1fr; }
+        }
+        .loading { 
+            display: inline-block; width: 20px; height: 20px; 
+            border: 2px solid var(--gray-100); border-top: 2px solid var(--primary); 
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="card">
+            <h1>🌱 AgenticLearn Mini</h1>
+            <p>Dashboard Pembelajaran Adaptif - <span id="user-name">Memuat...</span></p>
+        </header>
+
+        <section class="card">
+            <h2>Progress Pembelajaran Anda</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+            </div>
+            <div class="grid" id="stats-grid">
+                <div class="card"><div class="loading"></div></div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>🤖 Rekomendasi AI untuk Anda</h2>
+            <div id="ai-recommendations">
+                <div class="loading"></div>
+                <span>Memuat rekomendasi personalisasi...</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>📚 Lanjutkan Pembelajaran</h2>
+            <div id="current-module">
+                <div class="loading"></div>
+                <span>Memuat modul saat ini...</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>⚡ Aksi Cepat</h2>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn" id="btn-assessment">Quick Assessment</button>
+                <button class="btn" id="btn-progress">Lihat Progress Detail</button>
+                <button class="btn" id="btn-chat">Chat dengan AI</button>
+            </div>
+        </section>
+    </div    } catch (error) {
+        console.error("Failed to load class data:", error);
+        setInner("class-stats", "<div class='card'>Error loading class data</div>");
+    }
+}
+
+function setupEventListeners() {
+    onClick("btn-create-assignment", () => {
+        alert("Feature: Create Assignment - Coming soon!");
+    });
+    
+    onClick("btn-view-analytics", () => {
+        alert("Feature: View Analytics - Coming soon!");
+    });
+    
+    onClick("btn-manage-content", () => {
+        alert("Feature: Manage Content - Coming soon!");
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initializeEducatorPortal);
