@@ -7,7 +7,10 @@
     <meta name="description" content="Dashboard pembelajaran adaptif dengan AI">
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
-    
+
+    <!-- Import Shared CSS -->
+    <link rel="stylesheet" href="https://YOUR_USERNAME.github.io/agenticlearn-shared/css/green-components.css">
+
     <style>
         :root {
             --primary: #2563eb; --success: #059669; --gray-50: #f9fafb;
@@ -100,24 +103,13 @@
                 <button class="btn" id="btn-chat">Chat dengan AI</button>
             </div>
         </section>
-    </div    } catch (error) {
-        console.error("Failed to load class data:", error);
-        setInner("class-stats", "<div class='card'>Error loading class data</div>");
-    }
-}
+    </div>
 
-function setupEventListeners() {
-    onClick("btn-create-assignment", () => {
-        alert("Feature: Create Assignment - Coming soon!");
-    });
-    
-    onClick("btn-view-analytics", () => {
-        alert("Feature: View Analytics - Coming soon!");
-    });
-    
-    onClick("btn-manage-content", () => {
-        alert("Feature: Manage Content - Coming soon!");
-    });
-}
+    <!-- Green Computing Indicator -->
+    <div class="green-indicator" id="carbon-indicator">
+        🌱 0.000g CO2
+    </div>
 
-document.addEventListener('DOMContentLoaded', initializeEducatorPortal);
+    <script type="module" src="./js/student-dashboard.js"></script>
+</body>
+</html>
