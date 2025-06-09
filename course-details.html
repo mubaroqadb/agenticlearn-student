@@ -119,11 +119,65 @@
         </section>
     </div>
 
-    <script type="module">
-        import { JSCroot } from 'https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.9/api.js';
-        import { setInner, onClick } from 'https://cdn.jsdelivr.net/gh/jscroot/element@0.1.5/croot.js';
-        import { UIComponents } from 'https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js';
-        import { compatApiClient } from 'https://mubaroqadb.github.io/agenticlearn-shared/js/api-client.js';
+    <script>
+        console.log("🔄 Loading course details...");
+
+        // Simple UI Components
+        const UIComponents = {
+            createCard: (title, content, actions = []) => {
+                const actionsHTML = actions.map(action =>
+                    `<button class="btn" onclick="${action.handler}">${action.label}</button>`
+                ).join(' ');
+                return `
+                    <div class="card" style="background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="margin: 0 0 0.5rem 0; color: #2563eb;">${title}</h3>
+                        <div>${content}</div>
+                        ${actionsHTML ? `<div style="margin-top: 1rem;">${actionsHTML}</div>` : ''}
+                    </div>
+                `;
+            },
+            showNotification: (message, type = 'info') => {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
+                    color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    max-width: 300px;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 3000);
+            }
+        };
+
+        // API client
+        const apiClient = {
+            async request(endpoint) {
+                try {
+                    const baseURL = "http://localhost:8080/api/v1";
+                    console.log(`🔄 API Request: ${baseURL}${endpoint}`);
+
+                    const response = await fetch(`${baseURL}${endpoint}`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log("📊 API Response:", data);
+                    return data;
+                } catch (error) {
+                    console.error("❌ API Error:", error);
+                    throw error;
+                }
+            }
+        };
 
         // Get course ID from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
@@ -131,19 +185,19 @@
 
         async function loadCourseDetails() {
             if (!courseId) {
-                setInner("course-header", UIComponents.createCard(
+                document.getElementById("course-header").innerHTML = UIComponents.createCard(
                     "Error",
                     "Course ID tidak ditemukan",
                     []
-                ));
+                );
                 return;
             }
 
             try {
                 console.log("🔄 Loading course details for:", courseId);
-                
+
                 // Get course details
-                const response = await compatApiClient.request(`/learning/courses/${courseId}`);
+                const response = await apiClient.request(`/learning/courses/${courseId}`);
                 console.log("📚 Course details response:", response);
                 
                 if (response.status === 'success' && response.data) {
@@ -159,8 +213,8 @@
                             <span class="badge">${course.status}</span>
                         </div>
                     `;
-                    setInner("course-header", headerHTML);
-                    
+                    document.getElementById("course-header").innerHTML = headerHTML;
+
                     // Display modules
                     if (course.modules && course.modules.length > 0) {
                         let modulesHTML = "";
@@ -181,13 +235,13 @@
                                 </div>
                             `;
                         });
-                        setInner("course-modules", modulesHTML);
+                        document.getElementById("course-modules").innerHTML = modulesHTML;
                     } else {
-                        setInner("course-modules", UIComponents.createCard(
+                        document.getElementById("course-modules").innerHTML = UIComponents.createCard(
                             "📋 Belum Ada Module",
                             "Module untuk kursus ini sedang dalam pengembangan.",
                             []
-                        ));
+                        );
                     }
                 } else {
                     throw new Error("Course not found");
@@ -195,16 +249,16 @@
                 
             } catch (error) {
                 console.error("❌ Failed to load course details:", error);
-                setInner("course-header", UIComponents.createCard(
+                document.getElementById("course-header").innerHTML = UIComponents.createCard(
                     "Error",
                     "Gagal memuat detail kursus",
                     []
-                ));
-                setInner("course-modules", UIComponents.createCard(
+                );
+                document.getElementById("course-modules").innerHTML = UIComponents.createCard(
                     "Error",
                     "Gagal memuat modules",
                     []
-                ));
+                );
             }
         }
 
