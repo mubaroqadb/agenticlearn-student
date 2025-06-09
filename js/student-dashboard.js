@@ -1,7 +1,4 @@
-// AgenticLearn Student Dashboard dengan Shared Components + ARIA AI
-import { apiClient } from "https://mubaroqadb.github.io/agenticlearn-shared/js/api-client.js";
-import { UIComponents } from "https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js";
-import { ARIAChat } from "https://mubaroqadb.github.io/agenticlearn-shared/js/aria-chat.js";
+// AgenticLearn Student Dashboard dengan JSCroot
 import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
 import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
@@ -23,7 +20,7 @@ const compatApiClient = {
             const token = getCookie("access_token") || getCookie("login");
             const baseURL = window.location.hostname.includes('localhost')
                 ? "http://localhost:8080/api/v1"
-                : "https://agenticlearn-backend-production.up.railway.app/api/v1";
+                : "https://api.agenticlearn.com/api/v1"; // Will be Google Cloud endpoint
 
             console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
 
