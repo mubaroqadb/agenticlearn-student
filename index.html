@@ -464,6 +464,82 @@
             console.log("🤖 Starting recommendations");
         };
 
+        // Load student progress data
+        function loadStudentProgress() {
+            console.log("📊 Loading student progress...");
+
+            // Simulate progress data
+            const progressData = {
+                overallProgress: 65,
+                completedCourses: 2,
+                averageScore: 85,
+                streakDays: 7,
+                goalsAchieved: 3
+            };
+
+            // Update progress bar
+            const progressFill = document.getElementById("progress-fill");
+            if (progressFill) {
+                progressFill.style.width = `${progressData.overallProgress}%`;
+            }
+
+            // Create stats cards
+            const statsHTML = `
+                <div class="card" style="text-align: center; padding: 1rem;">
+                    <h3>📚 Courses Completed</h3>
+                    <div style="font-size: 2rem; font-weight: bold; color: #059669;">${progressData.completedCourses}</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 1rem;">
+                    <h3>⭐ Average Score</h3>
+                    <div style="font-size: 2rem; font-weight: bold; color: #2563eb;">${progressData.averageScore}%</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 1rem;">
+                    <h3>🔥 Streak Days</h3>
+                    <div style="font-size: 2rem; font-weight: bold; color: #dc2626;">${progressData.streakDays}</div>
+                </div>
+                <div class="card" style="text-align: center; padding: 1rem;">
+                    <h3>🎯 Goals Achieved</h3>
+                    <div style="font-size: 2rem; font-weight: bold; color: #7c3aed;">${progressData.goalsAchieved}</div>
+                </div>
+            `;
+
+            const statsGrid = document.getElementById("stats-grid");
+            if (statsGrid) statsGrid.innerHTML = statsHTML;
+
+            console.log("✅ Progress data loaded");
+        }
+
+        // Missing functions that buttons call
+        window.loadCourses = function() {
+            console.log("🔄 Reloading courses...");
+            UIComponents.showNotification("Reloading courses...", 'info');
+            loadAvailableCourses();
+        };
+
+        window.loadModules = function() {
+            console.log("🔄 Reloading modules...");
+            UIComponents.showNotification("Reloading modules...", 'info');
+            loadCurrentModule();
+        };
+
+        window.testAPI = async function() {
+            try {
+                console.log("🔄 Testing API connection...");
+                const response = await apiClient.request("/health");
+                if (response.status === 'healthy') {
+                    UIComponents.showNotification("✅ API Connection: SUCCESS", 'success');
+                } else {
+                    UIComponents.showNotification("❌ API Connection: FAILED", 'error');
+                }
+            } catch (error) {
+                UIComponents.showNotification("❌ API Connection: FAILED", 'error');
+            }
+        };
+
+        window.showSuccess = function() {
+            UIComponents.showNotification("Test notification working! ✅", 'success');
+        };
+
         // Apply TEST DASHBOARD algorithm - simple, direct initialization
         function initDashboard() {
             console.log("🌱 Initializing student dashboard...");
@@ -474,6 +550,12 @@
 
             // Show loading message
             UIComponents.showNotification("Loading dashboard...", 'info');
+
+            // Load progress data first
+            setTimeout(() => {
+                console.log("📊 Loading progress...");
+                loadStudentProgress();
+            }, 500);
 
             // Apply TEST DASHBOARD timing algorithm - sequential with delays
             setTimeout(() => {
@@ -491,17 +573,58 @@
                 loadAIRecommendations();
             }, 3000);
 
-            // Setup button listeners
-            const buttons = ['btn-assessment', 'btn-progress', 'btn-chat', 'btn-aria-toggle'];
-            buttons.forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                if (btn) {
-                    btn.addEventListener('click', () => {
-                        UIComponents.showNotification(`Button ${btnId} clicked!`, 'success');
-                        console.log(`🔘 Button clicked: ${btnId}`);
-                    });
-                }
-            });
+            // Setup button listeners with concrete actions
+            const assessmentBtn = document.getElementById('btn-assessment');
+            if (assessmentBtn) {
+                assessmentBtn.addEventListener('click', () => {
+                    UIComponents.showNotification("Starting Quick Assessment...", 'info');
+                    setTimeout(() => {
+                        const score = Math.floor(Math.random() * 30) + 70; // 70-100
+                        UIComponents.showNotification(`Assessment Complete! Score: ${score}%`, 'success');
+                        // Update progress
+                        loadStudentProgress();
+                    }, 2000);
+                });
+            }
+
+            const progressBtn = document.getElementById('btn-progress');
+            if (progressBtn) {
+                progressBtn.addEventListener('click', () => {
+                    UIComponents.showNotification("Opening detailed progress view...", 'info');
+                    // Refresh progress data
+                    loadStudentProgress();
+                });
+            }
+
+            const chatBtn = document.getElementById('btn-chat');
+            if (chatBtn) {
+                chatBtn.addEventListener('click', () => {
+                    UIComponents.showNotification("Opening ARIA Chat...", 'info');
+                    // Toggle ARIA chat visibility
+                    const chatWidget = document.getElementById('aria-chat-widget');
+                    const floatingBtn = document.getElementById('aria-floating-btn');
+                    if (chatWidget && floatingBtn) {
+                        if (chatWidget.style.display === 'none' || !chatWidget.style.display) {
+                            chatWidget.style.display = 'block';
+                            floatingBtn.style.display = 'none';
+                            UIComponents.showNotification("ARIA Chat activated! 🤖", 'success');
+                        } else {
+                            chatWidget.style.display = 'none';
+                            floatingBtn.style.display = 'flex';
+                            UIComponents.showNotification("ARIA Chat minimized", 'info');
+                        }
+                    }
+                });
+            }
+
+            const ariaBtn = document.getElementById('btn-aria-toggle');
+            if (ariaBtn) {
+                ariaBtn.addEventListener('click', () => {
+                    UIComponents.showNotification("ARIA AI Tutor ready to help! 🤖", 'success');
+                    // Same as chat button
+                    chatBtn.click();
+                });
+            }
 
             // Update carbon indicator
             const indicator = document.getElementById("carbon-indicator");
