@@ -242,6 +242,26 @@
         window.showSuccess = function() {
             alert("Test notification working! ✅");
         };
+
+        // Debug console errors
+        window.addEventListener('error', function(e) {
+            console.error('Global Error:', e.error);
+            console.error('Message:', e.message);
+            console.error('Source:', e.filename, 'Line:', e.lineno);
+        });
+
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('Unhandled Promise Rejection:', e.reason);
+        });
+
+        // Debug UIComponents availability
+        setTimeout(() => {
+            console.log('UIComponents check:', typeof window.UIComponents);
+            console.log('compatApiClient check:', typeof window.compatApiClient);
+            if (window.UIComponents) {
+                console.log('UIComponents methods:', Object.keys(window.UIComponents));
+            }
+        }, 2000);
     </script>
 
 
