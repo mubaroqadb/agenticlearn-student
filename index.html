@@ -109,25 +109,38 @@
         <section class="card">
             <h2>📚 Kursus Tersedia</h2>
             <div id="available-courses">
-                <div class="loading"></div>
-                <span>Memuat kursus yang tersedia...</span>
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="loading"></div> Loading courses from API...
+                </div>
             </div>
+            <button class="btn" onclick="loadCourses()" style="margin-top: 1rem;">🔄 Reload Courses</button>
         </section>
 
         <section class="card">
             <h2>📖 Lanjutkan Pembelajaran</h2>
             <div id="current-module">
-                <div class="loading"></div>
-                <span>Memuat modul saat ini...</span>
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="loading"></div> Loading current module...
+                </div>
             </div>
+            <button class="btn" onclick="loadModules()" style="margin-top: 1rem;">🔄 Reload Module</button>
         </section>
 
         <section class="card">
             <h2>🤖 Rekomendasi AI untuk Anda</h2>
             <div id="ai-recommendations">
-                <div class="loading"></div>
-                <span>Memuat rekomendasi personalisasi...</span>
+                <div style="text-align: center; padding: 2rem;">
+                    <div class="loading"></div> Loading AI recommendations...
+                </div>
             </div>
+        </section>
+
+        <section class="card">
+            <h2>🔧 Debug Controls</h2>
+            <button class="btn" onclick="testAPI()">Test API</button>
+            <button class="btn" onclick="loadCourses()">Load Courses</button>
+            <button class="btn" onclick="loadModules()">Load Modules</button>
+            <button class="btn" onclick="showSuccess()">Test Notification</button>
         </section>
 
         <section class="card">
@@ -258,62 +271,36 @@
             }
         };
 
-        // Load real courses from API with fallback to demo
+        // Apply TEST DASHBOARD algorithm - simple, direct course loading
         async function loadAvailableCourses() {
-            console.log("📚 Loading available courses...");
-
-            const coursesEl = document.getElementById("available-courses");
-            if (!coursesEl) {
-                console.error("❌ Element 'available-courses' not found!");
-                return;
-            }
-
-            // Show loading state
-            coursesEl.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="loading"></div> Loading courses...</div>';
-
             try {
-                console.log("🔄 Making API request for courses...");
-                const response = await apiClient.request("/learning/courses?page=1&limit=5");
-                console.log("📊 Courses API response:", response);
+                console.log("📚 Loading available courses...");
+                const response = await apiClient.request("/learning/courses?page=1&limit=3");
 
                 if (response.status === 'success' && response.data && response.data.courses) {
                     const courses = response.data.courses;
                     console.log(`✅ Found ${courses.length} real courses`);
 
-                    let coursesHTML = "";
+                    let html = `<p>Found ${courses.length} courses:</p><ul>`;
                     courses.forEach(course => {
-                        coursesHTML += UIComponents.createCard(
-                            `📚 ${course.title}`,
-                            `
-                                <p>${course.description}</p>
-                                <div style="margin: 1rem 0;">
-                                    <span style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                                        ${course.level} • ${course.duration} weeks
-                                    </span>
-                                </div>
-                            `,
-                            [
-                                { label: "Mulai Kursus", handler: `startCourse('${course._id}')` },
-                                { label: "Lihat Detail", handler: `viewCourseDetails('${course._id}')` }
-                            ]
-                        );
+                        html += `<li><strong>${course.title}</strong> (${course.level}, ${course.duration} weeks)</li>`;
                     });
+                    html += '</ul>';
+                    html += `<button class="btn" onclick="startCourse('${courses[0]._id}')">Start First Course</button>`;
 
-                    coursesEl.innerHTML = coursesHTML;
-                    console.log("✅ Courses HTML updated");
-                    UIComponents.showNotification(`Loaded ${courses.length} courses from database`, 'success');
-                    return;
+                    const coursesEl = document.getElementById("available-courses");
+                    if (coursesEl) coursesEl.innerHTML = html;
+
+                    UIComponents.showNotification(`Loaded ${courses.length} courses!`, 'success');
                 } else {
-                    console.warn("⚠️ Invalid response format:", response);
+                    throw new Error("No courses found");
                 }
             } catch (error) {
-                console.error("❌ Failed to load real courses:", error);
-                UIComponents.showNotification("Failed to load courses, using demo", 'error');
+                console.error("❌ Failed to load courses:", error);
+                const coursesEl = document.getElementById("available-courses");
+                if (coursesEl) coursesEl.innerHTML = '❌ Failed to load courses - using demo';
+                loadDemoCourses();
             }
-
-            // Fallback to demo content
-            console.log("🔄 Loading demo courses...");
-            loadDemoCourses();
         }
 
         // Demo courses fallback
@@ -476,8 +463,8 @@
             console.log("🤖 Starting recommendations");
         };
 
-        // Initialize dashboard
-        async function initDashboard() {
+        // Apply TEST DASHBOARD algorithm - simple, direct initialization
+        function initDashboard() {
             console.log("🌱 Initializing student dashboard...");
 
             // Set user name
@@ -487,20 +474,21 @@
             // Show loading message
             UIComponents.showNotification("Loading dashboard...", 'info');
 
-            // Load content from API with fallbacks
-            try {
-                console.log("📚 Starting to load courses...");
-                await loadAvailableCourses();
-                console.log("📖 Starting to load current module...");
-                await loadCurrentModule();
-                console.log("🤖 Starting to load AI recommendations...");
-                loadAIRecommendations();
+            // Apply TEST DASHBOARD timing algorithm - sequential with delays
+            setTimeout(() => {
+                console.log("📚 Loading courses...");
+                loadAvailableCourses();
+            }, 1000);
 
-                UIComponents.showNotification("Dashboard loaded successfully!", 'success');
-            } catch (error) {
-                console.error("Failed to load dashboard:", error);
-                UIComponents.showNotification("Dashboard loaded with demo data", 'info');
-            }
+            setTimeout(() => {
+                console.log("📖 Loading current module...");
+                loadCurrentModule();
+            }, 2000);
+
+            setTimeout(() => {
+                console.log("🤖 Loading AI recommendations...");
+                loadAIRecommendations();
+            }, 3000);
 
             // Setup button listeners
             const buttons = ['btn-assessment', 'btn-progress', 'btn-chat', 'btn-aria-toggle'];
