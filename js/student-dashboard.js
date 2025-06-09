@@ -84,9 +84,8 @@ const compatApiClient = {
     async request(endpoint) {
         try {
             const token = getCookie("access_token") || getCookie("login");
-            const baseURL = window.location.hostname.includes('localhost')
-                ? "http://localhost:8080/api/v1"
-                : "https://api.agenticlearn.com/api/v1"; // Will be Google Cloud endpoint
+            // Always use localhost backend for development
+            const baseURL = "http://localhost:8080/api/v1";
 
             console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
 
