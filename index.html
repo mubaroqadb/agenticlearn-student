@@ -177,6 +177,24 @@
         🌱 0.000g CO2
     </div>
 
+    <!-- Add loading spinner CSS -->
+    <style>
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+
     <!-- Debug version - inline script to ensure it loads - Updated: 2024-12-19 -->
     <script>
         console.log("🔄 Loading student dashboard debug version...");
@@ -244,8 +262,19 @@
         async function loadAvailableCourses() {
             console.log("📚 Loading available courses...");
 
+            const coursesEl = document.getElementById("available-courses");
+            if (!coursesEl) {
+                console.error("❌ Element 'available-courses' not found!");
+                return;
+            }
+
+            // Show loading state
+            coursesEl.innerHTML = '<div style="text-align: center; padding: 2rem;"><div class="loading"></div> Loading courses...</div>';
+
             try {
+                console.log("🔄 Making API request for courses...");
                 const response = await apiClient.request("/learning/courses?page=1&limit=5");
+                console.log("📊 Courses API response:", response);
 
                 if (response.status === 'success' && response.data && response.data.courses) {
                     const courses = response.data.courses;
@@ -270,17 +299,20 @@
                         );
                     });
 
-                    const coursesEl = document.getElementById("available-courses");
-                    if (coursesEl) coursesEl.innerHTML = coursesHTML;
-
+                    coursesEl.innerHTML = coursesHTML;
+                    console.log("✅ Courses HTML updated");
                     UIComponents.showNotification(`Loaded ${courses.length} courses from database`, 'success');
                     return;
+                } else {
+                    console.warn("⚠️ Invalid response format:", response);
                 }
             } catch (error) {
-                console.error("Failed to load real courses, using demo:", error);
+                console.error("❌ Failed to load real courses:", error);
+                UIComponents.showNotification("Failed to load courses, using demo", 'error');
             }
 
             // Fallback to demo content
+            console.log("🔄 Loading demo courses...");
             loadDemoCourses();
         }
 
@@ -452,10 +484,23 @@
             const userNameEl = document.getElementById("user-name");
             if (userNameEl) userNameEl.textContent = "Demo Student";
 
+            // Show loading message
+            UIComponents.showNotification("Loading dashboard...", 'info');
+
             // Load content from API with fallbacks
-            await loadAvailableCourses();
-            await loadCurrentModule();
-            loadAIRecommendations();
+            try {
+                console.log("📚 Starting to load courses...");
+                await loadAvailableCourses();
+                console.log("📖 Starting to load current module...");
+                await loadCurrentModule();
+                console.log("🤖 Starting to load AI recommendations...");
+                loadAIRecommendations();
+
+                UIComponents.showNotification("Dashboard loaded successfully!", 'success');
+            } catch (error) {
+                console.error("Failed to load dashboard:", error);
+                UIComponents.showNotification("Dashboard loaded with demo data", 'info');
+            }
 
             // Setup button listeners
             const buttons = ['btn-assessment', 'btn-progress', 'btn-chat', 'btn-aria-toggle'];
