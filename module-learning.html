@@ -173,26 +173,62 @@
         async function loadModuleContent(moduleId) {
             try {
                 console.log("Loading module content for:", moduleId);
-                
-                // Load module details
-                const moduleResponse = await apiClient.request(`/learning/modules/${moduleId}`);
-                
-                if (moduleResponse.status === 'success') {
-                    currentModule = moduleResponse.data;
-                    
+
+                // First try to find the module from course data
+                // Since we don't have direct module endpoint, we'll use demo data
+                // or try to get from course details
+
+                // Try to load from course data first
+                let moduleFound = false;
+
+                // Check if we have course ID in URL or try to find module in courses
+                const courseId = urlParams.get('courseId') || '68471ea555df4b1a863cb123'; // default course
+
+                try {
+                    const courseResponse = await apiClient.request(`/learning/courses/${courseId}`);
+                    if (courseResponse.status === 'success' && courseResponse.data.modules) {
+                        const modules = courseResponse.data.modules;
+                        currentModule = modules.find(m => m._id === moduleId);
+
+                        if (currentModule) {
+                            moduleFound = true;
+                            console.log("✅ Found module in course data:", currentModule);
+                        }
+                    }
+                } catch (courseError) {
+                    console.log("Course data not available, using demo module");
+                }
+
+                // If not found, use demo data
+                if (!moduleFound) {
+                    console.log("🎭 Loading demo module data");
+                    currentModule = getDemoModule(moduleId);
+                }
+
+                if (currentModule) {
                     // Display module header
                     setInner("module-header", `
                         <h1>📖 ${currentModule.title}</h1>
                         <p>${currentModule.description}</p>
                         <div style="margin: 1rem 0;">
-                            <span class="badge">Week ${currentModule.week_start}-${currentModule.week_end}</span>
-                            <span class="badge">${currentModule.lessons ? currentModule.lessons.length : 0} lessons</span>
+                            <span class="badge">Week ${currentModule.week_start || '?'}-${currentModule.week_end || '?'}</span>
+                            <span class="badge">${currentModule.lessons ? currentModule.lessons.length : 'Demo'} lessons</span>
+                            ${!moduleFound ? '<span class="badge" style="background: #059669;">Demo Mode</span>' : ''}
                         </div>
+                        ${currentModule.objectives ? `
+                            <div style="margin: 1rem 0;">
+                                <h4>🎯 Learning Objectives:</h4>
+                                <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                    ${currentModule.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
                     `);
-                    
+
                     // Load lessons
-                    if (currentModule.lessons && currentModule.lessons.length > 0) {
-                        loadLessonsNavigation(currentModule.lessons);
+                    const lessons = currentModule.lessons || getDemoLessons();
+                    if (lessons && lessons.length > 0) {
+                        loadLessonsNavigation(lessons);
                         loadLesson(0); // Load first lesson
                     } else {
                         setInner("lessons-list", "<p>No lessons available for this module.</p>");
@@ -203,19 +239,85 @@
                             </div>
                         `);
                     }
-                    
                 } else {
-                    throw new Error("Failed to load module details");
+                    throw new Error("Module not found");
                 }
-                
+
             } catch (error) {
                 console.error("Failed to load module content:", error);
                 setInner("module-header", `
                     <h1>❌ Error Loading Module</h1>
-                    <p>Failed to load module content. Please try again later.</p>
+                    <p>Failed to load module content: ${error.message}</p>
                     <a href="index.html" class="btn">Back to Dashboard</a>
                 `);
             }
+        }
+
+        function getDemoModule(moduleId) {
+            const demoModules = {
+                'demo-module-1': {
+                    _id: 'demo-module-1',
+                    title: 'Digital Literacy Essentials',
+                    description: 'Foundational digital skills untuk business professionals',
+                    week_start: 1,
+                    week_end: 2,
+                    objectives: [
+                        'Master professional digital communication',
+                        'Implement cloud-based business workflows',
+                        'Understand digital security best practices',
+                        'Use collaboration tools effectively'
+                    ]
+                },
+                'demo-module-2': {
+                    _id: 'demo-module-2',
+                    title: 'Digital Marketing Fundamentals',
+                    description: 'Essential digital marketing strategies for Indonesian businesses',
+                    week_start: 3,
+                    week_end: 5,
+                    objectives: [
+                        'Develop effective social media marketing strategies',
+                        'Create engaging content for Indonesian audience',
+                        'Implement email marketing campaigns',
+                        'Analyze digital marketing performance'
+                    ]
+                }
+            };
+
+            // Return specific module or first one as default
+            return demoModules[moduleId] || demoModules['demo-module-1'];
+        }
+
+        function getDemoLessons() {
+            return [
+                {
+                    _id: 'demo-lesson-1',
+                    title: 'Professional Digital Communication',
+                    description: 'Master email, messaging, and video conferencing for business',
+                    type: 'video',
+                    duration: 45
+                },
+                {
+                    _id: 'demo-lesson-2',
+                    title: 'Cloud Computing Basics',
+                    description: 'Understanding cloud storage and collaboration tools',
+                    type: 'reading',
+                    duration: 30
+                },
+                {
+                    _id: 'demo-lesson-3',
+                    title: 'Digital Security Fundamentals',
+                    description: 'Protecting your business data and communications',
+                    type: 'interactive',
+                    duration: 60
+                },
+                {
+                    _id: 'demo-lesson-4',
+                    title: 'Knowledge Check',
+                    description: 'Test your understanding of digital literacy concepts',
+                    type: 'quiz',
+                    duration: 15
+                }
+            ];
         }
 
         function loadLessonsNavigation(lessons) {
@@ -243,12 +345,13 @@
         }
 
         function loadLesson(index) {
-            if (!currentModule || !currentModule.lessons || index >= currentModule.lessons.length) {
+            const lessons = currentModule?.lessons || getDemoLessons();
+            if (!lessons || index >= lessons.length) {
                 return;
             }
-            
+
             currentLessonIndex = index;
-            const lesson = currentModule.lessons[index];
+            const lesson = lessons[index];
             
             let contentHTML = `
                 <div class="lesson-content">
@@ -269,7 +372,7 @@
                             <button class="btn btn-success" onclick="completeLesson(${index})">
                                 Mark Complete
                             </button>
-                            <button class="btn" onclick="nextLesson()" ${index === currentModule.lessons.length - 1 ? 'disabled' : ''}>
+                            <button class="btn" onclick="nextLesson()" ${index === lessons.length - 1 ? 'disabled' : ''}>
                                 Next →
                             </button>
                         </div>
@@ -278,7 +381,7 @@
             `;
             
             setInner("lesson-content", contentHTML);
-            loadLessonsNavigation(currentModule.lessons); // Refresh navigation
+            loadLessonsNavigation(lessons); // Refresh navigation
         }
 
         function generateLessonContent(lesson) {
@@ -378,10 +481,11 @@
         }
 
         function updateProgress() {
-            const totalLessons = currentModule?.lessons?.length || 1;
+            const lessons = currentModule?.lessons || getDemoLessons();
+            const totalLessons = lessons.length;
             const completed = completedLessons.length;
             const percentage = Math.round((completed / totalLessons) * 100);
-            
+
             document.getElementById("module-progress").style.width = `${percentage}%`;
             setInner("progress-info", `
                 <p>${percentage}% Complete</p>
@@ -399,7 +503,8 @@
         };
         
         window.nextLesson = function() {
-            if (currentLessonIndex < currentModule.lessons.length - 1) {
+            const lessons = currentModule?.lessons || getDemoLessons();
+            if (currentLessonIndex < lessons.length - 1) {
                 loadLesson(currentLessonIndex + 1);
             }
         };
@@ -408,10 +513,11 @@
             if (!completedLessons.includes(index)) {
                 completedLessons.push(index);
                 alert(`Lesson completed! 🎉`);
-                loadLessonsNavigation(currentModule.lessons);
-                
+                const lessons = currentModule?.lessons || getDemoLessons();
+                loadLessonsNavigation(lessons);
+
                 // Auto-advance to next lesson
-                if (index < currentModule.lessons.length - 1) {
+                if (index < lessons.length - 1) {
                     setTimeout(() => loadLesson(index + 1), 1000);
                 }
             }
