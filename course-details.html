@@ -184,10 +184,14 @@
         const courseId = urlParams.get('id');
 
         async function loadCourseDetails() {
+            console.log("🔄 Starting loadCourseDetails...");
+            console.log("📋 Course ID from URL:", courseId);
+
             if (!courseId) {
+                console.error("❌ No course ID found in URL");
                 document.getElementById("course-header").innerHTML = UIComponents.createCard(
                     "Error",
-                    "Course ID tidak ditemukan",
+                    "Course ID tidak ditemukan dalam URL. Pastikan URL mengandung parameter ?id=...",
                     []
                 );
                 return;
@@ -195,10 +199,13 @@
 
             try {
                 console.log("🔄 Loading course details for:", courseId);
+                UIComponents.showNotification("Loading course details...", "info");
 
                 // Get course details
                 const response = await apiClient.request(`/learning/courses/${courseId}`);
                 console.log("📚 Course details response:", response);
+                console.log("📚 Response status:", response?.status);
+                console.log("📚 Response data:", response?.data);
                 
                 if (response.status === 'success' && response.data) {
                     const course = response.data;
@@ -244,22 +251,118 @@
                         );
                     }
                 } else {
-                    throw new Error("Course not found");
+                    console.warn("⚠️ Course not found in response, using demo data");
+                    loadDemoCourseDetails();
                 }
                 
             } catch (error) {
                 console.error("❌ Failed to load course details:", error);
-                document.getElementById("course-header").innerHTML = UIComponents.createCard(
-                    "Error",
-                    "Gagal memuat detail kursus",
-                    []
-                );
-                document.getElementById("course-modules").innerHTML = UIComponents.createCard(
-                    "Error",
-                    "Gagal memuat modules",
-                    []
-                );
+                console.error("❌ Error details:", error.message);
+                console.error("❌ Error stack:", error.stack);
+
+                UIComponents.showNotification("Loading demo course data...", "info");
+
+                // Fallback to demo data
+                console.log("🔄 Loading demo course data as fallback");
+                loadDemoCourseDetails();
             }
+        }
+
+        function loadDemoCourseDetails() {
+            console.log("🎭 Loading demo course details");
+
+            // Demo course data
+            const demoCourse = {
+                title: "Digital Business Mastery for Indonesian Professionals",
+                description: "Comprehensive 16-week program covering digital literacy, e-commerce, digital marketing, business development, and industry integration specifically designed for Indonesian market.",
+                level: "beginner",
+                duration: "16",
+                status: "active",
+                modules: [
+                    {
+                        _id: "demo-module-1",
+                        title: "Digital Literacy Essentials",
+                        description: "Foundational digital skills untuk business professionals",
+                        week_start: 1,
+                        week_end: 2,
+                        lessons: [
+                            {
+                                _id: "demo-lesson-1",
+                                title: "Professional Digital Communication",
+                                description: "Master email, messaging, and video conferencing",
+                                duration: 45,
+                                type: "video"
+                            },
+                            {
+                                _id: "demo-lesson-2",
+                                title: "Cloud Computing Basics",
+                                description: "Understanding cloud storage and collaboration tools",
+                                duration: 30,
+                                type: "reading"
+                            }
+                        ]
+                    },
+                    {
+                        _id: "demo-module-2",
+                        title: "Digital Marketing Fundamentals",
+                        description: "Essential digital marketing strategies for Indonesian businesses",
+                        week_start: 3,
+                        week_end: 5,
+                        lessons: [
+                            {
+                                _id: "demo-lesson-3",
+                                title: "Social Media Marketing",
+                                description: "Leverage social platforms for business growth",
+                                duration: 60,
+                                type: "video"
+                            },
+                            {
+                                _id: "demo-lesson-4",
+                                title: "Content Marketing Strategy",
+                                description: "Create engaging content for your audience",
+                                duration: 40,
+                                type: "quiz"
+                            }
+                        ]
+                    }
+                ]
+            };
+
+            // Display demo course header
+            const headerHTML = `
+                <h1>📚 ${demoCourse.title} <span style="color: #059669; font-size: 0.8em;">(Demo)</span></h1>
+                <p>${demoCourse.description}</p>
+                <div style="margin: 1rem 0;">
+                    <span class="badge">${demoCourse.level}</span>
+                    <span class="badge">${demoCourse.duration} weeks</span>
+                    <span class="badge">${demoCourse.status}</span>
+                    <span class="badge" style="background: #059669;">Demo Mode</span>
+                </div>
+            `;
+            document.getElementById("course-header").innerHTML = headerHTML;
+
+            // Display demo modules
+            let modulesHTML = "";
+            demoCourse.modules.forEach((module, index) => {
+                modulesHTML += `
+                    <div class="module-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                        <h3>📖 ${module.title}</h3>
+                        <p>${module.description}</p>
+                        <div class="lesson-meta" style="margin: 0.5rem 0;">
+                            <span class="badge">Week ${module.week_start}-${module.week_end}</span>
+                            <span class="badge">${module.lessons ? module.lessons.length : 0} lessons</span>
+                        </div>
+                        <div style="margin-top: 1rem;">
+                            <button class="btn" onclick="startModule('${module._id}')">Mulai Module</button>
+                            <button class="btn" onclick="viewModuleLessons('${module._id}')" style="background: #6b7280;">Lihat Lessons</button>
+                        </div>
+                        ${module.lessons ? renderLessons(module.lessons) : ''}
+                    </div>
+                `;
+            });
+            document.getElementById("course-modules").innerHTML = modulesHTML;
+
+            UIComponents.showNotification("Demo course loaded successfully! 🎭", "success");
         }
 
         function renderLessons(lessons) {
@@ -287,16 +390,22 @@
         window.startModule = function(moduleId) {
             UIComponents.showNotification(`Starting module: ${moduleId}`, "info");
             console.log("🚀 Starting module:", moduleId);
+            // Navigate to module learning page
+            window.location.href = `module-learning.html?id=${moduleId}`;
         };
 
         window.viewModuleLessons = function(moduleId) {
             UIComponents.showNotification(`Loading lessons for module: ${moduleId}`, "info");
             console.log("📝 Loading lessons for module:", moduleId);
+            // Navigate to module learning page
+            window.location.href = `module-learning.html?id=${moduleId}`;
         };
 
         window.startLesson = function(lessonId) {
             UIComponents.showNotification(`Starting lesson: ${lessonId}`, "info");
             console.log("📖 Starting lesson:", lessonId);
+            // Navigate to lesson page (could be module learning with lesson focus)
+            window.location.href = `module-learning.html?lesson=${lessonId}`;
         };
 
         // Initialize page
