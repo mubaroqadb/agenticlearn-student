@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgenticLearn - Course Details</title>
+    <meta name="description" content="Detail kursus pembelajaran adaptif dengan AI">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+
+    <!-- Import Shared CSS -->
+    <link rel="stylesheet" href="https://mubaroqadb.github.io/agenticlearn-shared/css/green-components.css">
+
+    <style>
+        :root {
+            --primary: #2563eb; --success: #059669; --gray-50: #f9fafb;
+            --gray-100: #f3f4f6; --gray-800: #1f2937; --shadow: 0 1px 3px rgba(0,0,0,0.12);
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--gray-50); line-height: 1.6; color: var(--gray-800);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .card { 
+            background: white; border-radius: var(--radius); padding: 1.5rem; 
+            box-shadow: var(--shadow); margin-bottom: 1rem;
+        }
+        .btn { 
+            padding: 0.5rem 1rem; border: none; border-radius: var(--radius); 
+            cursor: pointer; background: var(--primary); color: white;
+            font-size: 0.875rem; transition: all 0.2s ease; text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: #3b82f6; }
+        .btn.secondary { background: var(--gray-100); color: var(--gray-800); }
+        .btn.secondary:hover { background: #e5e7eb; }
+        
+        .module-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            background: white;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .lesson-item {
+            padding: 0.75rem;
+            border-left: 3px solid var(--primary);
+            margin: 0.5rem 0;
+            background: #f8fafc;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .lesson-item h4 {
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .lesson-meta {
+            font-size: 0.875rem;
+            color: #666;
+            margin: 0.5rem 0;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: var(--success);
+            color: white;
+            margin: 0.25rem 0.25rem 0.25rem 0;
+        }
+        
+        .loading { 
+            display: inline-block; width: 20px; height: 20px; 
+            border: 2px solid var(--gray-100); border-top: 2px solid var(--primary); 
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .back-button {
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="back-button">
+            <a href="index.html" class="btn secondary">← Kembali ke Dashboard</a>
+        </div>
+        
+        <header class="card">
+            <div id="course-header">
+                <div class="loading"></div>
+                <span>Memuat detail kursus...</span>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2>📋 Modules</h2>
+            <div id="course-modules">
+                <div class="loading"></div>
+                <span>Memuat modules...</span>
+            </div>
+        </section>
+    </div>
+
+    <script type="module">
+        import { JSCroot } from 'https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.9/api.js';
+        import { setInner, onClick } from 'https://cdn.jsdelivr.net/gh/jscroot/element@0.1.5/croot.js';
+        import { UIComponents } from 'https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js';
+        import { compatApiClient } from 'https://mubaroqadb.github.io/agenticlearn-shared/js/api-client.js';
+
+        // Get course ID from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const courseId = urlParams.get('id');
+
+        async function loadCourseDetails() {
+            if (!courseId) {
+                setInner("course-header", UIComponents.createCard(
+                    "Error",
+                    "Course ID tidak ditemukan",
+                    []
+                ));
+                return;
+            }
+
+            try {
+                console.log("🔄 Loading course details for:", courseId);
+                
+                // Get course details
+                const response = await compatApiClient.request(`/learning/courses/${courseId}`);
+                console.log("📚 Course details response:", response);
+                
+                if (response.status === 'success' && response.data) {
+                    const course = response.data;
+                    
+                    // Display course header
+                    const headerHTML = `
+                        <h1>📚 ${course.title}</h1>
+                        <p>${course.description}</p>
+                        <div style="margin: 1rem 0;">
+                            <span class="badge">${course.level}</span>
+                            <span class="badge">${course.duration} weeks</span>
+                            <span class="badge">${course.status}</span>
+                        </div>
+                    `;
+                    setInner("course-header", headerHTML);
+                    
+                    // Display modules
+                    if (course.modules && course.modules.length > 0) {
+                        let modulesHTML = "";
+                        course.modules.forEach((module, index) => {
+                            modulesHTML += `
+                                <div class="module-card">
+                                    <h3>📖 ${module.title}</h3>
+                                    <p>${module.description}</p>
+                                    <div class="lesson-meta">
+                                        <span class="badge">Week ${module.week_start}-${module.week_end}</span>
+                                        <span class="badge">${module.lessons ? module.lessons.length : 0} lessons</span>
+                                    </div>
+                                    <div style="margin-top: 1rem;">
+                                        <button class="btn" onclick="startModule('${module._id}')">Mulai Module</button>
+                                        <button class="btn secondary" onclick="viewModuleLessons('${module._id}')">Lihat Lessons</button>
+                                    </div>
+                                    ${module.lessons ? renderLessons(module.lessons) : ''}
+                                </div>
+                            `;
+                        });
+                        setInner("course-modules", modulesHTML);
+                    } else {
+                        setInner("course-modules", UIComponents.createCard(
+                            "📋 Belum Ada Module",
+                            "Module untuk kursus ini sedang dalam pengembangan.",
+                            []
+                        ));
+                    }
+                } else {
+                    throw new Error("Course not found");
+                }
+                
+            } catch (error) {
+                console.error("❌ Failed to load course details:", error);
+                setInner("course-header", UIComponents.createCard(
+                    "Error",
+                    "Gagal memuat detail kursus",
+                    []
+                ));
+                setInner("course-modules", UIComponents.createCard(
+                    "Error",
+                    "Gagal memuat modules",
+                    []
+                ));
+            }
+        }
+
+        function renderLessons(lessons) {
+            if (!lessons || lessons.length === 0) return "";
+            
+            let lessonsHTML = "<div style='margin-top: 1rem;'><h4>📝 Lessons:</h4>";
+            lessons.forEach(lesson => {
+                lessonsHTML += `
+                    <div class="lesson-item">
+                        <h4>${lesson.title}</h4>
+                        <p>${lesson.description}</p>
+                        <div class="lesson-meta">
+                            <span class="badge">${lesson.duration} minutes</span>
+                            <span class="badge">${lesson.type}</span>
+                        </div>
+                        <button class="btn" onclick="startLesson('${lesson._id}')">Mulai Lesson</button>
+                    </div>
+                `;
+            });
+            lessonsHTML += "</div>";
+            return lessonsHTML;
+        }
+
+        // Global functions
+        window.startModule = function(moduleId) {
+            UIComponents.showNotification(`Starting module: ${moduleId}`, "info");
+            console.log("🚀 Starting module:", moduleId);
+        };
+
+        window.viewModuleLessons = function(moduleId) {
+            UIComponents.showNotification(`Loading lessons for module: ${moduleId}`, "info");
+            console.log("📝 Loading lessons for module:", moduleId);
+        };
+
+        window.startLesson = function(lessonId) {
+            UIComponents.showNotification(`Starting lesson: ${lessonId}`, "info");
+            console.log("📖 Starting lesson:", lessonId);
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', loadCourseDetails);
+    </script>
+</body>
+</html>

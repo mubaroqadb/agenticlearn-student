@@ -54,12 +54,39 @@
             .container { padding: 0.5rem; }
             .grid { grid-template-columns: 1fr; }
         }
-        .loading { 
-            display: inline-block; width: 20px; height: 20px; 
-            border: 2px solid var(--gray-100); border-top: 2px solid var(--primary); 
+        .loading {
+            display: inline-block; width: 20px; height: 20px;
+            border: 2px solid var(--gray-100); border-top: 2px solid var(--primary);
             border-radius: 50%; animation: spin 1s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Course cards styling */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: var(--success);
+            color: white;
+            margin: 0.5rem 0;
+        }
+
+        /* Course actions */
+        .course-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .course-actions .btn {
+            flex: 1;
+            min-width: 120px;
+        }
     </style>
 </head>
 <body>
@@ -80,18 +107,26 @@
         </section>
 
         <section class="card">
-            <h2>🤖 Rekomendasi AI untuk Anda</h2>
-            <div id="ai-recommendations">
+            <h2>📚 Kursus Tersedia</h2>
+            <div id="available-courses">
                 <div class="loading"></div>
-                <span>Memuat rekomendasi personalisasi...</span>
+                <span>Memuat kursus yang tersedia...</span>
             </div>
         </section>
 
         <section class="card">
-            <h2>📚 Lanjutkan Pembelajaran</h2>
+            <h2>📖 Lanjutkan Pembelajaran</h2>
             <div id="current-module">
                 <div class="loading"></div>
                 <span>Memuat modul saat ini...</span>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>🤖 Rekomendasi AI untuk Anda</h2>
+            <div id="ai-recommendations">
+                <div class="loading"></div>
+                <span>Memuat rekomendasi personalisasi...</span>
             </div>
         </section>
 

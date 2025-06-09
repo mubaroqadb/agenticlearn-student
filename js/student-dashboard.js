@@ -25,6 +25,8 @@ const compatApiClient = {
                 ? "http://localhost:8080/api/v1"
                 : "https://agenticlearn-backend-production.up.railway.app/api/v1";
 
+            console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
+
             const response = await fetch(`${baseURL}${endpoint}`, {
                 headers: {
                     "Authorization": token ? `Bearer ${token}` : "",
@@ -32,11 +34,15 @@ const compatApiClient = {
                 }
             });
 
+            console.log(`📡 Response status: ${response.status}`);
+
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
 
-            return response.json();
+            const data = await response.json();
+            console.log("📊 Response data:", data);
+            return data;
         }
     }
 };
@@ -66,8 +72,9 @@ async function initializeStudentDashboard() {
 
         // Load dashboard data
         await loadStudentProgress();
-        await loadAIRecommendations();
+        await loadAvailableCourses();
         await loadCurrentModule();
+        await loadAIRecommendations();
 
         // Setup event listeners
         setupEventListeners();
@@ -208,58 +215,155 @@ async function loadAIRecommendations() {
     }
 }
 
-async function loadCurrentModule() {
+async function loadAvailableCourses() {
     try {
-        // Use available endpoint or create mock data
-        const currentModule = await compatApiClient.request("/learning/courses").then(courses => {
-            if (courses.data && courses.data.length > 0) {
-                return {
-                    id: courses.data[0]._id,
-                    title: courses.data[0].title,
-                    description: courses.data[0].description,
-                    progress: 45
-                };
-            }
-            return null;
-        }).catch(() => ({
-            id: "module1",
-            title: "Green Computing Fundamentals",
-            description: "Learn the basics of environmentally sustainable computing practices.",
-            progress: 45
-        }));
-        
-        if (currentModule) {
-            const moduleHTML = UIComponents.createCard(
-                `📖 ${currentModule.title}`,
-                `
-                    <p>${currentModule.description}</p>
-                    ${UIComponents.createProgressBar(currentModule.progress || 0, "Module Progress")}
-                `,
-                [
-                    { label: "Continue Learning", handler: `continueModule('${currentModule.id}')` },
-                    { label: "View Details", handler: `viewModuleDetails('${currentModule.id}')` }
-                ]
-            );
-            
-            setInner("current-module", moduleHTML);
+        console.log("🔄 Loading available courses from database...");
+
+        // Get courses from database
+        const response = await compatApiClient.request("/learning/courses?page=1&limit=10");
+        console.log("📚 Courses response:", response);
+
+        if (response.status === 'success' && response.data && response.data.courses) {
+            const courses = response.data.courses;
+            console.log(`✅ Found ${courses.length} courses`);
+
+            let coursesHTML = "";
+            courses.forEach(course => {
+                coursesHTML += UIComponents.createCard(
+                    `📚 ${course.title}`,
+                    `
+                        <p>${course.description}</p>
+                        <div style="margin: 1rem 0;">
+                            <span class="badge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                ${course.level} • ${course.duration} weeks
+                            </span>
+                        </div>
+                    `,
+                    [
+                        { label: "Mulai Kursus", handler: `startCourse('${course._id}')` },
+                        { label: "Lihat Detail", handler: `viewCourseDetails('${course._id}')` }
+                    ]
+                );
+            });
+
+            setInner("available-courses", coursesHTML);
         } else {
-            setInner("current-module", UIComponents.createCard(
-                "📚 Start Learning",
-                "No active module. Browse available courses to start your learning journey!",
-                [
-                    { label: "Browse Courses", handler: "browseCourses()" }
-                ]
+            console.warn("⚠️ No courses found in response");
+            setInner("available-courses", UIComponents.createCard(
+                "📚 Belum Ada Kursus",
+                "Belum ada kursus yang tersedia saat ini. Silakan coba lagi nanti.",
+                []
             ));
         }
-        
+
     } catch (error) {
-        console.error("Failed to load current module:", error);
-        setInner("current-module", UIComponents.createCard(
+        console.error("❌ Failed to load courses:", error);
+        setInner("available-courses", UIComponents.createCard(
             "Error",
-            "Failed to load current module",
+            "Gagal memuat kursus. Menggunakan data demo.",
             []
         ));
+
+        // Load demo course
+        loadDemoCourse();
     }
+}
+
+function loadDemoCourse() {
+    const demoHTML = UIComponents.createCard(
+        "📚 Digital Business Mastery for Indonesian Professionals",
+        `
+            <p>Comprehensive 16-week program covering digital literacy, e-commerce, digital marketing, business development, and industry integration specifically designed for Indonesian market</p>
+            <div style="margin: 1rem 0;">
+                <span class="badge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                    beginner • 16 weeks
+                </span>
+            </div>
+        `,
+        [
+            { label: "Mulai Kursus", handler: "startDemoCourse()" },
+            { label: "Lihat Detail", handler: "viewDemoCourseDetails()" }
+        ]
+    );
+
+    setInner("available-courses", demoHTML);
+}
+
+async function loadCurrentModule() {
+    try {
+        console.log("🔄 Loading current module...");
+
+        // Try to get current progress first
+        const courses = await compatApiClient.request("/learning/courses?page=1&limit=1");
+
+        if (courses.status === 'success' && courses.data && courses.data.courses && courses.data.courses.length > 0) {
+            const course = courses.data.courses[0];
+            console.log("📖 Current course:", course);
+
+            // Get modules for this course
+            try {
+                const modulesResponse = await compatApiClient.request(`/learning/courses/${course._id}`);
+                console.log("📋 Modules response:", modulesResponse);
+
+                if (modulesResponse.status === 'success' && modulesResponse.data && modulesResponse.data.modules) {
+                    const modules = modulesResponse.data.modules;
+                    const currentModule = modules[0]; // Get first module as current
+
+                    if (currentModule) {
+                        const moduleHTML = UIComponents.createCard(
+                            `📖 ${currentModule.title}`,
+                            `
+                                <p>${currentModule.description}</p>
+                                <div style="margin: 1rem 0;">
+                                    <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                        Week ${currentModule.week_start}-${currentModule.week_end}
+                                    </span>
+                                </div>
+                                ${UIComponents.createProgressBar(25, "Module Progress")}
+                            `,
+                            [
+                                { label: "Lanjutkan Belajar", handler: `continueModule('${currentModule._id}')` },
+                                { label: "Lihat Lessons", handler: `viewModuleLessons('${currentModule._id}')` }
+                            ]
+                        );
+
+                        setInner("current-module", moduleHTML);
+                        return;
+                    }
+                }
+            } catch (moduleError) {
+                console.error("Failed to load modules:", moduleError);
+            }
+        }
+
+        // Fallback to demo module
+        loadDemoModule();
+
+    } catch (error) {
+        console.error("Failed to load current module:", error);
+        loadDemoModule();
+    }
+}
+
+function loadDemoModule() {
+    const demoHTML = UIComponents.createCard(
+        "📖 Digital Literacy Essentials",
+        `
+            <p>Foundational digital skills untuk business professionals</p>
+            <div style="margin: 1rem 0;">
+                <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                    Week 1-2
+                </span>
+            </div>
+            ${UIComponents.createProgressBar(25, "Module Progress")}
+        `,
+        [
+            { label: "Lanjutkan Belajar", handler: "continueDemoModule()" },
+            { label: "Lihat Lessons", handler: "viewDemoLessons()" }
+        ]
+    );
+
+    setInner("current-module", demoHTML);
 }
 
 function setupEventListeners() {
@@ -334,6 +438,60 @@ window.viewModuleDetails = function(id) {
 window.browseCourses = function() {
     UIComponents.showNotification("Opening course catalog...", "info");
     // TODO: Implement course browsing
+};
+
+// Course interaction functions
+window.startCourse = function(courseId) {
+    UIComponents.showNotification(`Starting course: ${courseId}`, "info");
+    console.log("🚀 Starting course:", courseId);
+    // TODO: Implement course start logic
+    // For now, show success message
+    setTimeout(() => {
+        UIComponents.showNotification("Course started! Check your current module.", "success");
+        loadCurrentModule(); // Refresh current module
+    }, 1000);
+};
+
+window.viewCourseDetails = function(courseId) {
+    UIComponents.showNotification(`Loading course details: ${courseId}`, "info");
+    console.log("📖 Viewing course details:", courseId);
+    // Redirect to course details page
+    window.location.href = `course-details.html?id=${courseId}`;
+};
+
+window.startDemoCourse = function() {
+    UIComponents.showNotification("Starting demo course...", "info");
+    setTimeout(() => {
+        UIComponents.showNotification("Demo course started! 🎉", "success");
+        loadDemoModule();
+    }, 1000);
+};
+
+window.viewDemoCourseDetails = function() {
+    UIComponents.showNotification("Showing demo course details...", "info");
+    // TODO: Show demo course details modal
+};
+
+window.continueModule = function(moduleId) {
+    UIComponents.showNotification(`Continuing module: ${moduleId}`, "info");
+    console.log("📖 Continuing module:", moduleId);
+    // TODO: Navigate to module learning page
+};
+
+window.viewModuleLessons = function(moduleId) {
+    UIComponents.showNotification(`Loading lessons for module: ${moduleId}`, "info");
+    console.log("📝 Loading lessons for module:", moduleId);
+    // TODO: Show lessons list or navigate to lessons page
+};
+
+window.continueDemoModule = function() {
+    UIComponents.showNotification("Continuing demo module...", "info");
+    // TODO: Navigate to demo module content
+};
+
+window.viewDemoLessons = function() {
+    UIComponents.showNotification("Loading demo lessons...", "info");
+    // TODO: Show demo lessons
 };
 
 // ARIA Chat Functions
