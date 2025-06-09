@@ -1,9 +1,13 @@
-// AgenticLearn Student Dashboard dengan Shared Components
+// AgenticLearn Student Dashboard dengan Shared Components + ARIA AI
 import { apiClient } from "https://YOUR_USERNAME.github.io/agenticlearn-shared/js/api-client.js";
 import { UIComponents } from "https://YOUR_USERNAME.github.io/agenticlearn-shared/js/ui-components.js";
+import { ARIAChat } from "https://YOUR_USERNAME.github.io/agenticlearn-shared/js/aria-chat.js";
 import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
 import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
+
+// Global ARIA instance
+let ariaChat = null;
 
 async function initializeStudentDashboard() {
     const token = getCookie("login");
@@ -24,7 +28,10 @@ async function initializeStudentDashboard() {
         
         // Setup event listeners
         setupEventListeners();
-        
+
+        // Initialize ARIA Chat
+        initializeARIA();
+
         // Update carbon indicator
         updateCarbonIndicator();
         
@@ -182,9 +189,29 @@ function setupEventListeners() {
     });
     
     onClick("btn-chat", () => {
-        UIComponents.showNotification("AI Chat feature coming soon! 🤖", "info");
-        // TODO: Implement AI chat
+        toggleARIAChat();
     });
+
+    onClick("btn-aria-toggle", () => {
+        toggleARIAChat();
+    });
+
+    // ARIA floating button
+    const ariaFloatingBtn = document.getElementById("aria-floating-btn");
+    if (ariaFloatingBtn) {
+        ariaFloatingBtn.addEventListener('click', toggleARIAChat);
+
+        // Hover effects
+        ariaFloatingBtn.addEventListener('mouseenter', () => {
+            ariaFloatingBtn.style.transform = 'scale(1.1)';
+            ariaFloatingBtn.style.boxShadow = '0 6px 20px rgba(46, 125, 50, 0.4)';
+        });
+
+        ariaFloatingBtn.addEventListener('mouseleave', () => {
+            ariaFloatingBtn.style.transform = 'scale(1)';
+            ariaFloatingBtn.style.boxShadow = '0 4px 16px rgba(46, 125, 50, 0.3)';
+        });
+    }
 }
 
 function updateCarbonIndicator() {
@@ -220,5 +247,75 @@ window.browseCourses = function() {
     UIComponents.showNotification("Opening course catalog...", "info");
     // TODO: Implement course browsing
 };
+
+// ARIA Chat Functions
+function initializeARIA() {
+    try {
+        // Initialize ARIA chat widget
+        ariaChat = new ARIAChat('aria-chat-widget', {
+            theme: 'green',
+            showSuggestions: true,
+            showCarbonTracker: true,
+            autoScroll: true,
+            maxMessages: 50
+        });
+
+        console.log('🤖 ARIA Chat initialized successfully');
+
+        // Show welcome message after 2 seconds
+        setTimeout(() => {
+            UIComponents.showNotification("ARIA AI Tutor siap membantu! Klik tombol 🤖 untuk mulai chat.", "info");
+        }, 2000);
+
+    } catch (error) {
+        console.error('Failed to initialize ARIA:', error);
+        UIComponents.showNotification("ARIA AI Tutor tidak tersedia saat ini", "error");
+    }
+}
+
+function toggleARIAChat() {
+    const chatWidget = document.getElementById('aria-chat-widget');
+    const floatingBtn = document.getElementById('aria-floating-btn');
+
+    if (!ariaChat) {
+        UIComponents.showNotification("ARIA sedang dimuat...", "info");
+        return;
+    }
+
+    if (chatWidget.style.display === 'none' || !chatWidget.style.display) {
+        // Show chat
+        chatWidget.style.display = 'block';
+        floatingBtn.style.display = 'none';
+
+        // Track interaction
+        updateCarbonIndicator();
+
+        UIComponents.showNotification("ARIA AI Tutor aktif! 🤖", "success");
+    } else {
+        // Hide chat
+        chatWidget.style.display = 'none';
+        floatingBtn.style.display = 'flex';
+    }
+}
+
+// Test ARIA Health
+async function testARIAHealth() {
+    try {
+        const health = await apiClient.ariaHealthCheck();
+        console.log('🤖 ARIA Health:', health);
+
+        if (health.status === 'healthy') {
+            UIComponents.showNotification("ARIA AI Tutor online dan siap! ✅", "success");
+        } else {
+            UIComponents.showNotification("ARIA AI Tutor mengalami masalah", "warning");
+        }
+    } catch (error) {
+        console.error('ARIA Health Check failed:', error);
+        UIComponents.showNotification("ARIA AI Tutor offline", "error");
+    }
+}
+
+// Auto-test ARIA health on load
+setTimeout(testARIAHealth, 3000);
 
 document.addEventListener('DOMContentLoaded', initializeStudentDashboard);

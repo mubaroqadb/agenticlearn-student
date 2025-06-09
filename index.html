@@ -100,9 +100,41 @@
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button class="btn" id="btn-assessment">Quick Assessment</button>
                 <button class="btn" id="btn-progress">Lihat Progress Detail</button>
-                <button class="btn" id="btn-chat">Chat dengan AI</button>
+                <button class="btn" id="btn-chat">Chat dengan ARIA AI</button>
+                <button class="btn" id="btn-aria-toggle" style="background: #2E7D32;">🤖 ARIA Tutor</button>
             </div>
         </section>
+    </div>
+
+    <!-- ARIA Chat Container -->
+    <div id="aria-chat-widget" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1000;
+        display: none;
+    "></div>
+
+    <!-- ARIA Floating Button -->
+    <div id="aria-floating-btn" style="
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #2E7D32, #4CAF50);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+        z-index: 999;
+        transition: all 0.3s ease;
+        color: white;
+        font-size: 24px;
+    " title="Chat dengan ARIA AI Tutor">
+        🤖
     </div>
 
     <!-- Green Computing Indicator -->
