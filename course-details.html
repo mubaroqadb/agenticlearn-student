@@ -208,37 +208,52 @@
                 console.log("📚 Response data:", response?.data);
                 
                 if (response.status === 'success' && response.data) {
-                    const course = response.data;
+                    // Handle different response structures
+                    const course = response.data.course || response.data;
+                    const modules = response.data.modules || course.modules || [];
                     
+                    console.log("📚 Parsed course:", course);
+                    console.log("📋 Parsed modules:", modules);
+
                     // Display course header
                     const headerHTML = `
-                        <h1>📚 ${course.title}</h1>
-                        <p>${course.description}</p>
+                        <h1>📚 ${course.title || 'Unknown Course'}</h1>
+                        <p>${course.description || 'No description available'}</p>
                         <div style="margin: 1rem 0;">
-                            <span class="badge">${course.level}</span>
-                            <span class="badge">${course.duration} weeks</span>
-                            <span class="badge">${course.status}</span>
+                            <span class="badge">${course.level || 'unknown'}</span>
+                            <span class="badge">${course.duration || 'unknown'} weeks</span>
+                            <span class="badge">${course.status || 'unknown'}</span>
                         </div>
                     `;
                     document.getElementById("course-header").innerHTML = headerHTML;
 
                     // Display modules
-                    if (course.modules && course.modules.length > 0) {
-                        let modulesHTML = "";
-                        course.modules.forEach((module, index) => {
+                    if (modules && modules.length > 0) {
+                        let modulesHTML = `<h2>📋 Modules (${modules.length})</h2>`;
+                        modules.forEach((module, index) => {
                             modulesHTML += `
-                                <div class="module-card">
-                                    <h3>📖 ${module.title}</h3>
-                                    <p>${module.description}</p>
-                                    <div class="lesson-meta">
-                                        <span class="badge">Week ${module.week_start}-${module.week_end}</span>
+                                <div class="module-card" style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin: 1rem 0;">
+                                    <h3>📖 ${module.title || `Module ${index + 1}`}</h3>
+                                    <p>${module.description || 'No description available'}</p>
+                                    <div class="lesson-meta" style="margin: 0.5rem 0;">
+                                        <span class="badge">Week ${module.week_start || '?'}-${module.week_end || '?'}</span>
                                         <span class="badge">${module.lessons ? module.lessons.length : 0} lessons</span>
+                                        ${module.capstone ? '<span class="badge" style="background: #7c3aed;">Capstone Project</span>' : ''}
                                     </div>
+                                    ${module.objectives ? `
+                                        <div style="margin: 1rem 0;">
+                                            <h4>🎯 Learning Objectives:</h4>
+                                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                                ${module.objectives.map(obj => `<li>${obj}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
                                     <div style="margin-top: 1rem;">
                                         <button class="btn" onclick="startModule('${module._id}')">Mulai Module</button>
-                                        <button class="btn secondary" onclick="viewModuleLessons('${module._id}')">Lihat Lessons</button>
+                                        <button class="btn" onclick="viewModuleLessons('${module._id}')" style="background: #6b7280;">Lihat Details</button>
                                     </div>
                                     ${module.lessons ? renderLessons(module.lessons) : ''}
+                                    ${module.capstone ? renderCapstone(module.capstone) : ''}
                                 </div>
                             `;
                         });
@@ -367,16 +382,16 @@
 
         function renderLessons(lessons) {
             if (!lessons || lessons.length === 0) return "";
-            
+
             let lessonsHTML = "<div style='margin-top: 1rem;'><h4>📝 Lessons:</h4>";
             lessons.forEach(lesson => {
                 lessonsHTML += `
-                    <div class="lesson-item">
-                        <h4>${lesson.title}</h4>
-                        <p>${lesson.description}</p>
-                        <div class="lesson-meta">
-                            <span class="badge">${lesson.duration} minutes</span>
-                            <span class="badge">${lesson.type}</span>
+                    <div class="lesson-item" style="border-left: 3px solid #2563eb; padding-left: 1rem; margin: 0.5rem 0;">
+                        <h4>${lesson.title || 'Untitled Lesson'}</h4>
+                        <p>${lesson.description || 'No description available'}</p>
+                        <div class="lesson-meta" style="margin: 0.5rem 0;">
+                            <span class="badge">${lesson.duration || '?'} minutes</span>
+                            <span class="badge">${lesson.type || 'unknown'}</span>
                         </div>
                         <button class="btn" onclick="startLesson('${lesson._id}')">Mulai Lesson</button>
                     </div>
@@ -384,6 +399,36 @@
             });
             lessonsHTML += "</div>";
             return lessonsHTML;
+        }
+
+        function renderCapstone(capstone) {
+            if (!capstone) return "";
+
+            return `
+                <div style="margin-top: 1rem; background: #f8fafc; border-radius: 6px; padding: 1rem; border-left: 4px solid #7c3aed;">
+                    <h4 style="color: #7c3aed;">🏆 Capstone Project: ${capstone.title}</h4>
+                    <p>${capstone.description}</p>
+                    <div style="margin: 1rem 0;">
+                        <strong>⏱️ Estimated Time:</strong> ${capstone.time_estimate || '?'} hours
+                    </div>
+                    ${capstone.requirements ? `
+                        <div style="margin: 1rem 0;">
+                            <strong>📋 Requirements:</strong>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                ${capstone.requirements.map(req => `<li>${req}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    ${capstone.deliverables ? `
+                        <div style="margin: 1rem 0;">
+                            <strong>📦 Deliverables:</strong>
+                            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                                ${capstone.deliverables.map(del => `<li>${del}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
         }
 
         // Global functions
