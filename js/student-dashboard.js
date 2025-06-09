@@ -439,19 +439,16 @@ function loadDemoModule() {
 }
 
 function setupEventListeners() {
-    onClick("btn-assessment", () => {
+    onClick("btn-assessment", async () => {
         UIComponents.showNotification("Starting quick assessment...", "info");
-        // TODO: Implement assessment
-        setTimeout(() => {
-            UIComponents.showNotification("Assessment completed! 🎉", "success");
-        }, 2000);
+        await startQuickAssessment();
     });
-    
+
     onClick("btn-progress", () => {
         UIComponents.showNotification("Opening detailed progress view...", "info");
-        // TODO: Implement detailed progress view
+        showProgressModal();
     });
-    
+
     onClick("btn-chat", () => {
         toggleARIAChat();
     });
@@ -492,48 +489,117 @@ function updateCarbonIndicator() {
 }
 
 // Global functions for UI interactions
-window.startRecommendation = function(id) {
+window.startRecommendation = async function(id) {
     UIComponents.showNotification(`Starting recommendation: ${id}`, "info");
-    // TODO: Implement recommendation start
+    try {
+        // Get recommendation details and start it
+        const response = await compatApiClient.request(`/personalization/recommendations/${id}/start`);
+        if (response.status === 'success') {
+            UIComponents.showNotification("Recommendation started! 🎯", "success");
+            // Refresh current module to show new content
+            await loadCurrentModule();
+        }
+    } catch (error) {
+        UIComponents.showNotification("Failed to start recommendation", "error");
+    }
 };
 
-window.learnMore = function(id) {
-    UIComponents.showNotification(`Learning more about: ${id}`, "info");
-    // TODO: Implement learn more
+window.learnMore = async function(id) {
+    UIComponents.showNotification(`Loading details for: ${id}`, "info");
+    try {
+        // Get detailed information about the recommendation
+        const response = await compatApiClient.request(`/personalization/recommendations/${id}`);
+        if (response.status === 'success') {
+            showRecommendationModal(response.data);
+        }
+    } catch (error) {
+        UIComponents.showNotification("Failed to load details", "error");
+    }
 };
 
-window.continueModule = function(id) {
+window.continueModule = async function(id) {
     UIComponents.showNotification(`Continuing module: ${id}`, "info");
-    // TODO: Implement module continuation
+    try {
+        // Navigate to module learning page
+        window.location.href = `module-learning.html?id=${id}`;
+    } catch (error) {
+        UIComponents.showNotification("Failed to continue module", "error");
+    }
 };
 
-window.viewModuleDetails = function(id) {
-    UIComponents.showNotification(`Viewing details for module: ${id}`, "info");
-    // TODO: Implement module details view
+window.viewModuleDetails = async function(id) {
+    UIComponents.showNotification(`Loading module details: ${id}`, "info");
+    try {
+        const response = await compatApiClient.request(`/learning/modules/${id}`);
+        if (response.status === 'success') {
+            showModuleModal(response.data);
+        }
+    } catch (error) {
+        UIComponents.showNotification("Failed to load module details", "error");
+    }
 };
 
 window.browseCourses = function() {
     UIComponents.showNotification("Opening course catalog...", "info");
-    // TODO: Implement course browsing
+    // Scroll to courses section
+    document.getElementById('available-courses').scrollIntoView({ behavior: 'smooth' });
 };
 
 // Course interaction functions
-window.startCourse = function(courseId) {
+window.startCourse = async function(courseId) {
     UIComponents.showNotification(`Starting course: ${courseId}`, "info");
     console.log("🚀 Starting course:", courseId);
-    // TODO: Implement course start logic
-    // For now, show success message
-    setTimeout(() => {
-        UIComponents.showNotification("Course started! Check your current module.", "success");
-        loadCurrentModule(); // Refresh current module
-    }, 1000);
+
+    try {
+        // Check if user is authenticated
+        const token = getCookie("access_token") || getCookie("login");
+        if (!token) {
+            UIComponents.showNotification("Please login to start a course", "error");
+            showLoginModal();
+            return;
+        }
+
+        // Enroll in course
+        const response = await compatApiClient.request(`/learning/courses/${courseId}/enroll`, {
+            method: 'POST'
+        });
+
+        if (response.status === 'success') {
+            UIComponents.showNotification("Course started successfully! 🎉", "success");
+            // Refresh dashboard to show new enrollment
+            await loadStudentProgress();
+            await loadCurrentModule();
+        } else {
+            UIComponents.showNotification("Failed to start course", "error");
+        }
+    } catch (error) {
+        console.error("Failed to start course:", error);
+        if (error.message.includes('401')) {
+            UIComponents.showNotification("Please login to start a course", "error");
+            showLoginModal();
+        } else {
+            UIComponents.showNotification("Failed to start course", "error");
+        }
+    }
 };
 
-window.viewCourseDetails = function(courseId) {
+window.viewCourseDetails = async function(courseId) {
     UIComponents.showNotification(`Loading course details: ${courseId}`, "info");
     console.log("📖 Viewing course details:", courseId);
-    // Redirect to course details page
-    window.location.href = `course-details.html?id=${courseId}`;
+
+    try {
+        const response = await compatApiClient.request(`/learning/courses/${courseId}`);
+        if (response.status === 'success') {
+            showCourseModal(response.data);
+        } else {
+            // Fallback to course details page
+            window.location.href = `course-details.html?id=${courseId}`;
+        }
+    } catch (error) {
+        console.error("Failed to load course details:", error);
+        // Fallback to course details page
+        window.location.href = `course-details.html?id=${courseId}`;
+    }
 };
 
 window.startDemoCourse = function() {
@@ -635,6 +701,690 @@ async function testARIAHealth() {
     } catch (error) {
         console.error('ARIA Health Check failed:', error);
         UIComponents.showNotification("ARIA AI Tutor menggunakan mode offline", "info");
+    }
+}
+
+// Modal Functions
+function showCourseModal(course) {
+    const modalHTML = `
+        <div id="course-modal" class="modal-overlay" onclick="closeModal('course-modal')">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>📚 ${course.title}</h2>
+                    <button class="modal-close" onclick="closeModal('course-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>${course.description}</p>
+                    <div class="course-info">
+                        <span class="badge">Level: ${course.level}</span>
+                        <span class="badge">Duration: ${course.duration} weeks</span>
+                        <span class="badge">Status: ${course.status}</span>
+                    </div>
+                    ${course.modules ? `
+                        <h3>📋 Modules (${course.modules.length})</h3>
+                        <ul>
+                            ${course.modules.map(module => `<li>${module.title}</li>`).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="startCourse('${course._id}')">Start Course</button>
+                    <button class="btn" onclick="closeModal('course-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addModalStyles();
+}
+
+function showModuleModal(module) {
+    const modalHTML = `
+        <div id="module-modal" class="modal-overlay" onclick="closeModal('module-modal')">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>📖 ${module.title}</h2>
+                    <button class="modal-close" onclick="closeModal('module-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>${module.description}</p>
+                    <div class="module-info">
+                        <span class="badge">Week ${module.week_start}-${module.week_end}</span>
+                        <span class="badge">Lessons: ${module.lessons?.length || 0}</span>
+                    </div>
+                    ${module.lessons ? `
+                        <h3>📝 Lessons</h3>
+                        <ul>
+                            ${module.lessons.map(lesson => `
+                                <li>
+                                    <strong>${lesson.title}</strong>
+                                    <span class="lesson-type">(${lesson.type})</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    ` : ''}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="continueModule('${module._id}')">Start Module</button>
+                    <button class="btn" onclick="closeModal('module-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addModalStyles();
+}
+
+function showLoginModal() {
+    const modalHTML = `
+        <div id="login-modal" class="modal-overlay" onclick="closeModal('login-modal')">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>🔐 Login Required</h2>
+                    <button class="modal-close" onclick="closeModal('login-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please login to access course features.</p>
+                    <form id="login-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="document.getElementById('login-form').submit()">Login</button>
+                    <button class="btn" onclick="showRegisterModal()">Register</button>
+                    <button class="btn" onclick="closeModal('login-modal')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addModalStyles();
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.remove();
+    }
+}
+
+function addModalStyles() {
+    if (document.getElementById('modal-styles')) return;
+
+    const styles = document.createElement('style');
+    styles.id = 'modal-styles';
+    styles.textContent = `
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        }
+        .modal-header {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        .modal-body {
+            padding: 1rem;
+        }
+        .modal-footer {
+            padding: 1rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+        .course-info, .module-info {
+            margin: 1rem 0;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+        }
+        .lesson-type {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .assessment-progress {
+            margin-bottom: 2rem;
+        }
+        .question {
+            margin-bottom: 2rem;
+        }
+        .question h3 {
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .option:hover {
+            background: #f9fafb;
+            border-color: #2563eb;
+        }
+        .option input[type="radio"] {
+            margin-right: 0.75rem;
+        }
+        .assessment-results {
+            text-align: center;
+        }
+        .score-display {
+            margin-bottom: 2rem;
+        }
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #059669, #2563eb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .score-number {
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .results-details {
+            text-align: left;
+            margin-bottom: 1.5rem;
+        }
+        .results-details p {
+            margin-bottom: 0.5rem;
+        }
+        .recommendations {
+            text-align: left;
+        }
+        .recommendations ul {
+            margin-top: 0.5rem;
+            padding-left: 1.5rem;
+        }
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        .stat-label {
+            font-weight: 500;
+        }
+        .stat-value {
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f9fafb;
+            border-radius: 6px;
+        }
+        .activity-icon {
+            font-size: 1.25rem;
+        }
+        .activity-text {
+            flex: 1;
+        }
+        .activity-time {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+    `;
+    document.head.appendChild(styles);
+}
+
+// Authentication Functions
+window.handleLogin = async function(event) {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+    const credentials = {
+        email: formData.get('email'),
+        password: formData.get('password')
+    };
+
+    try {
+        UIComponents.showNotification("Logging in...", "info");
+        const response = await fetch("http://localhost:8080/api/v1/auth/login", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(credentials)
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+            // Store token
+            document.cookie = `access_token=${data.data.access_token}; path=/; max-age=86400`;
+            document.cookie = `login=${data.data.access_token}; path=/; max-age=86400`;
+
+            UIComponents.showNotification("Login successful! 🎉", "success");
+            closeModal('login-modal');
+
+            // Refresh dashboard
+            await initializeStudentDashboard();
+        } else {
+            UIComponents.showNotification(data.message || "Login failed", "error");
+        }
+    } catch (error) {
+        console.error("Login error:", error);
+        UIComponents.showNotification("Login failed", "error");
+    }
+};
+
+// Assessment Functions
+async function startQuickAssessment() {
+    try {
+        const token = getCookie("access_token") || getCookie("login");
+        if (!token) {
+            UIComponents.showNotification("Please login to take assessment", "error");
+            showLoginModal();
+            return;
+        }
+
+        // Get available courses for assessment
+        const coursesResponse = await compatApiClient.request("/learning/courses?page=1&limit=1");
+        if (!coursesResponse.data?.courses?.length) {
+            UIComponents.showNotification("No courses available for assessment", "error");
+            return;
+        }
+
+        const course = coursesResponse.data.courses[0];
+
+        // Show assessment modal
+        showAssessmentModal(course);
+
+    } catch (error) {
+        console.error("Failed to start assessment:", error);
+        UIComponents.showNotification("Failed to start assessment", "error");
+    }
+}
+
+function showAssessmentModal(course) {
+    const questions = [
+        {
+            question: "What is Green Computing?",
+            options: [
+                "Computing with green colored hardware",
+                "Environmentally sustainable computing practices",
+                "Computing in green buildings",
+                "Using renewable energy only"
+            ],
+            correct: 1
+        },
+        {
+            question: "Which practice reduces IT carbon footprint?",
+            options: [
+                "Running servers 24/7",
+                "Using energy-efficient hardware",
+                "Keeping all devices plugged in",
+                "Maximizing screen brightness"
+            ],
+            correct: 1
+        },
+        {
+            question: "What is the main goal of sustainable software development?",
+            options: [
+                "Writing more code",
+                "Using more resources",
+                "Minimizing environmental impact",
+                "Increasing processing time"
+            ],
+            correct: 2
+        }
+    ];
+
+    const modalHTML = `
+        <div id="assessment-modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🎯 Quick Assessment - ${course.title}</h2>
+                    <button class="modal-close" onclick="closeModal('assessment-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="assessment-content">
+                        <div class="assessment-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="assessment-progress" style="width: 0%"></div>
+                            </div>
+                            <span id="question-counter">Question 1 of ${questions.length}</span>
+                        </div>
+                        <div id="question-container">
+                            <!-- Questions will be loaded here -->
+                        </div>
+                    </div>
+                    <div id="assessment-results" style="display: none;">
+                        <!-- Results will be shown here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" id="prev-question" onclick="previousQuestion()" disabled>Previous</button>
+                    <button class="btn" id="next-question" onclick="nextQuestion()">Next</button>
+                    <button class="btn" id="submit-assessment" onclick="submitAssessment()" style="display: none;">Submit</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addModalStyles();
+
+    // Initialize assessment
+    window.assessmentData = {
+        questions: questions,
+        currentQuestion: 0,
+        answers: [],
+        startTime: new Date()
+    };
+
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const { questions, currentQuestion } = window.assessmentData;
+    const question = questions[currentQuestion];
+
+    const questionHTML = `
+        <div class="question">
+            <h3>${question.question}</h3>
+            <div class="options">
+                ${question.options.map((option, index) => `
+                    <label class="option">
+                        <input type="radio" name="answer" value="${index}" onchange="selectAnswer(${index})">
+                        <span>${option}</span>
+                    </label>
+                `).join('')}
+            </div>
+        </div>
+    `;
+
+    document.getElementById('question-container').innerHTML = questionHTML;
+
+    // Update progress
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    document.getElementById('assessment-progress').style.width = `${progress}%`;
+    document.getElementById('question-counter').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+
+    // Update buttons
+    document.getElementById('prev-question').disabled = currentQuestion === 0;
+    document.getElementById('next-question').style.display = currentQuestion === questions.length - 1 ? 'none' : 'inline-block';
+    document.getElementById('submit-assessment').style.display = currentQuestion === questions.length - 1 ? 'inline-block' : 'none';
+
+    // Restore previous answer if exists
+    if (window.assessmentData.answers[currentQuestion] !== undefined) {
+        const radio = document.querySelector(`input[value="${window.assessmentData.answers[currentQuestion]}"]`);
+        if (radio) radio.checked = true;
+    }
+}
+
+window.selectAnswer = function(answerIndex) {
+    window.assessmentData.answers[window.assessmentData.currentQuestion] = answerIndex;
+};
+
+window.nextQuestion = function() {
+    if (window.assessmentData.currentQuestion < window.assessmentData.questions.length - 1) {
+        window.assessmentData.currentQuestion++;
+        loadQuestion();
+    }
+};
+
+window.previousQuestion = function() {
+    if (window.assessmentData.currentQuestion > 0) {
+        window.assessmentData.currentQuestion--;
+        loadQuestion();
+    }
+};
+
+window.submitAssessment = async function() {
+    const { questions, answers, startTime } = window.assessmentData;
+
+    // Calculate score
+    let correct = 0;
+    answers.forEach((answer, index) => {
+        if (answer === questions[index].correct) {
+            correct++;
+        }
+    });
+
+    const score = Math.round((correct / questions.length) * 100);
+    const endTime = new Date();
+    const duration = Math.round((endTime - startTime) / 1000); // seconds
+
+    try {
+        // Submit to backend (if available)
+        const token = getCookie("access_token") || getCookie("login");
+        if (token) {
+            await compatApiClient.request("/learning/assessment/quick", {
+                method: 'POST',
+                body: {
+                    answers: answers,
+                    score: score,
+                    duration: duration,
+                    start_time: startTime
+                }
+            });
+        }
+    } catch (error) {
+        console.log("Failed to submit to backend, showing local results");
+    }
+
+    // Show results
+    showAssessmentResults(score, correct, questions.length, duration);
+};
+
+function showAssessmentResults(score, correct, total, duration) {
+    const resultsHTML = `
+        <div class="assessment-results">
+            <div class="score-display">
+                <div class="score-circle">
+                    <span class="score-number">${score}%</span>
+                </div>
+                <h3>Assessment Complete!</h3>
+            </div>
+            <div class="results-details">
+                <p><strong>Correct Answers:</strong> ${correct} out of ${total}</p>
+                <p><strong>Time Taken:</strong> ${Math.floor(duration / 60)}:${(duration % 60).toString().padStart(2, '0')}</p>
+                <p><strong>Performance:</strong> ${score >= 80 ? '🎉 Excellent!' : score >= 60 ? '👍 Good!' : '📚 Keep Learning!'}</p>
+            </div>
+            <div class="recommendations">
+                <h4>Next Steps:</h4>
+                <ul>
+                    ${score < 60 ? '<li>Review Green Computing fundamentals</li>' : ''}
+                    ${score < 80 ? '<li>Practice with more assessments</li>' : ''}
+                    <li>Continue with the course modules</li>
+                    <li>Chat with ARIA AI for personalized help</li>
+                </ul>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('assessment-content').style.display = 'none';
+    document.getElementById('assessment-results').innerHTML = resultsHTML;
+    document.getElementById('assessment-results').style.display = 'block';
+
+    // Update modal footer
+    document.querySelector('#assessment-modal .modal-footer').innerHTML = `
+        <button class="btn" onclick="closeModal('assessment-modal')">Close</button>
+        <button class="btn" onclick="retakeAssessment()">Retake</button>
+    `;
+
+    // Update progress in dashboard
+    setTimeout(() => {
+        loadStudentProgress();
+        UIComponents.showNotification(`Assessment completed! Score: ${score}%`, score >= 60 ? "success" : "info");
+    }, 1000);
+}
+
+window.retakeAssessment = function() {
+    closeModal('assessment-modal');
+    setTimeout(() => startQuickAssessment(), 500);
+};
+
+// Progress Modal
+function showProgressModal() {
+    const modalHTML = `
+        <div id="progress-modal" class="modal-overlay" onclick="closeModal('progress-modal')">
+            <div class="modal-content" onclick="event.stopPropagation()">
+                <div class="modal-header">
+                    <h2>📊 Learning Progress</h2>
+                    <button class="modal-close" onclick="closeModal('progress-modal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="detailed-progress">
+                        <div class="loading">Loading detailed progress...</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn" onclick="closeModal('progress-modal')">Close</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    addModalStyles();
+    loadDetailedProgress();
+}
+
+async function loadDetailedProgress() {
+    try {
+        const token = getCookie("access_token") || getCookie("login");
+        if (!token) {
+            document.getElementById('detailed-progress').innerHTML = `
+                <p>Please login to view detailed progress.</p>
+                <button class="btn" onclick="showLoginModal()">Login</button>
+            `;
+            return;
+        }
+
+        // Get detailed progress from backend
+        const response = await compatApiClient.request("/learning/dashboard");
+        const progressHTML = `
+            <div class="progress-overview">
+                <h3>Overall Progress</h3>
+                <div class="progress-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Courses Enrolled:</span>
+                        <span class="stat-value">${response.data?.enrolled_courses || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Lessons Completed:</span>
+                        <span class="stat-value">${response.data?.completed_lessons || 0}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Overall Progress:</span>
+                        <span class="stat-value">${response.data?.overall_progress || 0}%</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Certificates Earned:</span>
+                        <span class="stat-value">${response.data?.certificates_earned || 0}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-activity">
+                <h3>Recent Activity</h3>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <span class="activity-icon">📚</span>
+                        <span class="activity-text">Started Digital Business Mastery course</span>
+                        <span class="activity-time">Today</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">🎯</span>
+                        <span class="activity-text">Completed Quick Assessment</span>
+                        <span class="activity-time">Today</span>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">🤖</span>
+                        <span class="activity-text">Chatted with ARIA AI Tutor</span>
+                        <span class="activity-time">Today</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('detailed-progress').innerHTML = progressHTML;
+
+    } catch (error) {
+        console.error("Failed to load detailed progress:", error);
+        document.getElementById('detailed-progress').innerHTML = `
+            <p>Failed to load progress data. Please try again later.</p>
+        `;
     }
 }
 
