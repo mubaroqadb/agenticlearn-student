@@ -177,6 +177,178 @@
         🌱 0.000g CO2
     </div>
 
-    <script type="module" src="./js/student-dashboard.js"></script>
+    <!-- Debug version - inline script to ensure it loads -->
+    <script>
+        console.log("🔄 Loading student dashboard debug version...");
+
+        // Simple UI Components
+        const UIComponents = {
+            createCard: (title, content, actions = []) => {
+                const actionsHTML = actions.map(action =>
+                    `<button class="btn" onclick="${action.handler}">${action.label}</button>`
+                ).join(' ');
+                return `
+                    <div class="card" style="background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="margin: 0 0 0.5rem 0; color: #2563eb;">${title}</h3>
+                        <div>${content}</div>
+                        ${actionsHTML ? `<div style="margin-top: 1rem;">${actionsHTML}</div>` : ''}
+                    </div>
+                `;
+            },
+            showNotification: (message, type = 'info') => {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                // Create simple notification
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
+                    color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    max-width: 300px;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => notification.remove(), 3000);
+            }
+        };
+
+        // Load demo content
+        function loadDemoContent() {
+            console.log("📚 Loading demo content...");
+
+            // Available courses
+            const coursesHTML = UIComponents.createCard(
+                "📚 Digital Business Mastery",
+                `
+                    <p>Comprehensive 16-week program for Indonesian professionals</p>
+                    <div style="margin: 1rem 0;">
+                        <span style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            beginner • 16 weeks
+                        </span>
+                    </div>
+                `,
+                [
+                    { label: "Mulai Kursus", handler: "startCourse('demo')" },
+                    { label: "Lihat Detail", handler: "viewCourseDetails('demo')" }
+                ]
+            );
+
+            const coursesEl = document.getElementById("available-courses");
+            if (coursesEl) coursesEl.innerHTML = coursesHTML;
+
+            // Current module
+            const moduleHTML = UIComponents.createCard(
+                "📖 Digital Literacy Essentials",
+                `
+                    <p>Foundational digital skills untuk business professionals</p>
+                    <div style="margin: 1rem 0;">
+                        <span style="background: #2563eb; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            Week 1-2
+                        </span>
+                    </div>
+                    <div style="margin: 1rem 0;">
+                        <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px;">
+                            <div style="width: 25%; height: 100%; background: linear-gradient(90deg, #059669, #2563eb);"></div>
+                        </div>
+                        <small>25% Complete</small>
+                    </div>
+                `,
+                [
+                    { label: "Lanjutkan Belajar", handler: "continueModule('demo')" },
+                    { label: "Lihat Lessons", handler: "viewLessons('demo')" }
+                ]
+            );
+
+            const moduleEl = document.getElementById("current-module");
+            if (moduleEl) moduleEl.innerHTML = moduleHTML;
+
+            // AI Recommendations
+            const aiHTML = UIComponents.createCard(
+                "🤖 AI Recommendations",
+                `
+                    <p>Based on your learning pattern, we recommend:</p>
+                    <ul>
+                        <li>Green Computing Fundamentals</li>
+                        <li>Carbon Footprint Calculation</li>
+                        <li>Sustainable Software Development</li>
+                    </ul>
+                `,
+                [
+                    { label: "Start Recommendations", handler: "startRecommendations()" }
+                ]
+            );
+
+            const aiEl = document.getElementById("ai-recommendations");
+            if (aiEl) aiEl.innerHTML = aiHTML;
+
+            console.log("✅ Demo content loaded");
+        }
+
+        // Global button handlers
+        window.startCourse = function(courseId) {
+            UIComponents.showNotification(`Starting course: ${courseId}`, 'success');
+            console.log("🚀 Starting course:", courseId);
+        };
+
+        window.viewCourseDetails = function(courseId) {
+            UIComponents.showNotification(`Viewing course details: ${courseId}`, 'info');
+            console.log("📖 Viewing course details:", courseId);
+        };
+
+        window.continueModule = function(moduleId) {
+            UIComponents.showNotification(`Continuing module: ${moduleId}`, 'success');
+            console.log("📖 Continuing module:", moduleId);
+        };
+
+        window.viewLessons = function(moduleId) {
+            UIComponents.showNotification(`Viewing lessons: ${moduleId}`, 'info');
+            console.log("📝 Viewing lessons:", moduleId);
+        };
+
+        window.startRecommendations = function() {
+            UIComponents.showNotification("Starting AI recommendations", 'success');
+            console.log("🤖 Starting recommendations");
+        };
+
+        // Initialize dashboard
+        function initDashboard() {
+            console.log("🌱 Initializing student dashboard...");
+
+            // Set user name
+            const userNameEl = document.getElementById("user-name");
+            if (userNameEl) userNameEl.textContent = "Demo Student";
+
+            // Load content
+            loadDemoContent();
+
+            // Setup button listeners
+            const buttons = ['btn-assessment', 'btn-progress', 'btn-chat', 'btn-aria-toggle'];
+            buttons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                    btn.addEventListener('click', () => {
+                        UIComponents.showNotification(`Button ${btnId} clicked!`, 'success');
+                        console.log(`🔘 Button clicked: ${btnId}`);
+                    });
+                }
+            });
+
+            // Update carbon indicator
+            const indicator = document.getElementById("carbon-indicator");
+            if (indicator) {
+                indicator.textContent = "🌱 0.000001g CO2";
+            }
+
+            console.log("✅ Student dashboard initialized");
+            UIComponents.showNotification("Dashboard loaded successfully!", 'success');
+        }
+
+        // Start when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initDashboard);
+        } else {
+            initDashboard();
+        }
+    </script>
 </body>
 </html>
