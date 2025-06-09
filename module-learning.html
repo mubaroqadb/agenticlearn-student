@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Learning - AgenticLearn</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
+    
+    <!-- Import Shared CSS -->
+    <link rel="stylesheet" href="https://mubaroqadb.github.io/agenticlearn-shared/css/green-components.css">
+    
+    <style>
+        :root {
+            --primary: #2563eb; --success: #059669; --gray-50: #f9fafb;
+            --gray-100: #f3f4f6; --gray-800: #1f2937; --shadow: 0 1px 3px rgba(0,0,0,0.12);
+            --radius: 8px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--gray-50); line-height: 1.6; color: var(--gray-800);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .card { 
+            background: white; border-radius: var(--radius); padding: 1.5rem; 
+            box-shadow: var(--shadow); margin-bottom: 1rem;
+        }
+        .btn { 
+            padding: 0.5rem 1rem; border: none; border-radius: var(--radius); 
+            cursor: pointer; background: var(--primary); color: white;
+            font-size: 0.875rem; transition: all 0.2s ease; text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { background: #3b82f6; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #047857; }
+        .grid { 
+            display: grid; grid-template-columns: 1fr 300px; 
+            gap: 1rem; 
+        }
+        @media (max-width: 768px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        .progress-bar { 
+            background: var(--gray-100); height: 8px; border-radius: 4px; 
+            overflow: hidden; margin: 1rem 0;
+        }
+        .progress-fill { 
+            background: linear-gradient(90deg, var(--primary), #3b82f6);
+            height: 100%; transition: width 0.5s ease;
+        }
+        .lesson-nav {
+            border: 1px solid #e5e7eb; border-radius: 6px; padding: 1rem;
+        }
+        .lesson-item {
+            padding: 0.75rem; margin: 0.5rem 0; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .lesson-item:hover { background: var(--gray-50); }
+        .lesson-item.active { background: var(--primary); color: white; }
+        .lesson-content {
+            min-height: 400px; padding: 2rem;
+        }
+        .quiz-container {
+            background: #f8fafc; border-radius: 6px; padding: 1.5rem; margin: 1rem 0;
+        }
+        .quiz-question {
+            margin-bottom: 1.5rem;
+        }
+        .quiz-options {
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        .quiz-option {
+            padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 4px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .quiz-option:hover { background: var(--gray-50); border-color: var(--primary); }
+        .quiz-option.selected { background: var(--primary); color: white; }
+        .back-link {
+            color: var(--primary); text-decoration: none; margin-bottom: 1rem; display: inline-block;
+        }
+        .back-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="index.html" class="back-link">← Back to Dashboard</a>
+        
+        <div id="module-header" class="card">
+            <div class="loading"></div> Loading module...
+        </div>
+
+        <div class="grid">
+            <div>
+                <div id="lesson-content" class="card">
+                    <div class="lesson-content">
+                        <div class="loading"></div> Loading lesson content...
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div id="lesson-navigation" class="card">
+                    <h3>📋 Lessons</h3>
+                    <div id="lessons-list">
+                        <div class="loading"></div> Loading lessons...
+                    </div>
+                </div>
+                
+                <div id="progress-panel" class="card">
+                    <h3>📊 Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="module-progress" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-info">
+                        <p>0% Complete</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import main script as ES6 module -->
+    <script type="module">
+        import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
+        import { setInner } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
+
+        // Get module ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const moduleId = urlParams.get('id');
+
+        let currentModule = null;
+        let currentLessonIndex = 0;
+        let completedLessons = [];
+
+        if (!moduleId) {
+            setInner("module-header", `
+                <h1>❌ Module Not Found</h1>
+                <p>No module ID provided. Please return to the dashboard.</p>
+                <a href="index.html" class="btn">Back to Dashboard</a>
+            `);
+        } else {
+            loadModuleContent(moduleId);
+        }
+
+        // API client
+        const apiClient = {
+            async request(endpoint) {
+                try {
+                    const token = getCookie("access_token") || getCookie("login");
+                    const baseURL = "http://localhost:8080/api/v1";
+                    
+                    const response = await fetch(`${baseURL}${endpoint}`, {
+                        headers: {
+                            "Authorization": token ? `Bearer ${token}` : "",
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    return await response.json();
+                } catch (error) {
+                    console.error("API Error:", error);
+                    throw error;
+                }
+            }
+        };
+
+        async function loadModuleContent(moduleId) {
+            try {
+                console.log("Loading module content for:", moduleId);
+                
+                // Load module details
+                const moduleResponse = await apiClient.request(`/learning/modules/${moduleId}`);
+                
+                if (moduleResponse.status === 'success') {
+                    currentModule = moduleResponse.data;
+                    
+                    // Display module header
+                    setInner("module-header", `
+                        <h1>📖 ${currentModule.title}</h1>
+                        <p>${currentModule.description}</p>
+                        <div style="margin: 1rem 0;">
+                            <span class="badge">Week ${currentModule.week_start}-${currentModule.week_end}</span>
+                            <span class="badge">${currentModule.lessons ? currentModule.lessons.length : 0} lessons</span>
+                        </div>
+                    `);
+                    
+                    // Load lessons
+                    if (currentModule.lessons && currentModule.lessons.length > 0) {
+                        loadLessonsNavigation(currentModule.lessons);
+                        loadLesson(0); // Load first lesson
+                    } else {
+                        setInner("lessons-list", "<p>No lessons available for this module.</p>");
+                        setInner("lesson-content", `
+                            <div class="lesson-content">
+                                <h2>Module Content Coming Soon</h2>
+                                <p>This module is being developed. Please check back later.</p>
+                            </div>
+                        `);
+                    }
+                    
+                } else {
+                    throw new Error("Failed to load module details");
+                }
+                
+            } catch (error) {
+                console.error("Failed to load module content:", error);
+                setInner("module-header", `
+                    <h1>❌ Error Loading Module</h1>
+                    <p>Failed to load module content. Please try again later.</p>
+                    <a href="index.html" class="btn">Back to Dashboard</a>
+                `);
+            }
+        }
+
+        function loadLessonsNavigation(lessons) {
+            let lessonsHTML = "";
+            
+            lessons.forEach((lesson, index) => {
+                const isCompleted = completedLessons.includes(index);
+                const isActive = index === currentLessonIndex;
+                
+                lessonsHTML += `
+                    <div class="lesson-item ${isActive ? 'active' : ''}" onclick="loadLesson(${index})">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>${isCompleted ? '✅' : '📝'} ${lesson.title}</span>
+                            <span style="font-size: 0.75rem; opacity: 0.8;">${lesson.duration}min</span>
+                        </div>
+                        <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem;">
+                            ${lesson.type}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            setInner("lessons-list", lessonsHTML);
+            updateProgress();
+        }
+
+        function loadLesson(index) {
+            if (!currentModule || !currentModule.lessons || index >= currentModule.lessons.length) {
+                return;
+            }
+            
+            currentLessonIndex = index;
+            const lesson = currentModule.lessons[index];
+            
+            let contentHTML = `
+                <div class="lesson-content">
+                    <h2>${lesson.title}</h2>
+                    <p style="color: #6b7280; margin-bottom: 2rem;">
+                        ${lesson.type} • ${lesson.duration} minutes
+                    </p>
+                    
+                    <div class="lesson-body">
+                        ${generateLessonContent(lesson)}
+                    </div>
+                    
+                    <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: space-between;">
+                        <button class="btn" onclick="previousLesson()" ${index === 0 ? 'disabled' : ''}>
+                            ← Previous
+                        </button>
+                        <div>
+                            <button class="btn btn-success" onclick="completeLesson(${index})">
+                                Mark Complete
+                            </button>
+                            <button class="btn" onclick="nextLesson()" ${index === currentModule.lessons.length - 1 ? 'disabled' : ''}>
+                                Next →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            setInner("lesson-content", contentHTML);
+            loadLessonsNavigation(currentModule.lessons); // Refresh navigation
+        }
+
+        function generateLessonContent(lesson) {
+            switch (lesson.type) {
+                case 'video':
+                    return `
+                        <div style="background: #f3f4f6; padding: 2rem; border-radius: 8px; text-align: center;">
+                            <h3>🎥 Video Lesson</h3>
+                            <p>Video content for: ${lesson.title}</p>
+                            <div style="margin: 1rem 0;">
+                                <div style="width: 100%; height: 200px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                    <span style="color: #6b7280;">Video Player Placeholder</span>
+                                </div>
+                            </div>
+                            <p style="font-size: 0.875rem; color: #6b7280;">
+                                This video covers the fundamentals of ${lesson.title.toLowerCase()}.
+                            </p>
+                        </div>
+                    `;
+                
+                case 'quiz':
+                    return generateQuizContent(lesson);
+                
+                case 'reading':
+                default:
+                    return `
+                        <div>
+                            <h3>📚 Reading Material</h3>
+                            <p>${lesson.description}</p>
+                            
+                            <div style="margin: 2rem 0;">
+                                <h4>Key Learning Points:</h4>
+                                <ul style="margin: 1rem 0; padding-left: 2rem;">
+                                    <li>Understanding the core concepts of ${lesson.title}</li>
+                                    <li>Practical applications in real-world scenarios</li>
+                                    <li>Best practices and common pitfalls to avoid</li>
+                                    <li>Integration with other course modules</li>
+                                </ul>
+                            </div>
+                            
+                            <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #2563eb;">
+                                <h4 style="color: #2563eb;">💡 Pro Tip</h4>
+                                <p>Take notes while reading and try to relate the concepts to your own experience. This will help reinforce your learning.</p>
+                            </div>
+                        </div>
+                    `;
+            }
+        }
+
+        function generateQuizContent(lesson) {
+            const questions = [
+                {
+                    question: `What is the main focus of ${lesson.title}?`,
+                    options: [
+                        "Theoretical concepts only",
+                        "Practical implementation",
+                        "Historical background",
+                        "Future predictions"
+                    ],
+                    correct: 1
+                }
+            ];
+            
+            let quizHTML = `
+                <div class="quiz-container">
+                    <h3>🎯 Quiz: ${lesson.title}</h3>
+                    <p>Test your understanding of this lesson.</p>
+            `;
+            
+            questions.forEach((q, qIndex) => {
+                quizHTML += `
+                    <div class="quiz-question">
+                        <h4>Question ${qIndex + 1}: ${q.question}</h4>
+                        <div class="quiz-options">
+                `;
+                
+                q.options.forEach((option, oIndex) => {
+                    quizHTML += `
+                        <div class="quiz-option" onclick="selectQuizOption(${qIndex}, ${oIndex})">
+                            ${option}
+                        </div>
+                    `;
+                });
+                
+                quizHTML += `
+                        </div>
+                    </div>
+                `;
+            });
+            
+            quizHTML += `
+                    <button class="btn btn-success" onclick="submitQuiz()">Submit Quiz</button>
+                </div>
+            `;
+            
+            return quizHTML;
+        }
+
+        function updateProgress() {
+            const totalLessons = currentModule?.lessons?.length || 1;
+            const completed = completedLessons.length;
+            const percentage = Math.round((completed / totalLessons) * 100);
+            
+            document.getElementById("module-progress").style.width = `${percentage}%`;
+            setInner("progress-info", `
+                <p>${percentage}% Complete</p>
+                <p>${completed} of ${totalLessons} lessons completed</p>
+            `);
+        }
+
+        // Global functions
+        window.loadLesson = loadLesson;
+        
+        window.previousLesson = function() {
+            if (currentLessonIndex > 0) {
+                loadLesson(currentLessonIndex - 1);
+            }
+        };
+        
+        window.nextLesson = function() {
+            if (currentLessonIndex < currentModule.lessons.length - 1) {
+                loadLesson(currentLessonIndex + 1);
+            }
+        };
+        
+        window.completeLesson = function(index) {
+            if (!completedLessons.includes(index)) {
+                completedLessons.push(index);
+                alert(`Lesson completed! 🎉`);
+                loadLessonsNavigation(currentModule.lessons);
+                
+                // Auto-advance to next lesson
+                if (index < currentModule.lessons.length - 1) {
+                    setTimeout(() => loadLesson(index + 1), 1000);
+                }
+            }
+        };
+        
+        window.selectQuizOption = function(questionIndex, optionIndex) {
+            // Remove previous selections
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selection to clicked option
+            event.target.classList.add('selected');
+            window.selectedQuizAnswer = optionIndex;
+        };
+        
+        window.submitQuiz = function() {
+            if (window.selectedQuizAnswer !== undefined) {
+                alert("Quiz submitted! Great job! 🎯");
+                completeLesson(currentLessonIndex);
+            } else {
+                alert("Please select an answer before submitting.");
+            }
+        };
+    </script>
+</body>
+</html>
