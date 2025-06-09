@@ -206,12 +206,43 @@
         }
     </style>
 
-    <!-- Import shared UI components -->
-    <script src="https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js"></script>
-    <script src="https://mubaroqadb.github.io/agenticlearn-shared/js/aria-chat.js"></script>
+    <!-- Import main dashboard script as ES6 module -->
+    <script type="module" src="js/student-dashboard.js"></script>
 
-    <!-- Import main dashboard script -->
-    <script src="js/student-dashboard.js"></script>
+    <!-- Global functions for button handlers -->
+    <script>
+        // Global functions that buttons can call
+        window.testAPI = async function() {
+            try {
+                console.log("🔄 Testing API connection...");
+                const response = await fetch("http://localhost:8080/api/v1/health");
+                const data = await response.json();
+                if (data.status === 'healthy') {
+                    alert("✅ API Connection: SUCCESS");
+                } else {
+                    alert("❌ API Connection: FAILED");
+                }
+            } catch (error) {
+                alert("❌ API Connection: FAILED");
+            }
+        };
+
+        window.loadCourses = function() {
+            console.log("🔄 Reloading courses...");
+            alert("Reloading courses...");
+            location.reload();
+        };
+
+        window.loadModules = function() {
+            console.log("🔄 Reloading modules...");
+            alert("Reloading modules...");
+            location.reload();
+        };
+
+        window.showSuccess = function() {
+            alert("Test notification working! ✅");
+        };
+    </script>
 
 
 
