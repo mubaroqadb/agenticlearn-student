@@ -212,13 +212,84 @@
             }
         };
 
-        // Load demo content
-        function loadDemoContent() {
-            console.log("📚 Loading demo content...");
+        // Enhanced API client with real backend integration
+        const apiClient = {
+            async request(endpoint) {
+                try {
+                    const baseURL = "http://localhost:8080/api/v1";
+                    console.log(`🔄 API Request: ${baseURL}${endpoint}`);
 
-            // Available courses
+                    const response = await fetch(`${baseURL}${endpoint}`, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    console.log("📊 API Response:", data);
+                    return data;
+                } catch (error) {
+                    console.error("❌ API Error:", error);
+                    throw error;
+                }
+            }
+        };
+
+        // Load real courses from API with fallback to demo
+        async function loadAvailableCourses() {
+            console.log("📚 Loading available courses...");
+
+            try {
+                const response = await apiClient.request("/learning/courses?page=1&limit=5");
+
+                if (response.status === 'success' && response.data && response.data.courses) {
+                    const courses = response.data.courses;
+                    console.log(`✅ Found ${courses.length} real courses`);
+
+                    let coursesHTML = "";
+                    courses.forEach(course => {
+                        coursesHTML += UIComponents.createCard(
+                            `📚 ${course.title}`,
+                            `
+                                <p>${course.description}</p>
+                                <div style="margin: 1rem 0;">
+                                    <span style="background: #059669; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                        ${course.level} • ${course.duration} weeks
+                                    </span>
+                                </div>
+                            `,
+                            [
+                                { label: "Mulai Kursus", handler: `startCourse('${course._id}')` },
+                                { label: "Lihat Detail", handler: `viewCourseDetails('${course._id}')` }
+                            ]
+                        );
+                    });
+
+                    const coursesEl = document.getElementById("available-courses");
+                    if (coursesEl) coursesEl.innerHTML = coursesHTML;
+
+                    UIComponents.showNotification(`Loaded ${courses.length} courses from database`, 'success');
+                    return;
+                }
+            } catch (error) {
+                console.error("Failed to load real courses, using demo:", error);
+            }
+
+            // Fallback to demo content
+            loadDemoCourses();
+        }
+
+        // Demo courses fallback
+        function loadDemoCourses() {
+            console.log("📚 Loading demo courses...");
+
             const coursesHTML = UIComponents.createCard(
-                "📚 Digital Business Mastery",
+                "📚 Digital Business Mastery (Demo)",
                 `
                     <p>Comprehensive 16-week program for Indonesian professionals</p>
                     <div style="margin: 1rem 0;">
@@ -236,9 +307,68 @@
             const coursesEl = document.getElementById("available-courses");
             if (coursesEl) coursesEl.innerHTML = coursesHTML;
 
-            // Current module
+        // Load current module from API with fallback
+        async function loadCurrentModule() {
+            console.log("📖 Loading current module...");
+
+            try {
+                // Get first course to get its modules
+                const coursesResponse = await apiClient.request("/learning/courses?page=1&limit=1");
+
+                if (coursesResponse.status === 'success' && coursesResponse.data && coursesResponse.data.courses.length > 0) {
+                    const course = coursesResponse.data.courses[0];
+                    console.log("📚 Found course:", course.title);
+
+                    // Get course details with modules
+                    const courseDetails = await apiClient.request(`/learning/courses/${course._id}`);
+
+                    if (courseDetails.status === 'success' && courseDetails.data && courseDetails.data.modules) {
+                        const modules = courseDetails.data.modules;
+                        const currentModule = modules[0]; // Get first module as current
+
+                        if (currentModule) {
+                            const moduleHTML = UIComponents.createCard(
+                                `📖 ${currentModule.title}`,
+                                `
+                                    <p>${currentModule.description}</p>
+                                    <div style="margin: 1rem 0;">
+                                        <span style="background: #2563eb; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                            Week ${currentModule.week_start}-${currentModule.week_end}
+                                        </span>
+                                    </div>
+                                    <div style="margin: 1rem 0;">
+                                        <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px;">
+                                            <div style="width: 25%; height: 100%; background: linear-gradient(90deg, #059669, #2563eb);"></div>
+                                        </div>
+                                        <small>25% Complete</small>
+                                    </div>
+                                `,
+                                [
+                                    { label: "Lanjutkan Belajar", handler: `continueModule('${currentModule._id}')` },
+                                    { label: "Lihat Lessons", handler: `viewLessons('${currentModule._id}')` }
+                                ]
+                            );
+
+                            const moduleEl = document.getElementById("current-module");
+                            if (moduleEl) moduleEl.innerHTML = moduleHTML;
+
+                            UIComponents.showNotification(`Loaded module: ${currentModule.title}`, 'success');
+                            return;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load real module, using demo:", error);
+            }
+
+            // Fallback to demo module
+            loadDemoModule();
+        }
+
+        // Demo module fallback
+        function loadDemoModule() {
             const moduleHTML = UIComponents.createCard(
-                "📖 Digital Literacy Essentials",
+                "📖 Digital Literacy Essentials (Demo)",
                 `
                     <p>Foundational digital skills untuk business professionals</p>
                     <div style="margin: 1rem 0;">
@@ -261,8 +391,12 @@
 
             const moduleEl = document.getElementById("current-module");
             if (moduleEl) moduleEl.innerHTML = moduleHTML;
+        }
 
-            // AI Recommendations
+        // Load AI recommendations
+        function loadAIRecommendations() {
+            console.log("🤖 Loading AI recommendations...");
+
             const aiHTML = UIComponents.createCard(
                 "🤖 AI Recommendations",
                 `
@@ -281,7 +415,7 @@
             const aiEl = document.getElementById("ai-recommendations");
             if (aiEl) aiEl.innerHTML = aiHTML;
 
-            console.log("✅ Demo content loaded");
+            console.log("✅ AI recommendations loaded");
         }
 
         // Global button handlers
@@ -311,15 +445,17 @@
         };
 
         // Initialize dashboard
-        function initDashboard() {
+        async function initDashboard() {
             console.log("🌱 Initializing student dashboard...");
 
             // Set user name
             const userNameEl = document.getElementById("user-name");
             if (userNameEl) userNameEl.textContent = "Demo Student";
 
-            // Load content
-            loadDemoContent();
+            // Load content from API with fallbacks
+            await loadAvailableCourses();
+            await loadCurrentModule();
+            loadAIRecommendations();
 
             // Setup button listeners
             const buttons = ['btn-assessment', 'btn-progress', 'btn-chat', 'btn-aria-toggle'];
