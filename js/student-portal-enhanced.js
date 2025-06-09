@@ -1,8 +1,11 @@
-// Enhanced Student Portal with Real Backend Integration
-import { learningAPI } from "https://mubaroqadb.github.io/agenticlearn-shared/js/api-client-enhanced.js";
+// Enhanced Student Portal with Cloud Functions Integration
+import { AgenticAPIClient } from "../agenticlearn-shared/js/api-client.js";
 import { getCookie, deleteCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
 import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
+
+// Initialize API client for Cloud Functions
+const apiClient = new AgenticAPIClient();
 
 // Get GitHub username for redirects
 const GITHUB_USERNAME = window.location.hostname.includes('github.io') 
@@ -55,8 +58,8 @@ async function loadStudentProfile() {
 
 async function loadDashboard() {
     try {
-        const dashboard = await learningAPI.getDashboard();
-        
+        const dashboard = await apiClient.assessment('/dashboard');
+
         if (dashboard.status === 'success') {
             const data = dashboard.data;
             
@@ -86,8 +89,8 @@ async function loadDashboard() {
 
 async function loadAvailableCourses() {
     try {
-        const courses = await learningAPI.getCourses(1, 10);
-        
+        const courses = await apiClient.content('/courses?page=1&limit=10');
+
         if (courses.status === 'success' && courses.data.courses) {
             renderAvailableCourses(courses.data.courses);
         }
@@ -155,8 +158,8 @@ function renderDemoCourses() {
 async function openCourse(courseId) {
     try {
         currentCourse = courseId;
-        const courseDetails = await learningAPI.getCourseDetails(courseId);
-        
+        const courseDetails = await apiClient.content(`/courses/${courseId}`);
+
         if (courseDetails.status === 'success') {
             renderCourseContent(courseDetails.data);
             showSection('course-content');
@@ -169,8 +172,8 @@ async function openCourse(courseId) {
 
 async function viewCourseDetails(courseId) {
     try {
-        const courseDetails = await learningAPI.getCourseDetails(courseId);
-        
+        const courseDetails = await apiClient.content(`/courses/${courseId}`);
+
         if (courseDetails.status === 'success') {
             renderCoursePreview(courseDetails.data);
             showSection('course-preview');
@@ -211,8 +214,8 @@ function renderCourseContent(courseData) {
 async function loadModuleLessons(moduleId) {
     try {
         // For now, we'll load lessons by course ID since our API structure
-        const modules = await learningAPI.getModules(currentCourse);
-        
+        const modules = await apiClient.content(`/modules/${moduleId}`);
+
         if (modules.status === 'success') {
             // Find the specific module and its lessons
             // This would need to be enhanced based on actual API structure
@@ -308,7 +311,7 @@ function showNotification(message, type = 'info') {
 }
 
 function updateCarbonIndicator() {
-    const metrics = learningAPI.getCarbonMetrics();
+    const metrics = apiClient.getCarbonMetrics();
     const indicator = document.getElementById("carbon-indicator");
     if (indicator) {
         indicator.textContent = `🌱 ${metrics.totalCarbon.toFixed(6)}g CO2`;
@@ -324,4 +327,4 @@ window.loadModuleLessons = loadModuleLessons;
 // Initialize when DOM ready
 document.addEventListener('DOMContentLoaded', initializeStudentPortal);
 
-console.log("🌱 AgenticLearn Enhanced Student Portal loaded");
+console.log("🌱 AgenticLearn Enhanced Student Portal loaded with Cloud Functions");
