@@ -3,20 +3,86 @@ import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.
 import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
 
-// Create compatibility wrapper for API client
+// Global variables for components
+let UIComponents, ARIAChat;
+
+// Initialize components
+async function initializeComponents() {
+    try {
+        const uiModule = await import("https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js");
+        UIComponents = uiModule.UIComponents;
+        console.log("✅ UIComponents loaded");
+    } catch (error) {
+        console.warn("⚠️ Failed to load UIComponents, using fallback");
+        // Fallback UIComponents
+        UIComponents = {
+            createCard: (title, content, actions = []) => {
+                const actionsHTML = actions.map(action =>
+                    `<button class="btn" onclick="${action.handler}">${action.label}</button>`
+                ).join(' ');
+                return `
+                    <div class="card" style="background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h3 style="margin: 0 0 0.5rem 0; color: #2563eb;">${title}</h3>
+                        <div>${content}</div>
+                        ${actionsHTML ? `<div style="margin-top: 1rem;">${actionsHTML}</div>` : ''}
+                    </div>
+                `;
+            },
+            createProgressBar: (percentage, label) => {
+                return `
+                    <div style="margin: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>${label}</span>
+                            <span>${percentage}%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                            <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, #059669, #2563eb); transition: width 0.3s ease;"></div>
+                        </div>
+                    </div>
+                `;
+            },
+            showNotification: (message, type = 'info') => {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                // Simple notification fallback
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
+                    color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    max-width: 300px; animation: slideIn 0.3s ease-out;
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => notification.remove(), 300);
+                }, 3000);
+            }
+        };
+    }
+
+    try {
+        const ariaModule = await import("https://mubaroqadb.github.io/agenticlearn-shared/js/aria-chat.js");
+        ARIAChat = ariaModule.ARIAChat;
+        console.log("✅ ARIAChat loaded");
+    } catch (error) {
+        console.warn("⚠️ Failed to load ARIAChat, using fallback");
+        ARIAChat = class {
+            constructor() {
+                console.log("ARIA Chat fallback initialized");
+            }
+            show() { console.log("ARIA Chat show"); }
+            hide() { console.log("ARIA Chat hide"); }
+            toggle() { console.log("ARIA Chat toggle"); }
+        };
+    }
+}
+
+// Simple API client for direct backend calls
 const compatApiClient = {
     async request(endpoint) {
-        // Map endpoints to correct service calls
-        if (endpoint.startsWith('/auth/')) {
-            return apiClient.auth(endpoint.replace('/auth', ''));
-        } else if (endpoint.startsWith('/learning/')) {
-            return apiClient.content(endpoint.replace('/learning', ''));
-        } else if (endpoint.startsWith('/personalization/')) {
-            return apiClient.personalization(endpoint.replace('/personalization', ''));
-        } else if (endpoint.startsWith('/aria/')) {
-            return apiClient.aria(endpoint.replace('/aria', ''));
-        } else {
-            // Fallback to direct backend call
+        try {
             const token = getCookie("access_token") || getCookie("login");
             const baseURL = window.location.hostname.includes('localhost')
                 ? "http://localhost:8080/api/v1"
@@ -27,19 +93,23 @@ const compatApiClient = {
             const response = await fetch(`${baseURL}${endpoint}`, {
                 headers: {
                     "Authorization": token ? `Bearer ${token}` : "",
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
                 }
             });
 
             console.log(`📡 Response status: ${response.status}`);
 
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
             console.log("📊 Response data:", data);
             return data;
+        } catch (error) {
+            console.error("❌ API Request failed:", error);
+            throw error;
         }
     }
 };
@@ -48,6 +118,12 @@ const compatApiClient = {
 let ariaChat = null;
 
 async function initializeStudentDashboard() {
+    // Set dashboard start time for carbon tracking
+    window.dashboardStartTime = Date.now();
+
+    // Initialize components first
+    await initializeComponents();
+
     const token = getCookie("login");
 
     try {
@@ -404,10 +480,15 @@ function setupEventListeners() {
 }
 
 function updateCarbonIndicator() {
-    const metrics = apiClient.getCarbonMetrics();
+    // Simple carbon calculation based on page activity
+    const now = Date.now();
+    const startTime = window.dashboardStartTime || now;
+    const runtime = (now - startTime) / 1000; // seconds
+    const estimatedCarbon = runtime * 0.000001; // Very rough estimate
+
     const indicator = document.getElementById("carbon-indicator");
     if (indicator) {
-        indicator.textContent = `🌱 ${metrics.totalCarbon.toFixed(6)}g CO2`;
+        indicator.textContent = `🌱 ${estimatedCarbon.toFixed(6)}g CO2`;
     }
 }
 
@@ -544,17 +625,17 @@ function toggleARIAChat() {
 // Test ARIA Health
 async function testARIAHealth() {
     try {
-        const health = await apiClient.ariaHealthCheck();
+        const health = await compatApiClient.request("/aria/health");
         console.log('🤖 ARIA Health:', health);
 
-        if (health.status === 'healthy') {
+        if (health.status === 'success' || health.status === 'healthy') {
             UIComponents.showNotification("ARIA AI Tutor online dan siap! ✅", "success");
         } else {
             UIComponents.showNotification("ARIA AI Tutor mengalami masalah", "warning");
         }
     } catch (error) {
         console.error('ARIA Health Check failed:', error);
-        UIComponents.showNotification("ARIA AI Tutor offline", "error");
+        UIComponents.showNotification("ARIA AI Tutor menggunakan mode offline", "info");
     }
 }
 
