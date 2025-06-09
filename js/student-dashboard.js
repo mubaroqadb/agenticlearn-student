@@ -6,26 +6,69 @@ import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.
 import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
 
+// Create compatibility wrapper for API client
+const compatApiClient = {
+    async request(endpoint) {
+        // Map endpoints to correct service calls
+        if (endpoint.startsWith('/auth/')) {
+            return apiClient.auth(endpoint.replace('/auth', ''));
+        } else if (endpoint.startsWith('/learning/')) {
+            return apiClient.content(endpoint.replace('/learning', ''));
+        } else if (endpoint.startsWith('/personalization/')) {
+            return apiClient.personalization(endpoint.replace('/personalization', ''));
+        } else if (endpoint.startsWith('/aria/')) {
+            return apiClient.aria(endpoint.replace('/aria', ''));
+        } else {
+            // Fallback to direct backend call
+            const token = getCookie("access_token") || getCookie("login");
+            const baseURL = window.location.hostname.includes('localhost')
+                ? "http://localhost:8080/api/v1"
+                : "https://agenticlearn-backend-production.up.railway.app/api/v1";
+
+            const response = await fetch(`${baseURL}${endpoint}`, {
+                headers: {
+                    "Authorization": token ? `Bearer ${token}` : "",
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+
+            return response.json();
+        }
+    }
+};
+
 // Global ARIA instance
 let ariaChat = null;
 
 async function initializeStudentDashboard() {
     const token = getCookie("login");
-    if (!token) {
-        redirect("https://mubaroqadb.github.io/agenticlearn-auth");
-        return;
-    }
 
     try {
-        // Load user data using shared API client
-        const response = await apiClient.request("/auth/profile");
-        setInner("user-name", response.data.profile.name || response.data.email);
-        
+        // Load user data - use mock data if no token or API fails
+        let userName = "Demo Student";
+        if (token) {
+            try {
+                const response = await compatApiClient.request("/auth/profile");
+                userName = response.data?.profile?.name || response.data?.email || "Demo Student";
+            } catch (error) {
+                console.log("Using demo mode - API not available");
+                userName = "Demo Student (Offline Mode)";
+            }
+        } else {
+            userName = "Guest User";
+        }
+
+        setInner("user-name", userName);
+
         // Load dashboard data
         await loadStudentProgress();
         await loadAIRecommendations();
         await loadCurrentModule();
-        
+
         // Setup event listeners
         setupEventListeners();
 
@@ -34,28 +77,37 @@ async function initializeStudentDashboard() {
 
         // Update carbon indicator
         updateCarbonIndicator();
-        
+
         // Auto-refresh every 30 seconds
         setInterval(() => {
             loadStudentProgress();
             updateCarbonIndicator();
         }, 30000);
-        
+
         // Show welcome notification
-        UIComponents.showNotification(`Welcome back, ${response.data.profile.name || response.data.email}! 🌱`, "success");
-        
+        UIComponents.showNotification(`Welcome back, ${userName}! 🌱`, "success");
+
         console.log("🌱 Student Dashboard loaded with shared components");
     } catch (error) {
         console.error("Failed to load student dashboard:", error);
-        setInner("user-name", "Error loading dashboard");
-        UIComponents.showNotification("Failed to load dashboard", "error");
+        setInner("user-name", "Demo Student");
+
+        // Load with mock data
+        await loadStudentProgress();
+        await loadAIRecommendations();
+        await loadCurrentModule();
+        setupEventListeners();
+        initializeARIA();
+        updateCarbonIndicator();
+
+        UIComponents.showNotification("Dashboard loaded in demo mode", "info");
     }
 }
 
 async function loadStudentProgress() {
     try {
         // Use available endpoint or create mock data
-        const progress = await apiClient.request("/learning/dashboard").catch(() => ({
+        const progress = await compatApiClient.request("/learning/dashboard").catch(() => ({
             overallProgress: 65,
             completedCourses: 2,
             averageScore: 85,
@@ -110,7 +162,7 @@ async function loadStudentProgress() {
 async function loadAIRecommendations() {
     try {
         // Use available endpoint or create mock data
-        const recommendations = await apiClient.request("/personalization/recommendations/675a1b2c3d4e5f6789012345").catch(() => [
+        const recommendations = await compatApiClient.request("/personalization/recommendations/675a1b2c3d4e5f6789012345").catch(() => [
             {
                 id: "rec1",
                 title: "Green Computing Fundamentals",
@@ -159,7 +211,7 @@ async function loadAIRecommendations() {
 async function loadCurrentModule() {
     try {
         // Use available endpoint or create mock data
-        const currentModule = await apiClient.request("/learning/courses").then(courses => {
+        const currentModule = await compatApiClient.request("/learning/courses").then(courses => {
             if (courses.data && courses.data.length > 0) {
                 return {
                     id: courses.data[0]._id,
