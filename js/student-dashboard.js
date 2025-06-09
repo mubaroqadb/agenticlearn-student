@@ -649,11 +649,7 @@ window.viewDemoCourseDetails = function() {
     // TODO: Show demo course details modal
 };
 
-window.continueModule = function(moduleId) {
-    UIComponents.showNotification(`Continuing module: ${moduleId}`, "info");
-    console.log("📖 Continuing module:", moduleId);
-    // TODO: Navigate to module learning page
-};
+// Removed duplicate function - already defined above
 
 window.viewModuleLessons = function(moduleId) {
     UIComponents.showNotification(`Loading lessons for module: ${moduleId}`, "info");
