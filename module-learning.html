@@ -125,9 +125,14 @@
         import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
         import { setInner } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
 
-        // Get module ID from URL
+        // Get module ID and lesson ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const moduleId = urlParams.get('id');
+        const lessonId = urlParams.get('lesson');
+
+        console.log("📋 URL Parameters:");
+        console.log("- moduleId:", moduleId);
+        console.log("- lessonId:", lessonId);
 
         let currentModule = null;
         let currentLessonIndex = 0;
@@ -173,6 +178,33 @@
         async function loadModuleContent(moduleId) {
             try {
                 console.log("Loading module content for:", moduleId);
+                console.log("Lesson ID from URL:", lessonId);
+
+                // Handle case where only lesson ID is provided
+                if (!moduleId && lessonId) {
+                    console.log("🔄 No module ID, inferring from lesson ID:", lessonId);
+                    // Map lesson ID to module ID
+                    const lessonToModuleMap = {
+                        'demo-lesson-1': 'demo-module-1',
+                        'demo-lesson-2': 'demo-module-1',
+                        'demo-lesson-3': 'demo-module-2',
+                        'demo-lesson-4': 'demo-module-2'
+                    };
+
+                    const inferredModuleId = lessonToModuleMap[lessonId] || 'demo-module-1';
+                    console.log("🎯 Inferred module ID:", inferredModuleId);
+
+                    // Update URL to include module ID
+                    const newUrl = new URL(window.location);
+                    newUrl.searchParams.set('id', inferredModuleId);
+                    if (!newUrl.searchParams.has('lesson')) {
+                        newUrl.searchParams.set('lesson', lessonId);
+                    }
+                    window.history.replaceState({}, '', newUrl);
+
+                    // Use inferred module ID
+                    moduleId = inferredModuleId;
+                }
 
                 // First try to find the module from course data
                 // Since we don't have direct module endpoint, we'll use demo data
@@ -229,7 +261,18 @@
                     const lessons = currentModule.lessons || getDemoLessons();
                     if (lessons && lessons.length > 0) {
                         loadLessonsNavigation(lessons);
-                        loadLesson(0); // Load first lesson
+
+                        // If lesson ID is specified, try to load that specific lesson
+                        let startLessonIndex = 0;
+                        if (lessonId) {
+                            const lessonIndex = lessons.findIndex(lesson => lesson._id === lessonId);
+                            if (lessonIndex !== -1) {
+                                startLessonIndex = lessonIndex;
+                                console.log("🎯 Loading specific lesson:", lessonId, "at index:", startLessonIndex);
+                            }
+                        }
+
+                        loadLesson(startLessonIndex); // Load first lesson or specific lesson
                     } else {
                         setInner("lessons-list", "<p>No lessons available for this module.</p>");
                         setInner("lesson-content", `
@@ -542,6 +585,26 @@
                 alert("Please select an answer before submitting.");
             }
         };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            console.log("🌱 Module Learning page loaded");
+            console.log("📋 Initial parameters - moduleId:", moduleId, "lessonId:", lessonId);
+
+            // Check if we have either module ID or lesson ID
+            if (!moduleId && !lessonId) {
+                setInner("module-header", `
+                    <h1>❌ Module Not Found</h1>
+                    <p>No module ID or lesson ID provided. Please return to the dashboard.</p>
+                    <a href="index.html" class="btn">Back to Dashboard</a>
+                `);
+                return;
+            }
+
+            // If we only have lesson ID, loadModuleContent will handle the inference
+            const targetModuleId = moduleId || 'demo-module-1'; // fallback
+            await loadModuleContent(targetModuleId);
+        });
     </script>
 </body>
 </html>
