@@ -167,6 +167,14 @@ async function initializeStudentDashboard() {
         UIComponents.showNotification(`Welcome back, ${userName}! 🌱`, "success");
 
         console.log("🌱 Student Dashboard loaded with shared components");
+
+        // Verify global functions are available
+        console.log("🔍 Global functions verification:");
+        console.log("- startCourse:", typeof window.startCourse);
+        console.log("- viewCourseDetails:", typeof window.viewCourseDetails);
+        console.log("- continueModule:", typeof window.continueModule);
+        console.log("- viewModuleLessons:", typeof window.viewModuleLessons);
+
     } catch (error) {
         console.error("Failed to load student dashboard:", error);
         setInner("user-name", "Demo Student");
@@ -180,6 +188,13 @@ async function initializeStudentDashboard() {
         updateCarbonIndicator();
 
         UIComponents.showNotification("Dashboard loaded in demo mode", "info");
+
+        // Verify global functions are available in error case too
+        console.log("🔍 Global functions verification (error case):");
+        console.log("- startCourse:", typeof window.startCourse);
+        console.log("- viewCourseDetails:", typeof window.viewCourseDetails);
+        console.log("- continueModule:", typeof window.continueModule);
+        console.log("- viewModuleLessons:", typeof window.viewModuleLessons);
     }
 }
 
@@ -547,7 +562,16 @@ window.browseCourses = function() {
 
 // Course interaction functions
 window.startCourse = async function(courseId) {
-    UIComponents.showNotification(`Starting course: ${courseId}`, "info");
+    console.log("🚀 startCourse called with courseId:", courseId);
+    console.log("🔍 UIComponents available:", typeof UIComponents);
+
+    if (typeof UIComponents !== 'undefined' && UIComponents.showNotification) {
+        UIComponents.showNotification(`Starting course: ${courseId}`, "info");
+    } else {
+        console.log("⚠️ UIComponents not available, using alert");
+        alert(`Starting course: ${courseId}`);
+    }
+
     console.log("🚀 Starting course:", courseId);
 
     try {
@@ -596,10 +620,20 @@ window.startCourse = async function(courseId) {
 };
 
 window.viewCourseDetails = async function(courseId) {
-    UIComponents.showNotification(`Loading course details: ${courseId}`, "info");
+    console.log("📖 viewCourseDetails called with courseId:", courseId);
+    console.log("🔍 UIComponents available:", typeof UIComponents);
+
+    if (typeof UIComponents !== 'undefined' && UIComponents.showNotification) {
+        UIComponents.showNotification(`Loading course details: ${courseId}`, "info");
+    } else {
+        console.log("⚠️ UIComponents not available, using alert");
+        alert(`Loading course details: ${courseId}`);
+    }
+
     console.log("📖 Viewing course details:", courseId);
 
     // Navigate directly to course details page
+    console.log("🔄 Navigating to:", `course-details.html?id=${courseId}`);
     window.location.href = `course-details.html?id=${courseId}`;
 };
 
