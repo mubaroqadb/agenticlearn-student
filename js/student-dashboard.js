@@ -574,33 +574,11 @@ window.startCourse = async function(courseId) {
             }
         }
 
-        // Try to enroll in course
-        try {
-            const response = await compatApiClient.request(`/learning/courses/${courseId}/enroll`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.status === 'success') {
-                UIComponents.showNotification("Course started successfully! 🎉", "success");
-                // Refresh dashboard to show new enrollment
-                await loadStudentProgress();
-                await loadCurrentModule();
-            } else {
-                UIComponents.showNotification("Failed to start course", "error");
-            }
-        } catch (enrollError) {
-            // If enrollment fails, simulate success for demo
-            console.log("Enrollment endpoint not available, simulating success");
-            UIComponents.showNotification("Course started successfully! 🎉 (Demo Mode)", "success");
-
-            // Navigate to course details
-            setTimeout(() => {
-                window.location.href = `course-details.html?id=${courseId}`;
-            }, 1000);
-        }
+        // Navigate directly to course details page
+        UIComponents.showNotification("Opening course details...", "info");
+        setTimeout(() => {
+            window.location.href = `course-details.html?id=${courseId}`;
+        }, 500);
 
     } catch (error) {
         console.error("Failed to start course:", error);
@@ -608,11 +586,11 @@ window.startCourse = async function(courseId) {
             UIComponents.showNotification("Please login to start a course", "error");
             showLoginModal();
         } else {
-            // Fallback to demo mode
-            UIComponents.showNotification("Course started! 🎉 (Demo Mode)", "success");
+            // Navigate to course details anyway
+            UIComponents.showNotification("Opening course details...", "info");
             setTimeout(() => {
                 window.location.href = `course-details.html?id=${courseId}`;
-            }, 1000);
+            }, 500);
         }
     }
 };
@@ -621,32 +599,22 @@ window.viewCourseDetails = async function(courseId) {
     UIComponents.showNotification(`Loading course details: ${courseId}`, "info");
     console.log("📖 Viewing course details:", courseId);
 
-    try {
-        const response = await compatApiClient.request(`/learning/courses/${courseId}`);
-        if (response.status === 'success') {
-            showCourseModal(response.data);
-        } else {
-            // Fallback to course details page
-            window.location.href = `course-details.html?id=${courseId}`;
-        }
-    } catch (error) {
-        console.error("Failed to load course details:", error);
-        // Fallback to course details page
-        window.location.href = `course-details.html?id=${courseId}`;
-    }
+    // Navigate directly to course details page
+    window.location.href = `course-details.html?id=${courseId}`;
 };
 
 window.startDemoCourse = function() {
-    UIComponents.showNotification("Starting demo course...", "info");
+    UIComponents.showNotification("Opening demo course...", "info");
     setTimeout(() => {
-        UIComponents.showNotification("Demo course started! 🎉", "success");
-        loadDemoModule();
-    }, 1000);
+        window.location.href = `course-details.html?id=demo-course-1`;
+    }, 500);
 };
 
 window.viewDemoCourseDetails = function() {
-    UIComponents.showNotification("Showing demo course details...", "info");
-    // TODO: Show demo course details modal
+    UIComponents.showNotification("Opening demo course details...", "info");
+    setTimeout(() => {
+        window.location.href = `course-details.html?id=demo-course-1`;
+    }, 500);
 };
 
 // Removed duplicate function - already defined above
@@ -654,17 +622,24 @@ window.viewDemoCourseDetails = function() {
 window.viewModuleLessons = function(moduleId) {
     UIComponents.showNotification(`Loading lessons for module: ${moduleId}`, "info");
     console.log("📝 Loading lessons for module:", moduleId);
-    // TODO: Show lessons list or navigate to lessons page
+    // Navigate to module learning page
+    setTimeout(() => {
+        window.location.href = `module-learning.html?id=${moduleId}`;
+    }, 500);
 };
 
 window.continueDemoModule = function() {
     UIComponents.showNotification("Continuing demo module...", "info");
-    // TODO: Navigate to demo module content
+    setTimeout(() => {
+        window.location.href = `module-learning.html?id=demo-module-1`;
+    }, 500);
 };
 
 window.viewDemoLessons = function() {
     UIComponents.showNotification("Loading demo lessons...", "info");
-    // TODO: Show demo lessons
+    setTimeout(() => {
+        window.location.href = `module-learning.html?id=demo-module-1`;
+    }, 500);
 };
 
 // ARIA Chat Functions
