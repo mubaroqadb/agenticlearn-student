@@ -76,6 +76,36 @@
         }
         .quiz-option:hover { background: var(--gray-50); border-color: var(--primary); }
         .quiz-option.selected { background: var(--primary); color: white; }
+
+        /* Enhanced Quiz Styles */
+        .quiz-header { margin-bottom: 2rem; text-align: center; }
+        .quiz-info { display: flex; justify-content: center; gap: 1rem; margin: 1rem 0; flex-wrap: wrap; }
+        .quiz-timer { background: #fef3c7; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; margin: 1rem 0; }
+        .quiz-progress { margin-bottom: 2rem; }
+        .progress-bar { width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #059669, #2563eb); transition: width 0.3s ease; }
+        .quiz-question { margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 6px; border: 1px solid #e5e7eb; }
+        .question-context { font-style: italic; color: #6b7280; margin: 0.5rem 0; }
+        .quiz-option { display: flex; align-items: center; gap: 0.75rem; }
+        .quiz-option input[type="radio"] { margin: 0; width: 1.25rem; height: 1.25rem; }
+        .quiz-option label { cursor: pointer; flex: 1; margin: 0; }
+        .question-points { text-align: right; color: #6b7280; margin-top: 0.5rem; }
+        .quiz-actions { display: flex; gap: 1rem; justify-content: center; margin: 2rem 0; flex-wrap: wrap; }
+        .quiz-results { background: white; border-radius: 8px; padding: 2rem; border: 1px solid #e5e7eb; margin-top: 2rem; }
+        .assessment-results { text-align: center; }
+        .score-display { margin-bottom: 2rem; }
+        .score-circle { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #059669, #2563eb); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .score-number { color: white; font-size: 2rem; font-weight: bold; }
+        .results-details { text-align: left; margin-bottom: 1.5rem; background: #f8fafc; padding: 1.5rem; border-radius: 6px; }
+        .results-details p { margin-bottom: 0.5rem; }
+        .question-review { text-align: left; margin: 2rem 0; }
+        .question-result { margin: 1rem 0; padding: 1rem; border-radius: 6px; border-left: 4px solid; }
+        .question-result.correct { background: #f0fdf4; border-left-color: #059669; }
+        .question-result.incorrect { background: #fef2f2; border-left-color: #ef4444; }
+        .recommendations { text-align: left; background: #fef3c7; padding: 1.5rem; border-radius: 6px; margin: 1.5rem 0; }
+        .recommendations ul { margin-top: 0.5rem; padding-left: 1.5rem; }
+        .results-actions { margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
         .back-link {
             color: var(--primary); text-decoration: none; margin-bottom: 1rem; display: inline-block;
         }
@@ -150,20 +180,27 @@
             loadModuleContent(moduleId);
         }
 
-        // API client
+        // API client with enhanced functionality
         const apiClient = {
-            async request(endpoint) {
+            async request(endpoint, options = {}) {
                 try {
                     const token = getCookie("access_token") || getCookie("login");
                     const baseURL = "http://localhost:8080/api/v1";
-                    
-                    const response = await fetch(`${baseURL}${endpoint}`, {
+
+                    const config = {
+                        method: options.method || 'GET',
                         headers: {
                             "Authorization": token ? `Bearer ${token}` : "",
                             "Content-Type": "application/json",
                             "Accept": "application/json"
                         }
-                    });
+                    };
+
+                    if (options.body) {
+                        config.body = JSON.stringify(options.body);
+                    }
+
+                    const response = await fetch(`${baseURL}${endpoint}`, config);
 
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -174,6 +211,45 @@
                     console.error("API Error:", error);
                     throw error;
                 }
+            }
+        };
+
+        // Compatibility API client for shared components
+        window.compatApiClient = apiClient;
+
+        // UI Components for notifications
+        window.UIComponents = {
+            showNotification: function(message, type = "info") {
+                console.log(`[${type.toUpperCase()}] ${message}`);
+
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed; top: 20px; right: 20px; z-index: 1000;
+                    padding: 1rem 1.5rem; border-radius: 6px; color: white;
+                    font-weight: 500; max-width: 400px; word-wrap: break-word;
+                    background: ${type === 'success' ? '#059669' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#2563eb'};
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    transform: translateX(100%); transition: transform 0.3s ease;
+                `;
+                notification.textContent = message;
+
+                document.body.appendChild(notification);
+
+                // Animate in
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(0)';
+                }, 100);
+
+                // Auto remove
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 4000);
             }
         };
 
@@ -483,51 +559,93 @@
         }
 
         function generateQuizContent(lesson) {
-            const questions = [
-                {
-                    question: `What is the main focus of ${lesson.title}?`,
-                    options: [
-                        "Theoretical concepts only",
-                        "Practical implementation",
-                        "Historical background",
-                        "Future predictions"
-                    ],
-                    correct: 1
-                }
-            ];
-            
+            // Get quiz data from lesson or generate comprehensive quiz
+            const quizData = lesson.content?.quiz || generateComprehensiveQuiz(lesson);
+
+            if (!quizData || !quizData.questions || quizData.questions.length === 0) {
+                return `
+                    <div class="quiz-container">
+                        <h3>📝 Assessment</h3>
+                        <p>No quiz available for this lesson.</p>
+                        <button class="btn" onclick="completeLesson(currentLessonIndex)">Mark as Complete</button>
+                    </div>
+                `;
+            }
+
+            // Store quiz data globally for submission
+            window.currentQuiz = {
+                lessonId: lesson._id || lesson.id,
+                lessonTitle: lesson.title,
+                questions: quizData.questions,
+                passScore: quizData.pass_score || 70,
+                timeLimit: quizData.time_limit || 15,
+                startTime: new Date().toISOString(),
+                answers: new Array(quizData.questions.length).fill(null)
+            };
+
             let quizHTML = `
                 <div class="quiz-container">
-                    <h3>🎯 Quiz: ${lesson.title}</h3>
-                    <p>Test your understanding of this lesson.</p>
+                    <div class="quiz-header">
+                        <h3>🎯 Quiz: ${lesson.title}</h3>
+                        <div class="quiz-info">
+                            <span class="badge">⏱️ ${window.currentQuiz.timeLimit} minutes</span>
+                            <span class="badge">📊 Pass: ${window.currentQuiz.passScore}%</span>
+                            <span class="badge">❓ ${quizData.questions.length} questions</span>
+                        </div>
+                        <div class="quiz-timer" id="quiz-timer">
+                            <span id="timer-display">⏱️ ${window.currentQuiz.timeLimit}:00</span>
+                        </div>
+                    </div>
+
+                    <div class="quiz-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="quiz-progress-fill" style="width: 0%"></div>
+                        </div>
+                        <span id="quiz-progress-text">Question 1 of ${quizData.questions.length}</span>
+                    </div>
             `;
-            
-            questions.forEach((q, qIndex) => {
+
+            quizData.questions.forEach((q, qIndex) => {
                 quizHTML += `
-                    <div class="quiz-question">
+                    <div class="quiz-question" data-question="${qIndex}">
                         <h4>Question ${qIndex + 1}: ${q.question}</h4>
+                        ${q.explanation ? `<p class="question-context">${q.explanation}</p>` : ''}
                         <div class="quiz-options">
                 `;
-                
+
                 q.options.forEach((option, oIndex) => {
                     quizHTML += `
-                        <div class="quiz-option" onclick="selectQuizOption(${qIndex}, ${oIndex})">
-                            ${option}
+                        <div class="quiz-option" onclick="selectQuizOption(${qIndex}, ${oIndex})" data-question="${qIndex}" data-option="${oIndex}">
+                            <input type="radio" name="question_${qIndex}" value="${oIndex}" id="q${qIndex}_o${oIndex}">
+                            <label for="q${qIndex}_o${oIndex}">${option}</label>
                         </div>
                     `;
                 });
-                
+
                 quizHTML += `
+                        </div>
+                        <div class="question-points">
+                            <small>Points: ${q.points || 1}</small>
                         </div>
                     </div>
                 `;
             });
-            
+
             quizHTML += `
-                    <button class="btn btn-success" onclick="submitQuiz()">Submit Quiz</button>
+                    <div class="quiz-actions">
+                        <button class="btn" onclick="submitQuiz()" id="submit-quiz-btn" disabled>Submit Quiz</button>
+                        <button class="btn" onclick="resetQuiz()" style="background: #6b7280;">Reset Answers</button>
+                    </div>
+
+                    <div class="quiz-results" id="quiz-results" style="display: none;">
+                        <!-- Results will be populated here -->
+                    </div>
                 </div>
             `;
-            
+
+            // Start quiz timer
+            setTimeout(() => startQuizTimer(), 1000);
+
             return quizHTML;
         }
 
@@ -574,30 +692,432 @@
             }
         };
         
+        function generateComprehensiveQuiz(lesson) {
+            // Generate contextual quiz based on lesson content
+            const lessonType = lesson.type || 'general';
+            const lessonTitle = lesson.title || 'Lesson';
+
+            const quizTemplates = {
+                'video': {
+                    questions: [
+                        {
+                            question: `What is the main concept discussed in "${lessonTitle}"?`,
+                            options: [
+                                "Theoretical framework only",
+                                "Practical implementation and real-world application",
+                                "Historical background information",
+                                "Future predictions and trends"
+                            ],
+                            correct_answer: "1",
+                            explanation: "This lesson focuses on practical implementation that can be applied in real business scenarios.",
+                            points: 2
+                        },
+                        {
+                            question: `How can you apply the concepts from "${lessonTitle}" in Indonesian business context?`,
+                            options: [
+                                "Use international standards without adaptation",
+                                "Adapt strategies to local market conditions and culture",
+                                "Focus only on Jakarta market",
+                                "Ignore local regulations"
+                            ],
+                            correct_answer: "1",
+                            explanation: "Successful implementation requires adaptation to local Indonesian market conditions and cultural context.",
+                            points: 3
+                        }
+                    ]
+                },
+                'reading': {
+                    questions: [
+                        {
+                            question: `Based on the reading material "${lessonTitle}", what is the key takeaway?`,
+                            options: [
+                                "Memorize all technical details",
+                                "Understand core principles and their applications",
+                                "Focus on theoretical aspects only",
+                                "Skip practical examples"
+                            ],
+                            correct_answer: "1",
+                            explanation: "The key is understanding core principles that can be applied in various business situations.",
+                            points: 2
+                        }
+                    ]
+                },
+                'interactive': {
+                    questions: [
+                        {
+                            question: `In the interactive lesson "${lessonTitle}", what was the most important skill demonstrated?`,
+                            options: [
+                                "Technical knowledge only",
+                                "Problem-solving and critical thinking",
+                                "Memorization of facts",
+                                "Following instructions exactly"
+                            ],
+                            correct_answer: "1",
+                            explanation: "Interactive lessons emphasize developing problem-solving and critical thinking skills.",
+                            points: 3
+                        },
+                        {
+                            question: `How would you implement the interactive concepts in your own business?`,
+                            options: [
+                                "Copy the exact same approach",
+                                "Adapt the principles to your specific business needs",
+                                "Use only the technical aspects",
+                                "Ignore the business context"
+                            ],
+                            correct_answer: "1",
+                            explanation: "Success comes from adapting principles to your specific business context and needs.",
+                            points: 2
+                        }
+                    ]
+                }
+            };
+
+            const template = quizTemplates[lessonType] || quizTemplates['video'];
+
+            return {
+                questions: template.questions,
+                pass_score: 70,
+                time_limit: 10
+            };
+        }
+
         window.selectQuizOption = function(questionIndex, optionIndex) {
-            // Remove previous selections
-            document.querySelectorAll('.quiz-option').forEach(opt => {
+            // Remove previous selections for this question
+            document.querySelectorAll(`[data-question="${questionIndex}"]`).forEach(opt => {
                 opt.classList.remove('selected');
             });
-            
+
             // Add selection to clicked option
-            event.target.classList.add('selected');
-            window.selectedQuizAnswer = optionIndex;
-        };
-        
-        window.submitQuiz = function() {
-            if (window.selectedQuizAnswer !== undefined) {
-                alert("Quiz submitted! Great job! 🎯");
-                completeLesson(currentLessonIndex);
-            } else {
-                alert("Please select an answer before submitting.");
+            const clickedOption = document.querySelector(`[data-question="${questionIndex}"][data-option="${optionIndex}"]`);
+            if (clickedOption) {
+                clickedOption.classList.add('selected');
+
+                // Update radio button
+                const radio = clickedOption.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+
+                // Store answer
+                if (window.currentQuiz) {
+                    window.currentQuiz.answers[questionIndex] = optionIndex.toString();
+                    updateQuizProgress();
+                    checkQuizCompletion();
+                }
             }
+        };
+
+        function updateQuizProgress() {
+            if (!window.currentQuiz) return;
+
+            const answeredQuestions = window.currentQuiz.answers.filter(answer => answer !== null).length;
+            const totalQuestions = window.currentQuiz.questions.length;
+            const progressPercentage = Math.round((answeredQuestions / totalQuestions) * 100);
+
+            const progressFill = document.getElementById('quiz-progress-fill');
+            const progressText = document.getElementById('quiz-progress-text');
+
+            if (progressFill) progressFill.style.width = `${progressPercentage}%`;
+            if (progressText) progressText.textContent = `${answeredQuestions} of ${totalQuestions} questions answered`;
+        }
+
+        function checkQuizCompletion() {
+            if (!window.currentQuiz) return;
+
+            const allAnswered = window.currentQuiz.answers.every(answer => answer !== null);
+            const submitBtn = document.getElementById('submit-quiz-btn');
+
+            if (submitBtn) {
+                submitBtn.disabled = !allAnswered;
+                if (allAnswered) {
+                    submitBtn.textContent = 'Submit Quiz ✅';
+                    submitBtn.style.background = 'var(--success)';
+                }
+            }
+        }
+
+        function startQuizTimer() {
+            if (!window.currentQuiz) return;
+
+            let timeLeft = window.currentQuiz.timeLimit * 60; // Convert to seconds
+            const timerDisplay = document.getElementById('timer-display');
+
+            window.quizTimer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+
+                if (timerDisplay) {
+                    timerDisplay.textContent = `⏱️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                    // Change color when time is running out
+                    if (timeLeft <= 60) {
+                        timerDisplay.style.color = '#ef4444'; // Red
+                    } else if (timeLeft <= 300) {
+                        timerDisplay.style.color = '#f59e0b'; // Orange
+                    }
+                }
+
+                timeLeft--;
+
+                if (timeLeft < 0) {
+                    clearInterval(window.quizTimer);
+                    autoSubmitQuiz();
+                }
+            }, 1000);
+        }
+
+        function autoSubmitQuiz() {
+            UIComponents.showNotification("⏰ Time's up! Quiz auto-submitted.", "warning");
+            submitQuiz(true);
+        }
+
+        window.resetQuiz = function() {
+            if (!window.currentQuiz) return;
+
+            if (confirm("Are you sure you want to reset all answers?")) {
+                // Clear all selections
+                document.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                    radio.checked = false;
+                });
+
+                // Reset answers array
+                window.currentQuiz.answers = new Array(window.currentQuiz.questions.length).fill(null);
+
+                // Update UI
+                updateQuizProgress();
+                checkQuizCompletion();
+
+                UIComponents.showNotification("Quiz reset successfully", "info");
+            }
+        };
+
+        window.submitQuiz = async function(autoSubmit = false) {
+            if (!window.currentQuiz) {
+                UIComponents.showNotification("No quiz data available", "error");
+                return;
+            }
+
+            // Stop timer
+            if (window.quizTimer) {
+                clearInterval(window.quizTimer);
+            }
+
+            // Calculate score
+            const results = calculateQuizScore();
+
+            // Show results
+            displayQuizResults(results, autoSubmit);
+
+            // Try to submit to backend
+            try {
+                await submitQuizToBackend(results);
+            } catch (error) {
+                console.error("Failed to submit quiz to backend:", error);
+                UIComponents.showNotification("Quiz saved locally (offline mode)", "warning");
+            }
+
+            // Mark lesson as complete if passed
+            if (results.passed) {
+                setTimeout(() => {
+                    completeLesson(currentLessonIndex);
+                }, 2000);
+            }
+        };
+
+        function calculateQuizScore() {
+            if (!window.currentQuiz) return null;
+
+            const quiz = window.currentQuiz;
+            let totalPoints = 0;
+            let earnedPoints = 0;
+            let correctAnswers = 0;
+            const questionResults = [];
+
+            quiz.questions.forEach((question, index) => {
+                const userAnswer = quiz.answers[index];
+                const correctAnswer = question.correct_answer;
+                const points = question.points || 1;
+                const isCorrect = userAnswer === correctAnswer;
+
+                totalPoints += points;
+                if (isCorrect) {
+                    earnedPoints += points;
+                    correctAnswers++;
+                }
+
+                questionResults.push({
+                    question: question.question,
+                    userAnswer: userAnswer !== null ? question.options[parseInt(userAnswer)] : 'Not answered',
+                    correctAnswer: question.options[parseInt(correctAnswer)],
+                    isCorrect,
+                    points,
+                    earnedPoints: isCorrect ? points : 0,
+                    explanation: question.explanation
+                });
+            });
+
+            const scorePercentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+            const passed = scorePercentage >= quiz.passScore;
+
+            return {
+                scorePercentage,
+                earnedPoints,
+                totalPoints,
+                correctAnswers,
+                totalQuestions: quiz.questions.length,
+                passed,
+                passScore: quiz.passScore,
+                questionResults,
+                submissionTime: new Date().toISOString(),
+                timeSpent: Math.round((new Date() - new Date(quiz.startTime)) / 1000) // seconds
+            };
+        }
+
+        function displayQuizResults(results, autoSubmit = false) {
+            const resultsContainer = document.getElementById('quiz-results');
+            if (!resultsContainer) return;
+
+            const statusColor = results.passed ? '#059669' : '#ef4444';
+            const statusIcon = results.passed ? '🎉' : '📚';
+            const statusText = results.passed ? 'Passed!' : 'Needs Review';
+
+            const resultsHTML = `
+                <div class="assessment-results">
+                    <div class="score-display">
+                        <div class="score-circle" style="background: linear-gradient(135deg, ${statusColor}, #2563eb);">
+                            <div class="score-number">${results.scorePercentage}%</div>
+                        </div>
+                        <h3>${statusIcon} ${statusText}</h3>
+                        ${autoSubmit ? '<p><em>Quiz auto-submitted due to time limit</em></p>' : ''}
+                    </div>
+
+                    <div class="results-details">
+                        <p><strong>Score:</strong> ${results.earnedPoints}/${results.totalPoints} points (${results.scorePercentage}%)</p>
+                        <p><strong>Correct Answers:</strong> ${results.correctAnswers}/${results.totalQuestions}</p>
+                        <p><strong>Pass Score:</strong> ${results.passScore}%</p>
+                        <p><strong>Time Spent:</strong> ${Math.floor(results.timeSpent / 60)}:${(results.timeSpent % 60).toString().padStart(2, '0')}</p>
+                        <p><strong>Status:</strong> ${results.passed ? '✅ Passed' : '❌ Failed'}</p>
+                    </div>
+
+                    <div class="question-review">
+                        <h4>📋 Question Review:</h4>
+                        ${results.questionResults.map((q, index) => `
+                            <div class="question-result ${q.isCorrect ? 'correct' : 'incorrect'}" style="margin: 1rem 0; padding: 1rem; border-radius: 6px; background: ${q.isCorrect ? '#f0fdf4' : '#fef2f2'};">
+                                <h5>Question ${index + 1}: ${q.question}</h5>
+                                <p><strong>Your Answer:</strong> ${q.userAnswer}</p>
+                                <p><strong>Correct Answer:</strong> ${q.correctAnswer}</p>
+                                <p><strong>Points:</strong> ${q.earnedPoints}/${q.points}</p>
+                                ${q.explanation ? `<p><strong>Explanation:</strong> ${q.explanation}</p>` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    ${!results.passed ? `
+                        <div class="recommendations">
+                            <h4>📚 Recommendations:</h4>
+                            <ul>
+                                <li>Review the lesson content again</li>
+                                <li>Focus on the concepts you missed</li>
+                                <li>Try the quiz again after studying</li>
+                                <li>Ask for help if you need clarification</li>
+                            </ul>
+                        </div>
+                    ` : ''}
+
+                    <div class="results-actions" style="margin-top: 2rem;">
+                        ${results.passed ?
+                            '<button class="btn" onclick="continueToNextLesson()">Continue to Next Lesson 🚀</button>' :
+                            '<button class="btn" onclick="retryQuiz()">Retry Quiz 🔄</button>'
+                        }
+                        <button class="btn" onclick="backToLessonContent()" style="background: #6b7280;">Review Lesson</button>
+                    </div>
+                </div>
+            `;
+
+            resultsContainer.innerHTML = resultsHTML;
+            resultsContainer.style.display = 'block';
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+            // Show notification
+            const message = results.passed ?
+                `🎉 Great job! You scored ${results.scorePercentage}%` :
+                `📚 Score: ${results.scorePercentage}%. Review and try again!`;
+            UIComponents.showNotification(message, results.passed ? "success" : "warning");
+        }
+
+        async function submitQuizToBackend(results) {
+            if (!window.currentQuiz) return;
+
+            const submissionData = {
+                answers: window.currentQuiz.answers,
+                start_time: window.currentQuiz.startTime
+            };
+
+            try {
+                const response = await compatApiClient.request(
+                    `/learning/assessment/lessons/${window.currentQuiz.lessonId}/quiz`,
+                    {
+                        method: 'POST',
+                        body: submissionData
+                    }
+                );
+
+                if (response.status === 'success') {
+                    console.log("✅ Quiz submitted to backend successfully");
+                    UIComponents.showNotification("Quiz submitted successfully! 🎯", "success");
+                    return response.data;
+                } else {
+                    throw new Error(response.message || 'Submission failed');
+                }
+            } catch (error) {
+                console.error("❌ Failed to submit quiz to backend:", error);
+                throw error;
+            }
+        }
+
+        window.continueToNextLesson = function() {
+            const lessons = currentModule?.lessons || getDemoLessons();
+            if (currentLessonIndex < lessons.length - 1) {
+                loadLesson(currentLessonIndex + 1);
+            } else {
+                UIComponents.showNotification("🎉 Module completed! Great job!", "success");
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 2000);
+            }
+        };
+
+        window.retryQuiz = function() {
+            // Reset quiz and reload lesson
+            if (window.currentQuiz) {
+                window.currentQuiz = null;
+            }
+            if (window.quizTimer) {
+                clearInterval(window.quizTimer);
+            }
+
+            loadLesson(currentLessonIndex);
+            UIComponents.showNotification("Quiz reset. Good luck! 🍀", "info");
+        };
+
+        window.backToLessonContent = function() {
+            // Hide quiz results and show lesson content
+            const resultsContainer = document.getElementById('quiz-results');
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+            }
+
+            // Scroll back to lesson content
+            document.querySelector('.lesson-content').scrollIntoView({ behavior: 'smooth' });
         };
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', async () => {
             console.log("🌱 Module Learning page loaded");
-            console.log("📋 Initial parameters - moduleId:", moduleId, "lessonId:", lessonId);
+            console.log("📋 Initial parameters - moduleId:", moduleId, "lessonId:", lessonId, "autostart:", autostart);
 
             // Check if we have either module ID or lesson ID
             if (!moduleId && !lessonId) {
