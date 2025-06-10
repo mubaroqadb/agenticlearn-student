@@ -144,6 +144,7 @@ async function initializeStudentDashboard() {
 
         // Load dashboard data
         await loadStudentProgress();
+        await loadEnrolledCourses();
         await loadAvailableCourses();
         await loadCurrentModule();
         await loadAIRecommendations();
@@ -181,6 +182,7 @@ async function initializeStudentDashboard() {
 
         // Load with mock data
         await loadStudentProgress();
+        await loadEnrolledCourses();
         await loadAIRecommendations();
         await loadCurrentModule();
         setupEventListeners();
@@ -200,54 +202,222 @@ async function initializeStudentDashboard() {
 
 async function loadStudentProgress() {
     try {
-        // Use available endpoint or create mock data
-        const progress = await compatApiClient.request("/learning/dashboard").catch(() => ({
-            overallProgress: 65,
-            completedCourses: 2,
-            averageScore: 85,
-            streakDays: 7,
-            goalsAchieved: 3
-        }));
-        
+        console.log("🔄 Loading student progress from database...");
+
+        // Get real dashboard data from backend
+        const dashboardResponse = await compatApiClient.request("/learning/dashboard");
+        console.log("📊 Dashboard response:", dashboardResponse);
+
+        let progressData = {};
+        let overallProgress = 0;
+        let completedCourses = 0;
+        let totalLessons = 0;
+        let completedLessons = 0;
+        let averageScore = 0;
+
+        if (dashboardResponse.status === 'success' && dashboardResponse.data) {
+            const data = dashboardResponse.data;
+
+            // Calculate metrics from real data
+            completedCourses = data.enrolled_courses ? data.enrolled_courses.length : 0;
+
+            // Calculate overall progress and lessons
+            if (data.enrolled_courses && data.enrolled_courses.length > 0) {
+                let totalProgressSum = 0;
+                let totalScoreSum = 0;
+                let scoreCount = 0;
+
+                data.enrolled_courses.forEach(enrollment => {
+                    const progress = enrollment.progress;
+                    if (progress) {
+                        totalProgressSum += progress.overall_progress || 0;
+                        completedLessons += progress.completed_lessons ? progress.completed_lessons.length : 0;
+                        totalLessons += progress.total_lessons || 0;
+
+                        if (progress.average_score && progress.average_score > 0) {
+                            totalScoreSum += progress.average_score;
+                            scoreCount++;
+                        }
+                    }
+                });
+
+                overallProgress = completedCourses > 0 ? Math.round(totalProgressSum / completedCourses) : 0;
+                averageScore = scoreCount > 0 ? Math.round(totalScoreSum / scoreCount) : 0;
+            }
+
+            progressData = {
+                overallProgress,
+                completedCourses,
+                totalLessons,
+                completedLessons,
+                averageScore,
+                enrolledCourses: data.enrolled_courses || [],
+                recentSubmissions: data.recent_submissions || []
+            };
+
+            console.log("✅ Calculated progress data:", progressData);
+        } else {
+            console.warn("⚠️ No dashboard data, using fallback");
+            // Fallback to demo data
+            progressData = {
+                overallProgress: 25,
+                completedCourses: 0,
+                totalLessons: 8,
+                completedLessons: 2,
+                averageScore: 0,
+                enrolledCourses: [],
+                recentSubmissions: []
+            };
+        }
+
         // Update progress bar
         const progressFill = document.getElementById("progress-fill");
         if (progressFill) {
-            progressFill.style.width = `${progress.data?.overallProgress || progress.overallProgress || 0}%`;
+            progressFill.style.width = `${progressData.overallProgress}%`;
         }
-        
-        // Create stats cards using shared UI components
+
+        // Create stats cards with real data
         const statsHTML = `
             <div class="grid">
                 ${UIComponents.createCard(
-                    "📚 Courses Completed",
-                    `<div class="metric-value">${progress.data?.completedCourses || progress.completedCourses || 0}</div>`,
+                    "📚 Enrolled Courses",
+                    `<div class="metric-value">${progressData.completedCourses}</div>
+                     <div class="metric-subtitle">Active enrollments</div>`,
+                    []
+                )}
+                ${UIComponents.createCard(
+                    "📖 Lessons Progress",
+                    `<div class="metric-value">${progressData.completedLessons}/${progressData.totalLessons}</div>
+                     <div class="metric-subtitle">Lessons completed</div>`,
                     []
                 )}
                 ${UIComponents.createCard(
                     "⭐ Average Score",
-                    `<div class="metric-value">${progress.data?.averageScore || progress.averageScore || 0}%</div>`,
+                    `<div class="metric-value">${progressData.averageScore}%</div>
+                     <div class="metric-subtitle">Quiz performance</div>`,
                     []
                 )}
                 ${UIComponents.createCard(
-                    "🔥 Streak Days",
-                    `<div class="metric-value">${progress.data?.streakDays || progress.streakDays || 0}</div>`,
-                    []
-                )}
-                ${UIComponents.createCard(
-                    "🎯 Goals Achieved",
-                    `<div class="metric-value">${progress.data?.goalsAchieved || progress.goalsAchieved || 0}</div>`,
+                    "🎯 Overall Progress",
+                    `<div class="metric-value">${progressData.overallProgress}%</div>
+                     <div class="metric-subtitle">Course completion</div>`,
                     []
                 )}
             </div>
         `;
-        
+
         setInner("stats-grid", statsHTML);
-        
+
+        // Store progress data globally for other functions
+        window.studentProgressData = progressData;
+
     } catch (error) {
-        console.error("Failed to load student progress:", error);
-        setInner("stats-grid", UIComponents.createCard(
+        console.error("❌ Failed to load student progress:", error);
+
+        // Show error with fallback data
+        const fallbackHTML = `
+            <div class="grid">
+                ${UIComponents.createCard(
+                    "📚 Enrolled Courses",
+                    `<div class="metric-value">0</div>
+                     <div class="metric-subtitle">No data available</div>`,
+                    []
+                )}
+                ${UIComponents.createCard(
+                    "📖 Lessons Progress",
+                    `<div class="metric-value">0/0</div>
+                     <div class="metric-subtitle">No data available</div>`,
+                    []
+                )}
+                ${UIComponents.createCard(
+                    "⭐ Average Score",
+                    `<div class="metric-value">0%</div>
+                     <div class="metric-subtitle">No data available</div>`,
+                    []
+                )}
+                ${UIComponents.createCard(
+                    "🎯 Overall Progress",
+                    `<div class="metric-value">0%</div>
+                     <div class="metric-subtitle">No data available</div>`,
+                    []
+                )}
+            </div>
+        `;
+
+        setInner("stats-grid", fallbackHTML);
+        UIComponents.showNotification("Failed to load progress data. Using offline mode.", "warning");
+    }
+}
+
+async function loadEnrolledCourses() {
+    try {
+        console.log("🔄 Loading enrolled courses...");
+
+        // Use enrolled courses from dashboard data
+        const progressData = window.studentProgressData;
+
+        if (progressData && progressData.enrolledCourses && progressData.enrolledCourses.length > 0) {
+            console.log(`✅ Found ${progressData.enrolledCourses.length} enrolled courses`);
+
+            let enrolledHTML = "";
+            progressData.enrolledCourses.forEach(enrollment => {
+                const course = enrollment.course;
+                const progress = enrollment.progress;
+
+                const progressPercentage = progress ? Math.round(progress.overall_progress || 0) : 0;
+                const completedLessons = progress && progress.completed_lessons ? progress.completed_lessons.length : 0;
+                const totalLessons = progress ? progress.total_lessons || 0 : 0;
+
+                enrolledHTML += UIComponents.createCard(
+                    `📚 ${course.title}`,
+                    `
+                        <p>${course.description}</p>
+                        <div style="margin: 1rem 0;">
+                            <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                ${course.level} • ${course.duration} weeks
+                            </span>
+                            <span class="badge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                ${completedLessons}/${totalLessons} lessons
+                            </span>
+                        </div>
+                        ${UIComponents.createProgressBar(progressPercentage, "Course Progress")}
+                        <div style="margin-top: 1rem;">
+                            <small style="color: #6b7280;">
+                                Last activity: ${progress && progress.last_accessed ? new Date(progress.last_accessed).toLocaleDateString() : 'Never'}
+                            </small>
+                        </div>
+                    `,
+                    [
+                        { label: "Continue Learning", handler: `viewCourseDetails('${course._id}')` },
+                        { label: "View Progress", handler: `viewCourseProgress('${course._id}')` }
+                    ]
+                );
+            });
+
+            setInner("enrolled-courses", enrolledHTML);
+        } else {
+            console.log("📚 No enrolled courses found");
+            setInner("enrolled-courses", UIComponents.createCard(
+                "🎯 Start Your Learning Journey",
+                `
+                    <p>You haven't enrolled in any courses yet. Browse available courses below and start your digital business mastery journey!</p>
+                    <div style="margin: 1rem 0;">
+                        <span class="badge" style="background: var(--info); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            Ready to begin?
+                        </span>
+                    </div>
+                `,
+                [
+                    { label: "Browse Courses", handler: "scrollToAvailableCourses()" }
+                ]
+            ));
+        }
+
+    } catch (error) {
+        console.error("❌ Failed to load enrolled courses:", error);
+        setInner("enrolled-courses", UIComponents.createCard(
             "Error",
-            "Failed to load progress data",
+            "Failed to load enrolled courses. Please try again later.",
             []
         ));
     }
@@ -378,14 +548,18 @@ function loadDemoCourse() {
 
 async function loadCurrentModule() {
     try {
-        console.log("🔄 Loading current module...");
+        console.log("🔄 Loading current module from enrolled courses...");
 
-        // Try to get current progress first
-        const courses = await compatApiClient.request("/learning/courses?page=1&limit=1");
+        // Use enrolled courses from dashboard data
+        const progressData = window.studentProgressData;
 
-        if (courses.status === 'success' && courses.data && courses.data.courses && courses.data.courses.length > 0) {
-            const course = courses.data.courses[0];
-            console.log("📖 Current course:", course);
+        if (progressData && progressData.enrolledCourses && progressData.enrolledCourses.length > 0) {
+            const enrollment = progressData.enrolledCourses[0]; // Get first enrolled course
+            const course = enrollment.course;
+            const progress = enrollment.progress;
+
+            console.log("📖 Current enrolled course:", course);
+            console.log("📊 Course progress:", progress);
 
             // Get modules for this course
             try {
@@ -394,9 +568,25 @@ async function loadCurrentModule() {
 
                 if (modulesResponse.status === 'success' && modulesResponse.data && modulesResponse.data.modules) {
                     const modules = modulesResponse.data.modules;
-                    const currentModule = modules[0]; // Get first module as current
+
+                    // Find current module based on progress or use first module
+                    let currentModule = modules[0];
+                    if (progress && progress.current_module_id) {
+                        const foundModule = modules.find(m => m._id === progress.current_module_id);
+                        if (foundModule) currentModule = foundModule;
+                    }
 
                     if (currentModule) {
+                        // Calculate module progress
+                        let moduleProgress = 0;
+                        if (progress && progress.completed_lessons) {
+                            const moduleCompletedLessons = progress.completed_lessons.filter(lessonId =>
+                                currentModule.lessons && currentModule.lessons.includes(lessonId)
+                            ).length;
+                            const totalModuleLessons = currentModule.lessons ? currentModule.lessons.length : 1;
+                            moduleProgress = Math.round((moduleCompletedLessons / totalModuleLessons) * 100);
+                        }
+
                         const moduleHTML = UIComponents.createCard(
                             `📖 ${currentModule.title}`,
                             `
@@ -405,8 +595,16 @@ async function loadCurrentModule() {
                                     <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
                                         Week ${currentModule.week_start}-${currentModule.week_end}
                                     </span>
+                                    <span class="badge" style="background: var(--success); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                                        ${currentModule.lessons ? currentModule.lessons.length : 0} lessons
+                                    </span>
                                 </div>
-                                ${UIComponents.createProgressBar(25, "Module Progress")}
+                                ${UIComponents.createProgressBar(moduleProgress, "Module Progress")}
+                                <div style="margin-top: 1rem;">
+                                    <small style="color: #6b7280;">
+                                        Course: ${course.title} • ${progress ? Math.round(progress.overall_progress || 0) : 0}% complete
+                                    </small>
+                                </div>
                             `,
                             [
                                 { label: "Lanjutkan Belajar", handler: `continueModule('${currentModule._id}')` },
@@ -423,11 +621,51 @@ async function loadCurrentModule() {
             }
         }
 
-        // Fallback to demo module
-        loadDemoModule();
+        // If no enrolled courses, show available courses instead
+        console.log("📚 No enrolled courses found, showing available courses...");
+        await loadAvailableCoursesForCurrentModule();
 
     } catch (error) {
         console.error("Failed to load current module:", error);
+        loadDemoModule();
+    }
+}
+
+async function loadAvailableCoursesForCurrentModule() {
+    try {
+        const courses = await compatApiClient.request("/learning/courses?page=1&limit=1");
+
+        if (courses.status === 'success' && courses.data && courses.data.courses && courses.data.courses.length > 0) {
+            const course = courses.data.courses[0];
+
+            const courseHTML = UIComponents.createCard(
+                `🎯 Start Your Learning Journey`,
+                `
+                    <h4 style="margin: 0 0 0.5rem 0; color: #2563eb;">${course.title}</h4>
+                    <p>${course.description}</p>
+                    <div style="margin: 1rem 0;">
+                        <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${course.level} • ${course.duration} weeks
+                        </span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <small style="color: #6b7280;">
+                            Ready to begin your digital business mastery journey?
+                        </small>
+                    </div>
+                `,
+                [
+                    { label: "Enroll Now", handler: `startCourse('${course._id}')` },
+                    { label: "View Details", handler: `viewCourseDetails('${course._id}')` }
+                ]
+            );
+
+            setInner("current-module", courseHTML);
+        } else {
+            loadDemoModule();
+        }
+    } catch (error) {
+        console.error("Failed to load available courses:", error);
         loadDemoModule();
     }
 }
@@ -704,6 +942,16 @@ window.viewDemoLessons = function() {
     UIComponents.showNotification("Loading demo lessons...", "info");
     setTimeout(() => {
         window.location.href = `module-learning.html?id=demo-module-1`;
+    }, 500);
+};
+
+window.viewCourseProgress = function(courseId) {
+    UIComponents.showNotification(`Loading progress for course: ${courseId}`, "info");
+    console.log("📊 Viewing course progress:", courseId);
+
+    // For now, navigate to course details which shows progress
+    setTimeout(() => {
+        window.location.href = `course-details.html?id=${courseId}&tab=progress`;
     }, 500);
 };
 
