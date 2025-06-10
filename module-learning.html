@@ -129,10 +129,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         const moduleId = urlParams.get('id');
         const lessonId = urlParams.get('lesson');
+        const autostart = urlParams.get('autostart') === 'true';
 
         console.log("📋 URL Parameters:");
         console.log("- moduleId:", moduleId);
         console.log("- lessonId:", lessonId);
+        console.log("- autostart:", autostart);
 
         let currentModule = null;
         let currentLessonIndex = 0;
@@ -262,17 +264,23 @@
                     if (lessons && lessons.length > 0) {
                         loadLessonsNavigation(lessons);
 
-                        // If lesson ID is specified, try to load that specific lesson
+                        // Determine which lesson to start with
                         let startLessonIndex = 0;
+
                         if (lessonId) {
+                            // Specific lesson requested
                             const lessonIndex = lessons.findIndex(lesson => lesson._id === lessonId);
                             if (lessonIndex !== -1) {
                                 startLessonIndex = lessonIndex;
                                 console.log("🎯 Loading specific lesson:", lessonId, "at index:", startLessonIndex);
                             }
+                        } else if (autostart) {
+                            // Autostart from "Mulai Module" - start with first lesson
+                            startLessonIndex = 0;
+                            console.log("🚀 Autostart mode - starting with first lesson");
                         }
 
-                        loadLesson(startLessonIndex); // Load first lesson or specific lesson
+                        loadLesson(startLessonIndex); // Load determined lesson
                     } else {
                         setInner("lessons-list", "<p>No lessons available for this module.</p>");
                         setInner("lesson-content", `
