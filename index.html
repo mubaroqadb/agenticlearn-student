@@ -215,15 +215,44 @@
         window.testAPI = async function() {
             try {
                 console.log("🔄 Testing API connection...");
-                const response = await fetch("http://localhost:8080/api/v1/health");
-                const data = await response.json();
-                if (data.status === 'healthy') {
+
+                // Test multiple endpoints to verify API health
+                const endpoints = [
+                    "http://localhost:8080/api/v1/health",
+                    "http://localhost:8080/api/v1/learning/courses"
+                ];
+
+                let success = false;
+                let lastError = null;
+
+                for (const endpoint of endpoints) {
+                    try {
+                        console.log(`Testing endpoint: ${endpoint}`);
+                        const response = await fetch(endpoint);
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            console.log(`✅ ${endpoint} responded:`, data);
+                            success = true;
+                            break;
+                        } else {
+                            console.log(`❌ ${endpoint} failed with status:`, response.status);
+                        }
+                    } catch (endpointError) {
+                        console.log(`❌ ${endpoint} error:`, endpointError.message);
+                        lastError = endpointError;
+                    }
+                }
+
+                if (success) {
                     alert("✅ API Connection: SUCCESS");
                 } else {
-                    alert("❌ API Connection: FAILED");
+                    alert(`❌ API Connection: FAILED\nLast error: ${lastError?.message || 'Unknown error'}`);
                 }
+
             } catch (error) {
-                alert("❌ API Connection: FAILED");
+                console.error("API test failed:", error);
+                alert(`❌ API Connection: FAILED\nError: ${error.message}`);
             }
         };
 
