@@ -2405,10 +2405,142 @@ function displayPerformanceMetrics(metrics) {
     `;
 }
 
+// Modern UI Interactions
+function initializeModernUI() {
+    // Add floating menu interactions
+    const ariaBtn = document.getElementById('aria-floating-btn');
+    const floatingMenu = document.getElementById('floating-menu');
+
+    if (ariaBtn) {
+        ariaBtn.addEventListener('mouseenter', () => {
+            ariaBtn.style.transform = 'scale(1.1)';
+            ariaBtn.style.boxShadow = '0 12px 40px rgba(102, 126, 234, 0.6)';
+
+            if (floatingMenu) {
+                floatingMenu.style.opacity = '1';
+                floatingMenu.style.transform = 'translateY(0)';
+                floatingMenu.style.pointerEvents = 'auto';
+            }
+        });
+
+        ariaBtn.addEventListener('mouseleave', () => {
+            ariaBtn.style.transform = 'scale(1)';
+            ariaBtn.style.boxShadow = '0 8px 32px rgba(102, 126, 234, 0.4)';
+
+            setTimeout(() => {
+                if (floatingMenu && !floatingMenu.matches(':hover')) {
+                    floatingMenu.style.opacity = '0';
+                    floatingMenu.style.transform = 'translateY(20px)';
+                    floatingMenu.style.pointerEvents = 'none';
+                }
+            }, 300);
+        });
+    }
+
+    // Add card hover effects
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-2px)';
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translateY(0)';
+        });
+    });
+
+    // Add button ripple effects
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            ripple.style.cssText = `
+                position: absolute;
+                width: ${size}px;
+                height: ${size}px;
+                left: ${x}px;
+                top: ${y}px;
+                background: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transform: scale(0);
+                animation: ripple 0.6s ease-out;
+                pointer-events: none;
+            `;
+
+            this.style.position = 'relative';
+            this.style.overflow = 'hidden';
+            this.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+
+    // Add CSS for ripple animation
+    if (!document.getElementById('ripple-styles')) {
+        const style = document.createElement('style');
+        style.id = 'ripple-styles';
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(2);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
+function toggleDebugSection() {
+    const debugSection = document.getElementById('debug-section');
+    if (debugSection) {
+        debugSection.style.display = debugSection.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Enhanced carbon indicator updates
+function updateCarbonIndicator() {
+    const indicator = document.getElementById('carbon-indicator');
+    if (indicator && window.performanceMonitor) {
+        const carbon = window.performanceMonitor.metrics.carbonFootprint || 0;
+        indicator.textContent = `🌱 ${carbon.toFixed(3)}g CO2`;
+
+        // Update color and style based on carbon level
+        if (carbon < 0.1) {
+            indicator.style.background = 'rgba(16, 185, 129, 0.9)'; // Green
+            indicator.style.boxShadow = '0 8px 32px rgba(16, 185, 129, 0.3)';
+        } else if (carbon < 0.5) {
+            indicator.style.background = 'rgba(245, 158, 11, 0.9)'; // Orange
+            indicator.style.boxShadow = '0 8px 32px rgba(245, 158, 11, 0.3)';
+        } else {
+            indicator.style.background = 'rgba(239, 68, 68, 0.9)'; // Red
+            indicator.style.boxShadow = '0 8px 32px rgba(239, 68, 68, 0.3)';
+        }
+    }
+}
+
 // Auto-test ARIA health on load
 setTimeout(testARIAHealth, 3000);
 
 // Load performance metrics
 setTimeout(loadPerformanceMetrics, 1000);
+
+// Initialize modern UI
+setTimeout(initializeModernUI, 500);
+
+// Update carbon indicator periodically
+setInterval(updateCarbonIndicator, 5000);
 
 document.addEventListener('DOMContentLoaded', initializeStudentDashboard);
