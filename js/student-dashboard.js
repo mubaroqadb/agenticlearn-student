@@ -531,17 +531,39 @@ function loadDemoRecommendations() {
 
     let recommendationsHTML = "";
     demoRecommendations.forEach(rec => {
-        recommendationsHTML += UIComponents.createCard(
-            `🤖 ${rec.title}`,
-            rec.description,
-            [
-                { label: "Start Now", handler: `startRecommendation('${rec.id}')` },
-                { label: "Learn More", handler: `learnMore('${rec.id}')` }
-            ]
-        );
+        if (window.UIComponents && window.UIComponents.createCard) {
+            recommendationsHTML += UIComponents.createCard(
+                `🤖 ${rec.title}`,
+                rec.description,
+                [
+                    { label: "Start Now", handler: `startRecommendation('${rec.id}')` },
+                    { label: "Learn More", handler: `learnMore('${rec.id}')` }
+                ]
+            );
+        } else {
+            // Fallback HTML without UIComponents
+            recommendationsHTML += `
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <div class="card-icon">🤖</div>
+                        <div>
+                            <div class="card-title">${rec.title}</div>
+                        </div>
+                    </div>
+                    <p>${rec.description}</p>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="startRecommendation('${rec.id}')" style="margin-right: 0.5rem;">Start Now</button>
+                        <button class="btn btn-secondary" onclick="learnMore('${rec.id}')">Learn More</button>
+                    </div>
+                </div>
+            `;
+        }
     });
 
-    setInner("ai-recommendations", recommendationsHTML);
+    const aiRecommendationsEl = document.getElementById("ai-recommendations");
+    if (aiRecommendationsEl) {
+        aiRecommendationsEl.innerHTML = recommendationsHTML;
+    }
 }
 
 async function loadAvailableCourses() {
@@ -645,30 +667,63 @@ function loadDemoCourses() {
 
     let coursesHTML = "";
     demoCourses.forEach(course => {
-        coursesHTML += UIComponents.createCard(
-            `📚 ${course.title}`,
-            `
-                <p>${course.description}</p>
-                <div style="margin: 1rem 0;">
-                    <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                        ${course.level}
-                    </span>
-                    <span class="badge" style="background: var(--secondary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                        ${course.duration} weeks
-                    </span>
-                    <span class="badge" style="background: var(--accent); color: var(--gray-700); padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                        ${course.lessons} lessons
-                    </span>
+        if (window.UIComponents && window.UIComponents.createCard) {
+            coursesHTML += UIComponents.createCard(
+                `📚 ${course.title}`,
+                `
+                    <p>${course.description}</p>
+                    <div style="margin: 1rem 0;">
+                        <span class="badge" style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${course.level}
+                        </span>
+                        <span class="badge" style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${course.duration} weeks
+                        </span>
+                        <span class="badge" style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${course.lessons} lessons
+                        </span>
+                    </div>
+                `,
+                [
+                    { label: "Start Course", handler: `startCourse('${course._id}')` },
+                    { label: "View Details", handler: `viewCourseDetails('${course._id}')` }
+                ]
+            );
+        } else {
+            // Fallback HTML without UIComponents
+            coursesHTML += `
+                <div class="card" style="margin-bottom: 1.5rem;">
+                    <div class="card-header">
+                        <div class="card-icon">📚</div>
+                        <div>
+                            <div class="card-title">${course.title}</div>
+                        </div>
+                    </div>
+                    <p>${course.description}</p>
+                    <div style="margin: 1rem 0;">
+                        <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">
+                            ${course.level}
+                        </span>
+                        <span style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">
+                            ${course.duration} weeks
+                        </span>
+                        <span style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                            ${course.lessons} lessons
+                        </span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="startCourse('${course._id}')" style="margin-right: 0.5rem;">Start Course</button>
+                        <button class="btn btn-secondary" onclick="viewCourseDetails('${course._id}')">View Details</button>
+                    </div>
                 </div>
-            `,
-            [
-                { label: "Start Course", handler: `startCourse('${course._id}')` },
-                { label: "View Details", handler: `viewCourseDetails('${course._id}')` }
-            ]
-        );
+            `;
+        }
     });
 
-    setInner("available-courses", coursesHTML);
+    const availableCoursesEl = document.getElementById("available-courses");
+    if (availableCoursesEl) {
+        availableCoursesEl.innerHTML = coursesHTML;
+    }
 }
 
 async function loadCurrentModule() {
@@ -796,24 +851,59 @@ async function loadAvailableCoursesForCurrentModule() {
 }
 
 function loadDemoModule() {
-    const demoHTML = UIComponents.createCard(
-        "📖 Digital Literacy Essentials",
-        `
-            <p>Foundational digital skills untuk business professionals</p>
-            <div style="margin: 1rem 0;">
-                <span class="badge" style="background: var(--primary); color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
-                    Week 1-2
-                </span>
-            </div>
-            ${UIComponents.createProgressBar(25, "Module Progress")}
-        `,
-        [
-            { label: "Lanjutkan Belajar", handler: "continueDemoModule()" },
-            { label: "Lihat Lessons", handler: "viewDemoLessons()" }
-        ]
-    );
+    let demoHTML = "";
 
-    setInner("current-module", demoHTML);
+    if (window.UIComponents && window.UIComponents.createCard) {
+        demoHTML = UIComponents.createCard(
+            "📖 Digital Literacy Essentials",
+            `
+                <p>Foundational digital skills untuk business professionals</p>
+                <div style="margin: 1rem 0;">
+                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                        Week 1-2
+                    </span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%"></div>
+                </div>
+            `,
+            [
+                { label: "Continue Learning", handler: "continueDemoModule()" },
+                { label: "View Lessons", handler: "viewDemoLessons()" }
+            ]
+        );
+    } else {
+        // Fallback HTML without UIComponents
+        demoHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📖</div>
+                    <div>
+                        <div class="card-title">Digital Literacy Essentials</div>
+                        <div class="card-subtitle">Current Learning Module</div>
+                    </div>
+                </div>
+                <p>Foundational digital skills untuk business professionals</p>
+                <div style="margin: 1rem 0;">
+                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">
+                        Week 1-2
+                    </span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 25%"></div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="continueDemoModule()" style="margin-right: 0.5rem;">Continue Learning</button>
+                    <button class="btn btn-secondary" onclick="viewDemoLessons()">View Lessons</button>
+                </div>
+            </div>
+        `;
+    }
+
+    const currentModuleEl = document.getElementById("current-module");
+    if (currentModuleEl) {
+        currentModuleEl.innerHTML = demoHTML;
+    }
 }
 
 function setupEventListeners() {
@@ -2918,7 +3008,106 @@ window.runSystemTest = function() {
     alert(`System Test\n\nThis would run:\n• Platform connectivity tests\n• Performance benchmarks\n• Feature availability checks\n• Database connectivity\n• API endpoint validation\n\nFeature coming soon!`);
 };
 
+// Demo module functions
+window.continueDemoModule = function() {
+    console.log("Continuing demo module...");
+    alert("Continue Learning\n\nThis would:\n• Resume from Lesson 4: Digital Communication\n• Show interactive content\n• Track progress\n• Update completion status\n\nFeature coming soon!");
+};
+
+window.viewDemoLessons = function() {
+    console.log("Viewing demo lessons...");
+    alert("Module Lessons\n\nDigital Literacy Essentials:\n\n✅ Lesson 1: Introduction to Digital Tools\n✅ Lesson 2: Email & Communication\n✅ Lesson 3: File Management\n🔄 Lesson 4: Digital Communication (Current)\n⏳ Lesson 5: Online Safety\n⏳ Lesson 6: Digital Productivity\n\nFeature coming soon!");
+};
+
 // Expose functions to window for HTML access
 window.loadSectionData = loadSectionData;
 
-document.addEventListener('DOMContentLoaded', initializeStudentDashboard);
+// Force immediate demo data loading for better UX
+function forceLoadDemoData() {
+    console.log("🚀 Force loading demo data for immediate display");
+
+    // Load demo progress immediately
+    const demoProgressData = {
+        overallProgress: 35,
+        completedCourses: 1,
+        totalLessons: 8,
+        completedLessons: 3,
+        averageScore: 85,
+        enrolledCourses: [
+            {
+                course: {
+                    _id: "demo-course-1",
+                    title: "Digital Business Fundamentals",
+                    description: "Learn the essentials of digital business transformation",
+                    level: "Beginner",
+                    duration: 8
+                },
+                progress: {
+                    overall_progress: 35,
+                    completed_lessons: ["lesson1", "lesson2", "lesson3"],
+                    total_lessons: 8,
+                    average_score: 85,
+                    last_accessed: new Date().toISOString(),
+                    current_module_id: "module-1"
+                }
+            }
+        ],
+        recentSubmissions: []
+    };
+
+    // Store globally
+    window.studentProgressData = demoProgressData;
+
+    // Update progress bar immediately
+    const progressFill = document.getElementById("progress-fill");
+    if (progressFill) {
+        progressFill.style.width = `${demoProgressData.overallProgress}%`;
+    }
+
+    // Update stats immediately if UIComponents is available
+    if (window.UIComponents && window.UIComponents.createCard) {
+        const statsHTML = `
+            <div class="stat-card">
+                <div class="stat-number">${demoProgressData.completedCourses}</div>
+                <div class="stat-label">Enrolled Courses</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${demoProgressData.completedLessons}/${demoProgressData.totalLessons}</div>
+                <div class="stat-label">Lessons Progress</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${demoProgressData.averageScore}%</div>
+                <div class="stat-label">Average Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">${demoProgressData.overallProgress}%</div>
+                <div class="stat-label">Overall Progress</div>
+            </div>
+        `;
+
+        const statsGrid = document.getElementById("stats-grid");
+        if (statsGrid) {
+            statsGrid.innerHTML = statsHTML;
+        }
+    }
+
+    // Load demo courses immediately
+    setTimeout(() => {
+        if (window.UIComponents) {
+            loadDemoCourses();
+            loadDemoRecommendations();
+            loadDemoModule();
+        }
+    }, 100);
+}
+
+// Try to load demo data immediately
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeStudentDashboard();
+        setTimeout(forceLoadDemoData, 500);
+    });
+} else {
+    initializeStudentDashboard();
+    setTimeout(forceLoadDemoData, 500);
+}
