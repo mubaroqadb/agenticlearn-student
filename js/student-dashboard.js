@@ -2541,4 +2541,150 @@ setTimeout(initializeModernUI, 500);
 // Update carbon indicator periodically
 setInterval(updateCarbonIndicator, 5000);
 
+// Assessment and Goals functions
+async function loadAssessmentHistory() {
+    try {
+        console.log("🔄 Loading assessment history...");
+
+        const response = await compatApiClient.request("/assessments/history");
+
+        if (response.success && response.assessments) {
+            const assessments = response.assessments;
+            let historyHTML = "";
+
+            if (assessments.length > 0) {
+                assessments.forEach(assessment => {
+                    const date = new Date(assessment.completed_at).toLocaleDateString();
+                    const score = assessment.score || 0;
+                    const type = assessment.type || 'Unknown';
+
+                    historyHTML += `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h4 style="color: var(--primary); margin-bottom: 0.5rem;">${type}</h4>
+                                    <p style="color: var(--gray-600); font-size: 14px;">Completed: ${date}</p>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 24px; font-weight: 700; color: var(--secondary);">${score}%</div>
+                                    <div style="font-size: 12px; color: var(--gray-500);">Score</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                historyHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                        <div style="font-size: 48px; margin-bottom: 1rem;">📊</div>
+                        <h3>No Assessment History</h3>
+                        <p>Take your first assessment to see results here.</p>
+                    </div>
+                `;
+            }
+
+            setInner("assessment-history", historyHTML);
+        } else {
+            setInner("assessment-history", `
+                <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                    <div style="font-size: 48px; margin-bottom: 1rem;">📊</div>
+                    <h3>No Assessment History</h3>
+                    <p>Take your first assessment to see results here.</p>
+                </div>
+            `);
+        }
+
+    } catch (error) {
+        console.error("Failed to load assessment history:", error);
+        setInner("assessment-history", `
+            <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                <div style="font-size: 48px; margin-bottom: 1rem;">📊</div>
+                <h3>Assessment History</h3>
+                <p>Assessment history will appear here once you complete assessments.</p>
+            </div>
+        `);
+    }
+}
+
+async function loadGoalsProgress() {
+    try {
+        console.log("🔄 Loading goals progress...");
+
+        const response = await compatApiClient.request("/goals/progress");
+
+        if (response.success && response.goals) {
+            const goals = response.goals;
+            let goalsHTML = "";
+
+            if (goals.length > 0) {
+                goals.forEach(goal => {
+                    const progress = goal.progress || 0;
+                    const title = goal.title || 'Untitled Goal';
+                    const deadline = goal.deadline ? new Date(goal.deadline).toLocaleDateString() : 'No deadline';
+
+                    goalsHTML += `
+                        <div class="card" style="margin-bottom: 1rem;">
+                            <h4 style="color: var(--primary); margin-bottom: 0.5rem;">${title}</h4>
+                            <div style="margin: 1rem 0;">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: ${progress}%"></div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 14px; color: var(--gray-600);">
+                                <span>Progress: ${progress}%</span>
+                                <span>Deadline: ${deadline}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                goalsHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                        <div style="font-size: 48px; margin-bottom: 1rem;">🎯</div>
+                        <h3>No Active Goals</h3>
+                        <p>Set your first learning goal to track progress here.</p>
+                    </div>
+                `;
+            }
+
+            setInner("goals-progress", goalsHTML);
+        } else {
+            setInner("goals-progress", `
+                <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                    <div style="font-size: 48px; margin-bottom: 1rem;">🎯</div>
+                    <h3>No Active Goals</h3>
+                    <p>Set your first learning goal to track progress here.</p>
+                </div>
+            `);
+        }
+
+    } catch (error) {
+        console.error("Failed to load goals progress:", error);
+        setInner("goals-progress", `
+            <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                <div style="font-size: 48px; margin-bottom: 1rem;">🎯</div>
+                <h3>Learning Goals</h3>
+                <p>Your learning goals and progress will appear here.</p>
+            </div>
+        `);
+    }
+}
+
+// Load assessment and goals data when sections are accessed
+function loadSectionData(section) {
+    switch(section) {
+        case 'assessment':
+            loadAssessmentHistory();
+            break;
+        case 'goals':
+            loadGoalsProgress();
+            break;
+        default:
+            break;
+    }
+}
+
+// Expose functions to window for HTML access
+window.loadSectionData = loadSectionData;
+
 document.addEventListener('DOMContentLoaded', initializeStudentDashboard);

@@ -680,11 +680,11 @@
                     <div class="nav-icon">📖</div>
                     <div class="nav-text">Continue Learning</div>
                 </a>
-                <a href="assessment.html" class="nav-item">
+                <a href="#" class="nav-item" data-section="assessment">
                     <div class="nav-icon">🎯</div>
                     <div class="nav-text">Assessment</div>
                 </a>
-                <a href="goal-setting.html" class="nav-item">
+                <a href="#" class="nav-item" data-section="goals">
                     <div class="nav-icon">🎯</div>
                     <div class="nav-text">Goals</div>
                 </a>
@@ -848,6 +848,128 @@
                         <div id="ai-recommendations">
                             <div style="text-align: center; padding: 2rem;">
                                 <div class="loading"></div> Loading AI recommendations...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assessment Section -->
+                <section id="assessment-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🎯</div>
+                            <div>
+                                <div class="card-title">Learning Assessment</div>
+                                <div class="card-subtitle">Evaluate your skills and discover your learning style</div>
+                            </div>
+                        </div>
+
+                        <div class="grid">
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--primary); margin-bottom: 1rem;">📊 Digital Literacy Assessment</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    Evaluate your current digital skills and identify areas for improvement.
+                                </p>
+                                <button class="btn btn-primary" onclick="startAssessment('digital-literacy')">
+                                    Start Assessment
+                                </button>
+                            </div>
+
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--secondary); margin-bottom: 1rem;">🧠 Learning Style Assessment</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    Discover your preferred learning style for personalized content delivery.
+                                </p>
+                                <button class="btn btn-secondary" onclick="startAssessment('learning-style')">
+                                    Discover Style
+                                </button>
+                            </div>
+
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--primary); margin-bottom: 1rem;">💼 Business Skills Assessment</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    Assess your business and entrepreneurship knowledge level.
+                                </p>
+                                <button class="btn btn-success" onclick="startAssessment('business-skills')">
+                                    Take Test
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📈</div>
+                                <div>
+                                    <div class="card-title">Assessment History</div>
+                                    <div class="card-subtitle">View your previous assessment results</div>
+                                </div>
+                            </div>
+
+                            <div id="assessment-history">
+                                <div style="text-align: center; padding: 2rem;">
+                                    <div class="loading"></div> Loading assessment history...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Goals Section -->
+                <section id="goals-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🎯</div>
+                            <div>
+                                <div class="card-title">Learning Goals</div>
+                                <div class="card-subtitle">Set and track your SMART learning objectives</div>
+                            </div>
+                        </div>
+
+                        <div class="grid">
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--primary); margin-bottom: 1rem;">🎯 Set New Goal</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    Create a new SMART learning goal with timeline and milestones.
+                                </p>
+                                <button class="btn btn-primary" onclick="openGoalSetting()">
+                                    Create Goal
+                                </button>
+                            </div>
+
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--secondary); margin-bottom: 1rem;">📋 My Active Goals</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    View and manage your current learning goals and progress.
+                                </p>
+                                <button class="btn btn-secondary" onclick="viewActiveGoals()">
+                                    View Goals
+                                </button>
+                            </div>
+
+                            <div class="card" style="margin-bottom: 0;">
+                                <h3 style="color: var(--primary); margin-bottom: 1rem;">📅 Daily Plan</h3>
+                                <p style="color: var(--gray-600); margin-bottom: 1.5rem;">
+                                    Get your personalized daily learning plan based on your goals.
+                                </p>
+                                <button class="btn btn-success" onclick="generateDailyPlan()">
+                                    Get Plan
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📊</div>
+                                <div>
+                                    <div class="card-title">Goal Progress</div>
+                                    <div class="card-subtitle">Track your progress towards learning objectives</div>
+                                </div>
+                            </div>
+
+                            <div id="goals-progress">
+                                <div style="text-align: center; padding: 2rem;">
+                                    <div class="loading"></div> Loading goals progress...
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1036,10 +1158,16 @@
                     sections.forEach(section => section.style.display = 'none');
 
                     // Show target section
-                    const targetSection = this.getAttribute('data-section') + '-section';
+                    const sectionName = this.getAttribute('data-section');
+                    const targetSection = sectionName + '-section';
                     const section = document.getElementById(targetSection);
                     if (section) {
                         section.style.display = 'block';
+
+                        // Load section-specific data
+                        if (window.loadSectionData) {
+                            window.loadSectionData(sectionName);
+                        }
                     }
 
                     // Update page title
@@ -1061,6 +1189,68 @@
             window.addEventListener('resize', handleResize);
             handleResize(); // Initial check
         });
+
+        // Assessment functions
+        window.startAssessment = function(type) {
+            console.log(`Starting ${type} assessment...`);
+
+            const assessmentTypes = {
+                'digital-literacy': {
+                    title: 'Digital Literacy Assessment',
+                    description: 'Evaluate your digital skills and competencies',
+                    questions: 15,
+                    duration: '10-15 minutes'
+                },
+                'learning-style': {
+                    title: 'Learning Style Assessment',
+                    description: 'Discover your preferred learning approach',
+                    questions: 12,
+                    duration: '8-10 minutes'
+                },
+                'business-skills': {
+                    title: 'Business Skills Assessment',
+                    description: 'Assess your business and entrepreneurship knowledge',
+                    questions: 20,
+                    duration: '15-20 minutes'
+                }
+            };
+
+            const assessment = assessmentTypes[type];
+            if (assessment) {
+                const confirmed = confirm(
+                    `Start ${assessment.title}?\n\n` +
+                    `${assessment.description}\n` +
+                    `Questions: ${assessment.questions}\n` +
+                    `Duration: ${assessment.duration}\n\n` +
+                    `Click OK to begin the assessment.`
+                );
+
+                if (confirmed) {
+                    // Here you would typically redirect to assessment page or open modal
+                    alert(`Starting ${assessment.title}...\n\nThis would open the assessment interface.`);
+                    // TODO: Implement actual assessment interface
+                }
+            }
+        };
+
+        // Goals functions
+        window.openGoalSetting = function() {
+            console.log('Opening goal setting interface...');
+            alert('Goal Setting Interface\n\nThis would open a form to create SMART learning goals with:\n- Specific objectives\n- Measurable outcomes\n- Achievable targets\n- Relevant skills\n- Time-bound milestones');
+            // TODO: Implement goal setting modal/interface
+        };
+
+        window.viewActiveGoals = function() {
+            console.log('Viewing active goals...');
+            alert('Active Goals View\n\nThis would show:\n- Current learning goals\n- Progress tracking\n- Milestone achievements\n- Goal management options');
+            // TODO: Implement goals viewing interface
+        };
+
+        window.generateDailyPlan = function() {
+            console.log('Generating daily plan...');
+            alert('Daily Learning Plan\n\nThis would generate:\n- Personalized daily tasks\n- Learning schedule\n- Goal-aligned activities\n- Progress checkpoints');
+            // TODO: Implement daily plan generation
+        };
 
         // Global functions that buttons can call
         window.testAPI = async function() {
