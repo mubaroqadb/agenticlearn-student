@@ -1,187 +1,329 @@
-// AgenticLearn Student Dashboard - Pure Vanilla JavaScript
-// No external dependencies, self-contained
-
+// AgenticLearn Student Dashboard - Direct Implementation
 console.log('🚀 Loading AgenticLearn Student Dashboard...');
 
-// Utility functions
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return null;
-}
+// IMMEDIATE DEMO DATA LOADING
+function loadDemoDataImmediately() {
+    console.log('📊 Loading demo data immediately...');
 
-function setInner(id, content) {
-    const element = document.getElementById(id);
-    if (element) {
-        element.innerHTML = content;
-    } else {
-        console.warn(`Element with id '${id}' not found`);
+    // Update progress bar
+    const progressFill = document.getElementById("progress-fill");
+    if (progressFill) {
+        progressFill.style.width = "35%";
     }
-}
 
-function onClick(id, handler) {
-    const element = document.getElementById(id);
-    if (element) {
-        element.addEventListener('click', handler);
-    } else {
-        console.warn(`Element with id '${id}' not found for click handler`);
-    }
-}
-
-function redirect(url) {
-    window.location.href = url;
-}
-
-// Self-contained UI Components
-const UIComponents = {
-    createCard: function(title, content, actions = []) {
-        let actionsHTML = '';
-        if (actions.length > 0) {
-            actionsHTML = '<div style="margin-top: 1rem;">';
-            actions.forEach(action => {
-                actionsHTML += `<button class="btn btn-primary" onclick="${action.handler}" style="margin-right: 0.5rem;">${action.label}</button>`;
-            });
-            actionsHTML += '</div>';
-        }
-
-        return `
-            <div class="card" style="margin-bottom: 1.5rem;">
+    // Update available courses
+    const availableCourses = document.getElementById("available-courses");
+    if (availableCourses) {
+        availableCourses.innerHTML = `
+            <div class="card">
                 <div class="card-header">
-                    <div class="card-icon">${title.split(' ')[0]}</div>
+                    <div class="card-icon">📚</div>
                     <div>
-                        <div class="card-title">${title.substring(2)}</div>
+                        <div class="card-title">Digital Business Fundamentals</div>
                     </div>
                 </div>
-                ${content}
-                ${actionsHTML}
+                <p>Master the essentials of digital business transformation, e-commerce, and online marketing strategies.</p>
+                <div style="margin: 1rem 0;">
+                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
+                    <span style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
+                    <span style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">16 lessons</span>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="startCourse('demo-course-1')" style="margin-right: 0.5rem;">Start Course</button>
+                    <button class="btn btn-secondary" onclick="viewCourseDetails('demo-course-1')">View Details</button>
+                </div>
             </div>
         `;
-    },
+    }
 
-    createProgressBar: function(percentage, label) {
-        return `
-            <div style="margin: 1rem 0;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="font-size: 14px; color: var(--gray-600);">${label}</span>
-                    <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${percentage}%</span>
+    // Update current module
+    const currentModule = document.getElementById("current-module");
+    if (currentModule) {
+        currentModule.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📖</div>
+                    <div>
+                        <div class="card-title">Digital Literacy Essentials</div>
+                        <div class="card-subtitle">Current Learning Module</div>
+                    </div>
+                </div>
+                <p>Foundational digital skills untuk business professionals</p>
+                <div style="margin: 1rem 0;">
+                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Week 1-2</span>
                 </div>
                 <div class="progress-bar">
-                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                    <div class="progress-fill" style="width: 35%"></div>
+                </div>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="continueDemoModule()" style="margin-right: 0.5rem;">Continue Learning</button>
+                    <button class="btn btn-secondary" onclick="viewDemoLessons()">View Lessons</button>
                 </div>
             </div>
         `;
-    },
+    }
 
-    showNotification: function(message, type = 'info') {
-        console.log(`[${type.toUpperCase()}] ${message}`);
-        const notification = document.createElement('div');
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#19b69f'};
-            color: white;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
-            z-index: 10000;
-            font-size: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    // Update AI recommendations
+    const aiRecommendations = document.getElementById("ai-recommendations");
+    if (aiRecommendations) {
+        aiRecommendations.innerHTML = `
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🤖</div>
+                    <div>
+                        <div class="card-title">Digital Marketing Fundamentals</div>
+                    </div>
+                </div>
+                <p>Based on your progress in Digital Business, we recommend starting with marketing basics to build a strong foundation.</p>
+                <div style="margin-top: 1rem;">
+                    <button class="btn btn-primary" onclick="startRecommendation('rec-1')" style="margin-right: 0.5rem;">Start Now</button>
+                    <button class="btn btn-secondary" onclick="learnMore('rec-1')">Learn More</button>
+                </div>
+            </div>
         `;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
     }
-};
 
-// Self-contained API Client
-const compatApiClient = {
-    async request(endpoint) {
-        try {
-            const token = getCookie("access_token") || getCookie("login");
-            const config = window.AgenticLearnConfig || {};
-            const baseURL = config.apiBaseURL || "https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn";
-
-            console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
-
-            const response = await fetch(`${baseURL}${endpoint}`, {
-                headers: {
-                    "Authorization": token ? `Bearer ${token}` : "",
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            });
-
-            console.log(`📡 Response status: ${response.status}`);
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            const data = await response.json();
-            console.log("📊 Response data:", data);
-            return data;
-        } catch (error) {
-            console.error("❌ API Request failed:", error);
-            throw error;
-        }
+    // Update assessment history
+    const assessmentHistory = document.getElementById("assessment-history");
+    if (assessmentHistory) {
+        assessmentHistory.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                <div style="font-size: 48px; margin-bottom: 1rem;">📊</div>
+                <h3>Assessment History</h3>
+                <p>Assessment history will appear here once you complete assessments.</p>
+            </div>
+        `;
     }
-};
 
-// ARIA Chat fallback
-class ARIAChat {
-    constructor() {
-        console.log("ARIA Chat initialized");
+    // Update goals progress
+    const goalsProgress = document.getElementById("goals-progress");
+    if (goalsProgress) {
+        goalsProgress.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                <div style="font-size: 48px; margin-bottom: 1rem;">🎯</div>
+                <h3>Learning Goals</h3>
+                <p>Your learning goals and progress will appear here.</p>
+            </div>
+        `;
     }
-    show() { console.log("ARIA Chat show"); }
-    hide() { console.log("ARIA Chat hide"); }
-    toggle() { console.log("ARIA Chat toggle"); }
+
+    // Update performance data
+    const performanceMetrics = document.getElementById("performance-metrics");
+    if (performanceMetrics) {
+        performanceMetrics.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--gray-600);">
+                <div style="font-size: 48px; margin-bottom: 1rem;">📈</div>
+                <h3>Performance Analytics</h3>
+                <p>Detailed performance metrics will appear here.</p>
+            </div>
+        `;
+    }
+
+    console.log('✅ Demo data loaded successfully');
 }
 
-// Global instances
-let ariaChat = null;
+// SIMPLE FUNCTION DEFINITIONS - DIRECT IMPLEMENTATION
 
-// Simple API client for direct backend calls
-const compatApiClient = {
-    async request(endpoint) {
-        try {
-            const token = getCookie("access_token") || getCookie("login");
-            // Always use localhost backend for development
-            const baseURL = "https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn";
+// Course functions
+function startCourse(courseId) {
+    console.log('Starting course:', courseId);
+    alert(`Starting Course: ${courseId}\n\nThis would:\n• Enroll you in the course\n• Set up progress tracking\n• Navigate to first lesson\n\nFeature coming soon!`);
+}
 
-            console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
+function viewCourseDetails(courseId) {
+    console.log('Viewing course details:', courseId);
+    alert(`Course Details: ${courseId}\n\nThis would show:\n• Complete curriculum\n• Learning objectives\n• Prerequisites\n• Reviews\n\nFeature coming soon!`);
+}
 
-            const response = await fetch(`${baseURL}${endpoint}`, {
-                headers: {
-                    "Authorization": token ? `Bearer ${token}` : "",
-                    "Content-Type": "application/json",
-                    "Accept": "application/json"
-                }
-            });
+function continueModule(moduleId) {
+    console.log('Continuing module:', moduleId);
+    alert(`Continue Module: ${moduleId}\n\nThis would:\n• Resume from last lesson\n• Show progress\n• Load content\n\nFeature coming soon!`);
+}
 
-            console.log(`📡 Response status: ${response.status}`);
+function viewModuleLessons(moduleId) {
+    console.log('Viewing module lessons:', moduleId);
+    alert(`Module Lessons: ${moduleId}\n\nThis would show:\n• List of lessons\n• Completion status\n• Learning objectives\n\nFeature coming soon!`);
+}
 
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+function viewCourseProgress(courseId) {
+    console.log('Viewing course progress:', courseId);
+    alert(`Course Progress: ${courseId}\n\nThis would show:\n• Completion percentage\n• Quiz scores\n• Time spent\n\nFeature coming soon!`);
+}
+
+// AI functions
+function startRecommendation(recId) {
+    console.log('Starting recommendation:', recId);
+    alert(`AI Recommendation: ${recId}\n\nThis would:\n• Start recommended path\n• Customize content\n• Track effectiveness\n\nFeature coming soon!`);
+}
+
+function learnMore(recId) {
+    console.log('Learning more about:', recId);
+    alert(`Recommendation Details: ${recId}\n\nThis would show:\n• Why recommended\n• Learning objectives\n• Time commitment\n\nFeature coming soon!`);
+}
+
+// Assessment functions
+function startAssessment(type) {
+    console.log('Starting assessment:', type);
+    alert(`Assessment: ${type}\n\nThis would:\n• Start assessment interface\n• Track progress\n• Generate results\n\nFeature coming soon!`);
+}
+
+// Goals functions
+function openGoalSetting() {
+    console.log('Opening goal setting');
+    alert(`Goal Setting\n\nThis would open:\n• SMART goal creation\n• Timeline setting\n• Milestone planning\n\nFeature coming soon!`);
+}
+
+function viewActiveGoals() {
+    console.log('Viewing active goals');
+    alert(`Active Goals\n\nThis would show:\n• Current goals\n• Progress tracking\n• Achievement status\n\nFeature coming soon!`);
+}
+
+function generateDailyPlan() {
+    console.log('Generating daily plan');
+    alert(`Daily Plan\n\nThis would generate:\n• Personalized tasks\n• Learning schedule\n• Goal alignment\n\nFeature coming soon!`);
+}
+
+// Performance functions
+function loadPerformanceReport() {
+    console.log('Loading performance report');
+    alert(`Performance Report\n\nThis would show:\n• Learning analytics\n• Progress trends\n• Recommendations\n\nFeature coming soon!`);
+}
+
+function loadOptimizationStatus() {
+    console.log('Loading optimization status');
+    alert(`Optimization Status\n\nThis would show:\n• System performance\n• Resource usage\n• Improvements\n\nFeature coming soon!`);
+}
+
+function loadCarbonReport() {
+    console.log('Loading carbon report');
+    alert(`Carbon Report\n\nThis would show:\n• Environmental impact\n• Sustainability metrics\n• Green tips\n\nFeature coming soon!`);
+}
+
+function runSystemTest() {
+    console.log('Running system test');
+    alert(`System Test\n\nThis would run:\n• Connectivity tests\n• Performance checks\n• Feature validation\n\nFeature coming soon!`);
+}
+
+// UI functions
+function toggleARIAChat() {
+    console.log('Toggling ARIA chat');
+    alert(`ARIA Chat\n\nThis would open:\n• AI tutor interface\n• Real-time assistance\n• Learning guidance\n\nFeature coming soon!`);
+}
+
+function toggleARIATutor() {
+    console.log('Toggling ARIA tutor');
+    alert(`ARIA Tutor\n\nThis would activate:\n• Intelligent tutoring\n• Adaptive guidance\n• Personalized help\n\nFeature coming soon!`);
+}
+
+function initializeContent() {
+    console.log('Initializing content');
+    alert(`Content Initialization\n\nThis would:\n• Set up personalized content\n• Configure preferences\n• Initialize tracking\n\nFeature coming soon!`);
+}
+
+// Demo functions
+function continueDemoModule() {
+    console.log('Continuing demo module');
+    alert(`Continue Demo Module\n\nThis would:\n• Resume from current lesson\n• Show interactive content\n• Track progress\n\nFeature coming soon!`);
+}
+
+function viewDemoLessons() {
+    console.log('Viewing demo lessons');
+    alert(`Demo Lessons\n\nDigital Literacy Essentials:\n\n✅ Lesson 1: Digital Tools\n✅ Lesson 2: Communication\n✅ Lesson 3: File Management\n🔄 Lesson 4: Current\n⏳ Lesson 5: Online Safety\n\nFeature coming soon!`);
+}
+
+// Section loading
+function loadSectionData(section) {
+    console.log('Loading section data:', section);
+    // Section-specific data loading would go here
+}
+
+// EXPOSE ALL FUNCTIONS TO WINDOW IMMEDIATELY
+window.startCourse = startCourse;
+window.viewCourseDetails = viewCourseDetails;
+window.continueModule = continueModule;
+window.viewModuleLessons = viewModuleLessons;
+window.viewCourseProgress = viewCourseProgress;
+window.startRecommendation = startRecommendation;
+window.learnMore = learnMore;
+window.startAssessment = startAssessment;
+window.openGoalSetting = openGoalSetting;
+window.viewActiveGoals = viewActiveGoals;
+window.generateDailyPlan = generateDailyPlan;
+window.loadPerformanceReport = loadPerformanceReport;
+window.loadOptimizationStatus = loadOptimizationStatus;
+window.loadCarbonReport = loadCarbonReport;
+window.runSystemTest = runSystemTest;
+window.toggleARIAChat = toggleARIAChat;
+window.toggleARIATutor = toggleARIATutor;
+window.initializeContent = initializeContent;
+window.continueDemoModule = continueDemoModule;
+window.viewDemoLessons = viewDemoLessons;
+window.loadSectionData = loadSectionData;
+
+console.log('✅ All functions exposed to window object');
+
+// INITIALIZATION
+function initializeDashboard() {
+    console.log('🚀 Initializing dashboard...');
+
+    // Load demo data immediately
+    loadDemoDataImmediately();
+
+    // Setup navigation
+    setupNavigation();
+
+    console.log('✅ Dashboard initialized successfully');
+}
+
+function setupNavigation() {
+    // Setup sidebar navigation
+    const navItems = document.querySelectorAll('.nav-item[data-section]');
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Remove active class from all items
+            navItems.forEach(nav => nav.classList.remove('active'));
+
+            // Add active class to clicked item
+            this.classList.add('active');
+
+            // Hide all sections
+            const sections = document.querySelectorAll('.dashboard-section');
+            sections.forEach(section => section.style.display = 'none');
+
+            // Show target section
+            const sectionName = this.getAttribute('data-section');
+            const targetSection = sectionName + '-section';
+            const section = document.getElementById(targetSection);
+            if (section) {
+                section.style.display = 'block';
+
+                // Load section-specific data
+                loadSectionData(sectionName);
             }
 
-            const data = await response.json();
-            console.log("📊 Response data:", data);
-            return data;
-        } catch (error) {
-            console.error("❌ API Request failed:", error);
-            throw error;
-        }
-    }
-};
+            // Update page title
+            const pageTitle = document.querySelector('.page-title');
+            const navText = this.querySelector('.nav-text').textContent;
+            if (pageTitle) {
+                pageTitle.textContent = navText;
+            }
+        });
+    });
+}
 
-// Global ARIA instance
-let ariaChat = null;
+// MAIN INITIALIZATION
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('📄 DOM loaded - starting initialization');
+    initializeDashboard();
+});
 
-async function initializeStudentDashboard() {
+// If DOM already loaded
+if (document.readyState !== 'loading') {
+    console.log('📄 DOM already ready - starting initialization');
+    initializeDashboard();
+}
     console.log('🚀 Initializing Student Dashboard...');
 
     // Set dashboard start time for carbon tracking
