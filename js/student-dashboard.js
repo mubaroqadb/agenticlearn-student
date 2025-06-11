@@ -692,9 +692,15 @@ function loadDemoModule() {
 }
 
 function setupEventListeners() {
-    onClick("btn-assessment", async () => {
-        UIComponents.showNotification("Starting quick assessment...", "info");
-        await startQuickAssessment();
+    // Assessment and Profile buttons
+    onClick("btn-profile", async () => {
+        UIComponents.showNotification("Loading your profile...", "info");
+        await showStudentProfile();
+    });
+
+    onClick("btn-recommendations", async () => {
+        UIComponents.showNotification("Getting AI recommendations...", "info");
+        await showAIRecommendations();
     });
 
     onClick("btn-progress", () => {
@@ -704,6 +710,11 @@ function setupEventListeners() {
 
     onClick("btn-chat", () => {
         toggleARIAChat();
+    });
+
+    onClick("btn-content-init", async () => {
+        UIComponents.showNotification("Initializing content database...", "info");
+        await initializeContentDatabase();
     });
 
     onClick("btn-aria-toggle", () => {
@@ -1779,6 +1790,140 @@ async function loadDetailedProgress() {
         document.getElementById('detailed-progress').innerHTML = `
             <p>Failed to load progress data. Please try again later.</p>
         `;
+    }
+}
+
+// New functions for enhanced dashboard
+async function showStudentProfile() {
+    try {
+        const response = await compatApiClient.request("/auth/profile");
+        const profile = response.data || response;
+
+        const profileHTML = `
+            <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h2 style="margin-bottom: 1rem; color: #2563eb;">👤 Profil Mahasiswa</h2>
+                <div style="display: grid; gap: 1rem;">
+                    <div><strong>Nama:</strong> ${profile.name || profile.email || 'N/A'}</div>
+                    <div><strong>Email:</strong> ${profile.email || 'N/A'}</div>
+                    <div><strong>Digital Skills Level:</strong> ${profile.digital_skills_level || 'Belum dinilai'}</div>
+                    <div><strong>Learning Style:</strong> ${profile.learning_style || 'Belum dinilai'}</div>
+                    <div><strong>Technology Comfort:</strong> ${profile.technology_comfort || 'Belum dinilai'}</div>
+                </div>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="assessment.html" style="background: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-block;">
+                        🎯 Update Assessment
+                    </a>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; margin-left: 1rem; cursor: pointer;">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+            align-items: center; justify-content: center;
+        `;
+        overlay.innerHTML = profileHTML;
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.remove();
+        };
+        document.body.appendChild(overlay);
+
+    } catch (error) {
+        console.error('Failed to load profile:', error);
+        UIComponents.showNotification('Gagal memuat profil. Silakan coba lagi.', 'error');
+    }
+}
+
+async function showAIRecommendations() {
+    try {
+        const response = await compatApiClient.request("/aria/recommendations");
+        const recommendations = response.recommendations || response.data || [];
+
+        let recHTML = `
+            <div style="max-width: 800px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <h2 style="margin-bottom: 1rem; color: #2563eb;">🤖 Rekomendasi AI untuk Anda</h2>
+                <div style="display: grid; gap: 1rem;">
+        `;
+
+        if (recommendations.length > 0) {
+            recommendations.forEach(rec => {
+                recHTML += `
+                    <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <h3 style="margin: 0 0 0.5rem 0; color: #1f2937;">${rec.title}</h3>
+                        <p style="margin: 0 0 0.5rem 0; color: #6b7280;">${rec.description}</p>
+                        <span style="background: #3b82f6; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                            ${rec.priority || 'medium'} priority
+                        </span>
+                    </div>
+                `;
+            });
+        } else {
+            recHTML += `
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                    <p>Belum ada rekomendasi tersedia.</p>
+                    <p>Selesaikan assessment untuk mendapatkan rekomendasi yang dipersonalisasi!</p>
+                </div>
+            `;
+        }
+
+        recHTML += `
+                </div>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <a href="assessment.html" style="background: #059669; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; text-decoration: none; display: inline-block;">
+                        🎯 Mulai Assessment
+                    </a>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; margin-left: 1rem; cursor: pointer;">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+            align-items: center; justify-content: center; overflow-y: auto;
+        `;
+        overlay.innerHTML = recHTML;
+        overlay.onclick = (e) => {
+            if (e.target === overlay) overlay.remove();
+        };
+        document.body.appendChild(overlay);
+
+    } catch (error) {
+        console.error('Failed to load recommendations:', error);
+        UIComponents.showNotification('Gagal memuat rekomendasi. Silakan coba lagi.', 'error');
+    }
+}
+
+async function initializeContentDatabase() {
+    try {
+        UIComponents.showNotification('Initializing content database...', 'info');
+
+        const response = await compatApiClient.request("/content/initialize");
+
+        if (response.success) {
+            UIComponents.showNotification('Content database initialized successfully! 🎉', 'success');
+
+            // Refresh courses
+            setTimeout(() => {
+                loadAvailableCourses();
+                loadCurrentModule();
+            }, 1000);
+        } else {
+            throw new Error('Failed to initialize content');
+        }
+
+    } catch (error) {
+        console.error('Failed to initialize content:', error);
+        UIComponents.showNotification('Gagal menginisialisasi konten. Silakan coba lagi.', 'error');
     }
 }
 

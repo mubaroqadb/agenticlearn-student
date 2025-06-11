@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment - AgenticLearn</title>
+    <meta name="description" content="Assessment pembelajaran digital untuk mahasiswa Indonesia">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+    
+    <!-- Green Computing Meta -->
+    <meta name="carbon-efficient" content="true">
+    <meta name="mobile-optimized" content="true">
+    <meta name="resource-conscious" content="true">
+    
+    <style>
+        :root {
+            --primary: #2563eb; --success: #059669; --warning: #d97706; --error: #dc2626;
+            --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; 
+            --gray-300: #d1d5db; --gray-600: #4b5563; --gray-800: #1f2937;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12); --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --radius: 12px; --radius-sm: 8px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, #e0f2fe 100%);
+            line-height: 1.6; color: var(--gray-800); min-height: 100vh;
+        }
+        
+        .container { 
+            max-width: 800px; margin: 0 auto; padding: 1rem;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        
+        .header {
+            background: white; border-radius: var(--radius); padding: 2rem;
+            box-shadow: var(--shadow); margin-bottom: 2rem; text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .header h1 { 
+            font-size: 2rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 0.5rem; display: flex; align-items: center; 
+            justify-content: center; gap: 0.5rem;
+        }
+        
+        .header p { color: var(--gray-600); font-size: 1.1rem; }
+        
+        .assessment-card {
+            background: white; border-radius: var(--radius); padding: 2rem;
+            box-shadow: var(--shadow-lg); margin-bottom: 2rem; flex: 1;
+            border: 1px solid var(--gray-100);
+        }
+        
+        .assessment-type {
+            display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+            padding: 1rem; background: var(--gray-50); border-radius: var(--radius-sm);
+        }
+        
+        .assessment-type .icon {
+            width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; color: white; font-weight: bold;
+        }
+        
+        .digital-skills { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .learning-style { background: linear-gradient(135deg, #059669, #047857); }
+        .tech-comfort { background: linear-gradient(135deg, #d97706, #b45309); }
+        
+        .question-container {
+            margin-bottom: 2rem; padding: 1.5rem; 
+            background: var(--gray-50); border-radius: var(--radius-sm);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .question-number {
+            font-size: 0.875rem; font-weight: 600; color: var(--primary);
+            margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .question-text {
+            font-size: 1.1rem; font-weight: 500; color: var(--gray-800);
+            margin-bottom: 1rem; line-height: 1.5;
+        }
+        
+        .options-container {
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+        
+        .option {
+            display: flex; align-items: center; gap: 0.75rem; padding: 1rem;
+            background: white; border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm); cursor: pointer;
+            transition: all 0.2s ease; position: relative;
+        }
+        
+        .option:hover {
+            border-color: var(--primary); background: #eff6ff;
+            transform: translateY(-1px); box-shadow: var(--shadow);
+        }
+        
+        .option.selected {
+            border-color: var(--primary); background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .option input[type="radio"] {
+            width: 20px; height: 20px; accent-color: var(--primary);
+        }
+        
+        .option-text {
+            flex: 1; font-size: 1rem; color: var(--gray-700);
+        }
+        
+        .progress-section {
+            margin-bottom: 2rem; padding: 1rem; background: white;
+            border-radius: var(--radius-sm); box-shadow: var(--shadow);
+        }
+        
+        .progress-header {
+            display: flex; justify-content: between; align-items: center;
+            margin-bottom: 0.5rem; font-size: 0.875rem; color: var(--gray-600);
+        }
+        
+        .progress-bar {
+            background: var(--gray-200); height: 8px; border-radius: 4px;
+            overflow: hidden; position: relative;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), #3b82f6);
+            height: 100%; transition: width 0.5s ease; border-radius: 4px;
+        }
+        
+        .navigation {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 2rem; gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem; border: none; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 1rem; font-weight: 500;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;
+            text-decoration: none; text-align: center; min-width: 120px;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary); color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8; transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--gray-200); color: var(--gray-700);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-300);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5; cursor: not-allowed; transform: none !important;
+        }
+        
+        .results-container {
+            text-align: center; padding: 2rem;
+        }
+        
+        .results-score {
+            font-size: 3rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .results-level {
+            font-size: 1.25rem; font-weight: 600; color: var(--gray-700);
+            margin-bottom: 1rem; text-transform: capitalize;
+        }
+        
+        .results-description {
+            color: var(--gray-600); margin-bottom: 2rem; line-height: 1.6;
+        }
+        
+        .loading {
+            display: inline-block; width: 24px; height: 24px;
+            border: 3px solid var(--gray-200); border-top: 3px solid var(--primary);
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .green-indicator {
+            position: fixed; bottom: 20px; right: 20px; background: var(--success);
+            color: white; padding: 0.5rem 1rem; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 500; z-index: 1000;
+        }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+            .header { padding: 1.5rem; }
+            .header h1 { font-size: 1.5rem; }
+            .assessment-card { padding: 1.5rem; }
+            .navigation { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+        
+        .hidden { display: none !important; }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 Assessment Pembelajaran</h1>
+            <p>Temukan gaya belajar dan tingkat kemampuan digital Anda</p>
+        </div>
+
+        <!-- Assessment Selection -->
+        <div id="assessment-selection" class="assessment-card">
+            <h2 style="margin-bottom: 2rem; color: var(--gray-800);">Pilih Jenis Assessment</h2>
+            
+            <div class="assessment-type" onclick="startAssessment('digital-skills')">
+                <div class="icon digital-skills">💻</div>
+                <div>
+                    <h3>Digital Skills Assessment</h3>
+                    <p>Evaluasi kemampuan teknologi digital Anda</p>
+                    <small>⏱️ 5-8 menit • 8 pertanyaan</small>
+                </div>
+            </div>
+            
+            <div class="assessment-type" onclick="startAssessment('learning-style')">
+                <div class="icon learning-style">🧠</div>
+                <div>
+                    <h3>Learning Style Assessment</h3>
+                    <p>Temukan gaya belajar yang paling efektif untuk Anda</p>
+                    <small>⏱️ 6-10 menit • 8 pertanyaan</small>
+                </div>
+            </div>
+            
+            <div class="assessment-type" onclick="startAssessment('tech-comfort')">
+                <div class="icon tech-comfort">⚙️</div>
+                <div>
+                    <h3>Technology Comfort Survey</h3>
+                    <p>Seberapa nyaman Anda dengan teknologi modern</p>
+                    <small>⏱️ 4-6 menit • 6 pertanyaan</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Container -->
+        <div id="assessment-container" class="assessment-card hidden">
+            <!-- Progress Section -->
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span>Progress: <span id="current-question">1</span> dari <span id="total-questions">8</span></span>
+                    <span id="progress-percentage">12%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill" style="width: 12%"></div>
+                </div>
+            </div>
+
+            <!-- Question Container -->
+            <div id="question-display">
+                <!-- Questions will be loaded here -->
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button class="btn btn-secondary" id="btn-previous" onclick="previousQuestion()" disabled>
+                    ← Sebelumnya
+                </button>
+                <button class="btn btn-primary" id="btn-next" onclick="nextQuestion()" disabled>
+                    Selanjutnya →
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Container -->
+        <div id="results-container" class="assessment-card hidden">
+            <div class="results-container">
+                <div class="loading" id="results-loading"></div>
+                <div id="results-content" class="hidden">
+                    <!-- Results will be displayed here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Back to Dashboard -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html" class="btn btn-secondary">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Green Computing Indicator -->
+    <div class="green-indicator" id="carbon-indicator">
+        🌱 0.000g CO2
+    </div>
+
+    <!-- Import Assessment Script -->
+    <script type="module" src="js/assessment.js"></script>
+</body>
+</html>
