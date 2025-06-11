@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Setting - AgenticLearn</title>
+    <meta name="description" content="Tetapkan tujuan pembelajaran yang SMART untuk kesuksesan Anda">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>">
+    
+    <!-- Green Computing Meta -->
+    <meta name="carbon-efficient" content="true">
+    <meta name="mobile-optimized" content="true">
+    <meta name="resource-conscious" content="true">
+    
+    <style>
+        :root {
+            --primary: #2563eb; --success: #059669; --warning: #d97706; --error: #dc2626;
+            --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; 
+            --gray-300: #d1d5db; --gray-600: #4b5563; --gray-800: #1f2937;
+            --shadow: 0 1px 3px rgba(0,0,0,0.12); --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --radius: 12px; --radius-sm: 8px;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, var(--gray-50) 0%, #e0f2fe 100%);
+            line-height: 1.6; color: var(--gray-800); min-height: 100vh;
+        }
+        
+        .container { 
+            max-width: 900px; margin: 0 auto; padding: 1rem;
+            min-height: 100vh; display: flex; flex-direction: column;
+        }
+        
+        .header {
+            background: white; border-radius: var(--radius); padding: 2rem;
+            box-shadow: var(--shadow); margin-bottom: 2rem; text-align: center;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        }
+        
+        .header h1 { 
+            font-size: 2rem; font-weight: 700; color: var(--primary);
+            margin-bottom: 0.5rem; display: flex; align-items: center; 
+            justify-content: center; gap: 0.5rem;
+        }
+        
+        .goal-wizard {
+            background: white; border-radius: var(--radius); padding: 2rem;
+            box-shadow: var(--shadow-lg); margin-bottom: 2rem; flex: 1;
+        }
+        
+        .step-indicator {
+            display: flex; justify-content: center; margin-bottom: 2rem;
+            gap: 1rem; flex-wrap: wrap;
+        }
+        
+        .step {
+            display: flex; align-items: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; border-radius: 20px;
+            background: var(--gray-100); color: var(--gray-600);
+            font-size: 0.875rem; font-weight: 500;
+        }
+        
+        .step.active {
+            background: var(--primary); color: white;
+        }
+        
+        .step.completed {
+            background: var(--success); color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-label {
+            display: block; margin-bottom: 0.5rem;
+            font-weight: 500; color: var(--gray-800);
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%; padding: 0.75rem; border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm); font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none; border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px; resize: vertical;
+        }
+        
+        .goal-categories {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem; margin-bottom: 1.5rem;
+        }
+        
+        .category-card {
+            padding: 1rem; border: 2px solid var(--gray-200);
+            border-radius: var(--radius-sm); cursor: pointer;
+            transition: all 0.2s ease; text-align: center;
+        }
+        
+        .category-card:hover {
+            border-color: var(--primary); background: #eff6ff;
+        }
+        
+        .category-card.selected {
+            border-color: var(--primary); background: #eff6ff;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .category-icon {
+            font-size: 2rem; margin-bottom: 0.5rem;
+        }
+        
+        .milestones-container {
+            border: 1px solid var(--gray-200); border-radius: var(--radius-sm);
+            padding: 1rem; background: var(--gray-50);
+        }
+        
+        .milestone {
+            display: flex; gap: 1rem; margin-bottom: 1rem;
+            padding: 1rem; background: white; border-radius: var(--radius-sm);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .milestone-input {
+            flex: 1; padding: 0.5rem; border: 1px solid var(--gray-200);
+            border-radius: 4px;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem; border: none; border-radius: var(--radius-sm);
+            cursor: pointer; font-size: 1rem; font-weight: 500;
+            transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 0.5rem;
+            text-decoration: none; min-height: 48px; justify-content: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary); color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8; transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-secondary {
+            background: var(--gray-200); color: var(--gray-700);
+        }
+        
+        .btn-success {
+            background: var(--success); color: white;
+        }
+        
+        .btn-outline {
+            background: transparent; border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        
+        .navigation {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 2rem; gap: 1rem;
+        }
+        
+        .goals-list {
+            background: white; border-radius: var(--radius); padding: 2rem;
+            box-shadow: var(--shadow); margin-bottom: 2rem;
+        }
+        
+        .goal-item {
+            padding: 1.5rem; border: 1px solid var(--gray-200);
+            border-radius: var(--radius-sm); margin-bottom: 1rem;
+            background: var(--gray-50);
+        }
+        
+        .goal-header {
+            display: flex; justify-content: space-between; align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .goal-title {
+            font-size: 1.25rem; font-weight: 600; color: var(--gray-800);
+        }
+        
+        .goal-category {
+            background: var(--primary); color: white; padding: 0.25rem 0.75rem;
+            border-radius: 12px; font-size: 0.75rem; font-weight: 500;
+        }
+        
+        .goal-progress {
+            margin: 1rem 0;
+        }
+        
+        .progress-bar {
+            background: var(--gray-200); height: 8px; border-radius: 4px;
+            overflow: hidden; margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            background: var(--success); height: 100%; transition: width 0.5s ease;
+        }
+        
+        .hidden { display: none !important; }
+        
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+            .header { padding: 1.5rem; }
+            .goal-wizard { padding: 1.5rem; }
+            .navigation { flex-direction: column; }
+            .btn { width: 100%; }
+            .goal-categories { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎯 Goal Setting</h1>
+            <p>Tetapkan tujuan pembelajaran yang SMART untuk mencapai kesuksesan</p>
+        </div>
+
+        <!-- Goal Wizard -->
+        <div id="goal-wizard" class="goal-wizard">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step active" id="step-1">
+                    <span>1</span> Kategori & Prioritas
+                </div>
+                <div class="step" id="step-2">
+                    <span>2</span> Detail Tujuan
+                </div>
+                <div class="step" id="step-3">
+                    <span>3</span> Milestone & Timeline
+                </div>
+                <div class="step" id="step-4">
+                    <span>4</span> Review & Konfirmasi
+                </div>
+            </div>
+
+            <!-- Step 1: Category & Priority -->
+            <div id="wizard-step-1" class="wizard-step">
+                <h2 style="margin-bottom: 1.5rem;">Pilih Kategori dan Prioritas Tujuan</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Kategori Tujuan</label>
+                    <div class="goal-categories">
+                        <div class="category-card" data-category="career">
+                            <div class="category-icon">💼</div>
+                            <h3>Karir</h3>
+                            <p>Pengembangan karir dan profesional</p>
+                        </div>
+                        <div class="category-card" data-category="skill">
+                            <div class="category-icon">🚀</div>
+                            <h3>Skill</h3>
+                            <p>Peningkatan kemampuan teknis</p>
+                        </div>
+                        <div class="category-card" data-category="project">
+                            <div class="category-icon">📋</div>
+                            <h3>Project</h3>
+                            <p>Penyelesaian proyek tertentu</p>
+                        </div>
+                        <div class="category-card" data-category="academic">
+                            <div class="category-icon">🎓</div>
+                            <h3>Akademik</h3>
+                            <p>Pencapaian akademis</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Prioritas</label>
+                    <select class="form-select" id="goal-priority">
+                        <option value="">Pilih prioritas...</option>
+                        <option value="high">🔴 Tinggi - Sangat penting dan mendesak</option>
+                        <option value="medium">🟡 Sedang - Penting tapi tidak mendesak</option>
+                        <option value="low">🟢 Rendah - Bagus untuk dicapai</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 2: Goal Details -->
+            <div id="wizard-step-2" class="wizard-step hidden">
+                <h2 style="margin-bottom: 1.5rem;">Detail Tujuan Anda</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Judul Tujuan</label>
+                    <input type="text" class="form-input" id="goal-title" 
+                           placeholder="Contoh: Menguasai Digital Marketing dalam 3 bulan">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Deskripsi Detail</label>
+                    <textarea class="form-textarea" id="goal-description" 
+                              placeholder="Jelaskan tujuan Anda secara detail. Apa yang ingin Anda capai? Mengapa ini penting? Bagaimana Anda akan mengukur kesuksesan?"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Tanggal Penyelesaian</label>
+                    <input type="date" class="form-input" id="goal-target-date">
+                </div>
+            </div>
+
+            <!-- Step 3: Milestones -->
+            <div id="wizard-step-3" class="wizard-step hidden">
+                <h2 style="margin-bottom: 1.5rem;">Milestone & Timeline</h2>
+                <p style="margin-bottom: 1.5rem; color: var(--gray-600);">
+                    Bagi tujuan besar Anda menjadi milestone-milestone kecil yang dapat diukur
+                </p>
+                
+                <div class="milestones-container">
+                    <div id="milestones-list">
+                        <!-- Milestones will be added here -->
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="addMilestone()">
+                        ➕ Tambah Milestone
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review -->
+            <div id="wizard-step-4" class="wizard-step hidden">
+                <h2 style="margin-bottom: 1.5rem;">Review & Konfirmasi</h2>
+                <div id="goal-review">
+                    <!-- Goal review will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="navigation">
+                <button class="btn btn-secondary" id="btn-previous" onclick="previousStep()" style="display: none;">
+                    ← Sebelumnya
+                </button>
+                <button class="btn btn-primary" id="btn-next" onclick="nextStep()">
+                    Selanjutnya →
+                </button>
+            </div>
+        </div>
+
+        <!-- Goals List -->
+        <div id="goals-list" class="goals-list hidden">
+            <h2 style="margin-bottom: 1.5rem;">📋 Tujuan Pembelajaran Anda</h2>
+            <div id="goals-container">
+                <!-- Goals will be displayed here -->
+            </div>
+            <button class="btn btn-primary" onclick="showGoalWizard()">
+                🎯 Tambah Tujuan Baru
+            </button>
+        </div>
+
+        <!-- Back to Dashboard -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html" class="btn btn-secondary">
+                ← Kembali ke Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Import Goal Setting Script -->
+    <script type="module" src="js/goal-setting.js"></script>
+</body>
+</html>

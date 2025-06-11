@@ -165,12 +165,41 @@
         </section>
 
         <section class="card">
+            <h2>🎯 Goal Setting & Planning</h2>
+            <p style="margin-bottom: 1rem; color: var(--gray-600);">
+                Tetapkan tujuan pembelajaran yang SMART dan pantau progress Anda
+            </p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                <a href="goal-setting.html" class="btn" style="background: #059669; color: white; text-decoration: none;">
+                    🎯 Set Learning Goals
+                </a>
+                <a href="goal-setting.html?view=goals" class="btn" style="background: #7c3aed; color: white; text-decoration: none;">
+                    📋 View My Goals
+                </a>
+                <button class="btn" id="btn-daily-plan" style="background: #d97706;">📅 Daily Plan</button>
+            </div>
+        </section>
+
+        <section class="card">
             <h2>⚡ Aksi Cepat</h2>
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                 <button class="btn" id="btn-progress">📊 Lihat Progress Detail</button>
                 <button class="btn" id="btn-chat">💬 Chat dengan ARIA AI</button>
                 <button class="btn" id="btn-content-init" style="background: #7c3aed;">🚀 Initialize Content</button>
+                <button class="btn" id="btn-system-test" style="background: #dc2626;">🧪 System Test</button>
                 <button class="btn" id="btn-aria-toggle" style="background: #2E7D32;">🤖 ARIA Tutor</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>📊 Performance & Analytics</h2>
+            <div id="performance-metrics" style="margin-bottom: 1rem;">
+                <div class="loading"></div> Loading performance data...
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <button class="btn" id="btn-performance-report" style="background: #3b82f6;">📈 Performance Report</button>
+                <button class="btn" id="btn-optimization-status" style="background: #059669;">⚡ Optimization Status</button>
+                <button class="btn" id="btn-carbon-report" style="background: #16a34a;">🌱 Carbon Report</button>
             </div>
         </section>
     </div>
@@ -228,6 +257,11 @@
             100% { transform: rotate(360deg); }
         }
     </style>
+
+    <!-- Import performance monitoring and optimization -->
+    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/performance-monitor.js"></script>
+    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/performance-optimizer.js"></script>
+    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/system-test.js"></script>
 
     <!-- Import main dashboard script as ES6 module -->
     <script type="module" src="js/student-dashboard.js"></script>

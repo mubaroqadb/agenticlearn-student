@@ -721,6 +721,29 @@ function setupEventListeners() {
         toggleARIAChat();
     });
 
+    // New advanced features
+    onClick("btn-daily-plan", async () => {
+        UIComponents.showNotification("Creating daily learning plan...", "info");
+        await createDailyPlan();
+    });
+
+    onClick("btn-system-test", async () => {
+        UIComponents.showNotification("Running comprehensive system tests...", "info");
+        await runSystemTests();
+    });
+
+    onClick("btn-performance-report", () => {
+        showPerformanceReport();
+    });
+
+    onClick("btn-optimization-status", () => {
+        showOptimizationStatus();
+    });
+
+    onClick("btn-carbon-report", () => {
+        showCarbonReport();
+    });
+
     // ARIA floating button
     const ariaFloatingBtn = document.getElementById("aria-floating-btn");
     if (ariaFloatingBtn) {
@@ -1927,7 +1950,465 @@ async function initializeContentDatabase() {
     }
 }
 
+// Advanced Features Implementation
+async function createDailyPlan() {
+    try {
+        // Get student goals and progress
+        const goals = await getStudentGoals();
+        const progress = await compatApiClient.request("/progress");
+
+        const dailyPlan = generateDailyPlan(goals, progress);
+        showDailyPlanModal(dailyPlan);
+
+    } catch (error) {
+        console.error('Failed to create daily plan:', error);
+        UIComponents.showNotification('Gagal membuat rencana harian. Silakan coba lagi.', 'error');
+    }
+}
+
+async function getStudentGoals() {
+    // Mock goals for now - replace with actual API call
+    return [
+        {
+            id: '1',
+            title: 'Menguasai Digital Marketing',
+            category: 'skill',
+            priority: 'high',
+            progress: 35,
+            target_date: new Date('2024-06-30')
+        }
+    ];
+}
+
+function generateDailyPlan(goals, progress) {
+    const today = new Date();
+    const plan = {
+        date: today.toLocaleDateString('id-ID'),
+        goals: goals.slice(0, 3), // Top 3 goals
+        tasks: [
+            {
+                time: '09:00',
+                task: 'Review yesterday\'s learning',
+                duration: '15 min',
+                type: 'review'
+            },
+            {
+                time: '09:15',
+                task: 'Complete Digital Marketing Module 2',
+                duration: '45 min',
+                type: 'learning'
+            },
+            {
+                time: '10:00',
+                task: 'Practice with case study',
+                duration: '30 min',
+                type: 'practice'
+            },
+            {
+                time: '10:30',
+                task: 'Chat with ARIA for clarification',
+                duration: '15 min',
+                type: 'ai_assistance'
+            }
+        ],
+        estimatedTime: '105 minutes',
+        carbonImpact: '0.2g CO2'
+    };
+
+    return plan;
+}
+
+function showDailyPlanModal(plan) {
+    const modalHTML = `
+        <div style="max-width: 700px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1rem; color: #2563eb;">📅 Rencana Belajar Hari Ini</h2>
+            <p style="margin-bottom: 1.5rem; color: #6b7280;">${plan.date}</p>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">🎯 Fokus Tujuan Hari Ini:</h3>
+                ${plan.goals.map(goal => `
+                    <div style="padding: 0.75rem; background: #f3f4f6; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <strong>${goal.title}</strong> - Progress: ${goal.progress}%
+                    </div>
+                `).join('')}
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📋 Jadwal Pembelajaran:</h3>
+                ${plan.tasks.map(task => `
+                    <div style="display: flex; gap: 1rem; padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600; color: #2563eb; min-width: 60px;">${task.time}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">${task.task}</div>
+                            <div style="font-size: 0.875rem; color: #6b7280;">${task.duration} • ${task.type}</div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>Total Waktu:</strong> ${plan.estimatedTime}</span>
+                    <span><strong>Carbon Impact:</strong> 🌱 ${plan.carbonImpact}</span>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #2563eb; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; margin-right: 1rem; cursor: pointer;">
+                    Mulai Belajar 🚀
+                </button>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; overflow-y: auto;
+    `;
+    overlay.innerHTML = modalHTML;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+async function runSystemTests() {
+    try {
+        if (typeof window.runSystemTests === 'function') {
+            const results = await window.runSystemTests();
+            showSystemTestResults(results);
+        } else {
+            throw new Error('System test module not loaded');
+        }
+    } catch (error) {
+        console.error('Failed to run system tests:', error);
+        UIComponents.showNotification('Gagal menjalankan system test. Silakan coba lagi.', 'error');
+    }
+}
+
+function showSystemTestResults(results) {
+    const summary = results.summary;
+    const details = results.details;
+
+    const modalHTML = `
+        <div style="max-width: 900px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1rem; color: #2563eb;">🧪 System Test Results</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="padding: 1rem; background: #f0f9ff; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #2563eb;">${summary.successRate}%</div>
+                    <div>Success Rate</div>
+                </div>
+                <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #059669;">${summary.passedTests}/${summary.totalTests}</div>
+                    <div>Tests Passed</div>
+                </div>
+                <div style="padding: 1rem; background: #fefce8; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #d97706;">${summary.duration}ms</div>
+                    <div>Duration</div>
+                </div>
+                <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color: #16a34a;">${summary.carbonFootprint.toFixed(3)}g</div>
+                    <div>CO2 Footprint</div>
+                </div>
+            </div>
+
+            <div style="max-height: 400px; overflow-y: auto; margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📋 Detailed Results:</h3>
+                ${details.map(test => `
+                    <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 0.5rem;">
+                        <div style="font-size: 1.5rem;">${test.status === 'PASS' ? '✅' : '❌'}</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500;">${test.name}</div>
+                            ${test.error ? `<div style="font-size: 0.875rem; color: #dc2626;">${test.error}</div>` : ''}
+                        </div>
+                        <div style="font-size: 0.875rem; color: #6b7280;">${test.status}</div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; overflow-y: auto;
+    `;
+    overlay.innerHTML = modalHTML;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+function showPerformanceReport() {
+    if (typeof window.generatePerformanceReport === 'function') {
+        const metrics = window.generatePerformanceReport();
+        showPerformanceModal(metrics);
+    } else {
+        UIComponents.showNotification('Performance monitor not available', 'warning');
+    }
+}
+
+function showOptimizationStatus() {
+    if (typeof window.getOptimizationStatus === 'function') {
+        const status = window.getOptimizationStatus();
+        showOptimizationModal(status);
+    } else {
+        UIComponents.showNotification('Performance optimizer not available', 'warning');
+    }
+}
+
+function showCarbonReport() {
+    if (typeof window.getPerformanceMetrics === 'function') {
+        const metrics = window.getPerformanceMetrics();
+        showCarbonModal(metrics);
+    } else {
+        UIComponents.showNotification('Carbon tracking not available', 'warning');
+    }
+}
+
+function showPerformanceModal(metrics) {
+    const modalHTML = `
+        <div style="max-width: 800px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1rem; color: #2563eb;">📈 Performance Report</h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                <div style="padding: 1rem; background: #f0f9ff; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #2563eb;">${metrics.performanceScore || 'N/A'}</div>
+                    <div>Performance Score</div>
+                </div>
+                <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #059669;">${metrics.pageLoad?.loadComplete || 'N/A'}ms</div>
+                    <div>Page Load Time</div>
+                </div>
+                <div style="padding: 1rem; background: #fefce8; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #d97706;">${metrics.pageLoad?.firstContentfulPaint || 'N/A'}ms</div>
+                    <div>First Paint</div>
+                </div>
+                <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold; color: #16a34a;">${metrics.carbonFootprint?.toFixed(3) || 'N/A'}g</div>
+                    <div>CO2 Footprint</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📱 Mobile Optimization:</h3>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                    <div>Device: ${metrics.mobileOptimization?.isMobile ? 'Mobile' : 'Desktop'}</div>
+                    <div>Touch Support: ${metrics.mobileOptimization?.hasTouchSupport ? 'Yes' : 'No'}</div>
+                    <div>Viewport: ${metrics.mobileOptimization?.viewport?.width}x${metrics.mobileOptimization?.viewport?.height}</div>
+                    <div>Touch Targets: ${metrics.mobileOptimization?.touchTargets?.compliance || 'N/A'}% compliant</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">♿ Accessibility:</h3>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                    <div>Alt Texts: ${metrics.accessibility?.hasAltTexts ? 'Present' : 'Missing'}</div>
+                    <div>ARIA Labels: ${metrics.accessibility?.hasAriaLabels ? 'Present' : 'Missing'}</div>
+                    <div>Semantic HTML: ${metrics.accessibility?.hasSemanticHTML ? 'Present' : 'Missing'}</div>
+                    <div>Keyboard Navigation: ${metrics.accessibility?.keyboardNavigation?.focusableCount || 0} focusable elements</div>
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; overflow-y: auto;
+    `;
+    overlay.innerHTML = modalHTML;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+function showOptimizationModal(status) {
+    const optimizations = status.optimizations;
+
+    const modalHTML = `
+        <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1rem; color: #2563eb;">⚡ Optimization Status</h2>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">🔧 Applied Optimizations:</h3>
+                ${Object.entries(optimizations).map(([key, value]) => `
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">
+                        <span>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
+                        <span style="color: ${value ? '#059669' : '#dc2626'};">${value ? '✅ Enabled' : '❌ Disabled'}</span>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.5rem; color: #059669;">🌱 Green Computing Benefits:</h4>
+                <ul style="margin: 0; padding-left: 1.5rem;">
+                    <li>Reduced CPU usage through optimized animations</li>
+                    <li>Lower memory consumption via efficient caching</li>
+                    <li>Minimized network requests through prefetching</li>
+                    <li>Improved battery life on mobile devices</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; overflow-y: auto;
+    `;
+    overlay.innerHTML = modalHTML;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+function showCarbonModal(metrics) {
+    const carbon = metrics.carbonFootprint || 0;
+    const rating = carbon < 0.1 ? 'A+' : carbon < 0.5 ? 'A' : carbon < 1.0 ? 'B' : 'C';
+    const color = carbon < 0.1 ? '#059669' : carbon < 0.5 ? '#16a34a' : carbon < 1.0 ? '#d97706' : '#dc2626';
+
+    const modalHTML = `
+        <div style="max-width: 600px; margin: 2rem auto; padding: 2rem; background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+            <h2 style="margin-bottom: 1rem; color: #2563eb;">🌱 Carbon Footprint Report</h2>
+
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 4rem; font-weight: bold; color: ${color};">${carbon.toFixed(3)}g</div>
+                <div style="font-size: 1.5rem; color: ${color}; margin-bottom: 0.5rem;">CO2 Emissions</div>
+                <div style="background: ${color}; color: white; padding: 0.5rem 1rem; border-radius: 20px; display: inline-block;">
+                    Rating: ${rating}
+                </div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3 style="margin-bottom: 1rem;">📊 Breakdown:</h3>
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Session Duration:</span>
+                        <span>${metrics.sessionDuration || 0} seconds</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Memory Usage:</span>
+                        <span>${metrics.resourceUsage?.memoryUsed || 0} MB</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Network Requests:</span>
+                        <span>${metrics.apiCalls?.length || 0} calls</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background: #f0fdf4; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 0.5rem; color: #059669;">🌍 Environmental Impact:</h4>
+                <p style="margin: 0; font-size: 0.875rem;">
+                    Your current session has a ${rating} sustainability rating.
+                    ${carbon < 0.5 ? 'Excellent! You\'re using the platform very efficiently.' :
+                      carbon < 1.0 ? 'Good! Consider closing unused tabs to reduce impact.' :
+                      'Consider optimizing your usage for better environmental impact.'}
+                </p>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); z-index: 1000; display: flex;
+        align-items: center; justify-content: center; overflow-y: auto;
+    `;
+    overlay.innerHTML = modalHTML;
+    overlay.onclick = (e) => {
+        if (e.target === overlay) overlay.remove();
+    };
+    document.body.appendChild(overlay);
+}
+
+// Load performance metrics on dashboard
+async function loadPerformanceMetrics() {
+    try {
+        setTimeout(() => {
+            if (typeof window.getPerformanceMetrics === 'function') {
+                const metrics = window.getPerformanceMetrics();
+                displayPerformanceMetrics(metrics);
+            } else {
+                document.getElementById('performance-metrics').innerHTML = `
+                    <div style="color: #6b7280; text-align: center;">
+                        Performance monitoring will be available once the page fully loads
+                    </div>
+                `;
+            }
+        }, 3000); // Wait for performance monitor to initialize
+    } catch (error) {
+        console.error('Failed to load performance metrics:', error);
+    }
+}
+
+function displayPerformanceMetrics(metrics) {
+    const container = document.getElementById('performance-metrics');
+    if (!container) return;
+
+    const carbon = metrics.carbonFootprint || 0;
+    const score = metrics.performanceScore || 0;
+    const loadTime = metrics.pageLoad?.loadComplete || 0;
+
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+            <div style="text-align: center; padding: 0.75rem; background: #f0f9ff; border-radius: 8px;">
+                <div style="font-size: 1.25rem; font-weight: bold; color: #2563eb;">${score}</div>
+                <div style="font-size: 0.75rem; color: #6b7280;">Performance</div>
+            </div>
+            <div style="text-align: center; padding: 0.75rem; background: #f0fdf4; border-radius: 8px;">
+                <div style="font-size: 1.25rem; font-weight: bold; color: #059669;">${loadTime}ms</div>
+                <div style="font-size: 0.75rem; color: #6b7280;">Load Time</div>
+            </div>
+            <div style="text-align: center; padding: 0.75rem; background: #f0fdf4; border-radius: 8px;">
+                <div style="font-size: 1.25rem; font-weight: bold; color: #16a34a;">${carbon.toFixed(3)}g</div>
+                <div style="font-size: 0.75rem; color: #6b7280;">CO2 Impact</div>
+            </div>
+        </div>
+    `;
+}
+
 // Auto-test ARIA health on load
 setTimeout(testARIAHealth, 3000);
+
+// Load performance metrics
+setTimeout(loadPerformanceMetrics, 1000);
 
 document.addEventListener('DOMContentLoaded', initializeStudentDashboard);
