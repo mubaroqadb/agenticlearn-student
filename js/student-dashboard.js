@@ -205,7 +205,7 @@ async function loadStudentProgress() {
         console.log("🔄 Loading student progress from database...");
 
         // Get real dashboard data from backend
-        const dashboardResponse = await compatApiClient.request("/health");
+        const dashboardResponse = await compatApiClient.request("/progress");
         console.log("📊 Dashboard response:", dashboardResponse);
 
         let progressData = {};
@@ -215,22 +215,22 @@ async function loadStudentProgress() {
         let completedLessons = 0;
         let averageScore = 0;
 
-        if (dashboardResponse.status === 'success' && dashboardResponse.data) {
-            const data = dashboardResponse.data;
+        if (dashboardResponse.success && dashboardResponse.progress) {
+            const data = dashboardResponse;
 
-            // Calculate metrics from real data
-            completedCourses = data.enrolled_courses ? data.enrolled_courses.length : 0;
+            // Calculate metrics from real progress data
+            const progressArray = data.progress || [];
+            completedCourses = progressArray.length;
 
-            // Calculate overall progress and lessons
-            if (data.enrolled_courses && data.enrolled_courses.length > 0) {
+            // Calculate overall progress and lessons from progress array
+            if (progressArray.length > 0) {
                 let totalProgressSum = 0;
                 let totalScoreSum = 0;
                 let scoreCount = 0;
 
-                data.enrolled_courses.forEach(enrollment => {
-                    const progress = enrollment.progress;
+                progressArray.forEach(progress => {
                     if (progress) {
-                        totalProgressSum += progress.overall_progress || 0;
+                        totalProgressSum += progress.completion_percentage || 0;
                         completedLessons += progress.completed_lessons ? progress.completed_lessons.length : 0;
                         totalLessons += progress.total_lessons || 0;
 
@@ -251,19 +251,19 @@ async function loadStudentProgress() {
                 totalLessons,
                 completedLessons,
                 averageScore,
-                enrolledCourses: data.enrolled_courses || [],
-                recentSubmissions: data.recent_submissions || []
+                enrolledCourses: progressArray || [],
+                recentSubmissions: []
             };
 
             console.log("✅ Calculated progress data:", progressData);
         } else {
             console.warn("⚠️ No dashboard data, using fallback");
-            // Fallback to demo data
+            // Fallback to empty data
             progressData = {
-                overallProgress: 25,
+                overallProgress: 0,
                 completedCourses: 0,
-                totalLessons: 8,
-                completedLessons: 2,
+                totalLessons: 0,
+                completedLessons: 0,
                 averageScore: 0,
                 enrolledCourses: [],
                 recentSubmissions: []
@@ -425,48 +425,46 @@ async function loadEnrolledCourses() {
 
 async function loadAIRecommendations() {
     try {
-        // Use available endpoint or create mock data
-        const recommendations = await compatApiClient.request("/personalization/recommendations/675a1b2c3d4e5f6789012345").catch(() => [
-            {
-                id: "rec1",
-                title: "Green Computing Fundamentals",
-                description: "Based on your learning pattern, we recommend starting with energy efficiency concepts."
-            },
-            {
-                id: "rec2",
-                title: "Carbon Footprint Calculation",
-                description: "Learn how to measure and reduce IT environmental impact."
-            }
-        ]);
+        // Use available ARIA recommendations endpoint
+        const recommendations = await compatApiClient.request("/aria/recommendations");
         
         let recommendationsHTML = "";
-        const recData = recommendations.data || recommendations;
-        if (recData && recData.length > 0) {
-            recData.slice(0, 3).forEach(rec => {
-                recommendationsHTML += UIComponents.createCard(
-                    `🤖 ${rec.title}`,
-                    rec.description,
-                    [
-                        { label: "Start Now", handler: `startRecommendation('${rec.id}')` },
-                        { label: "Learn More", handler: `learnMore('${rec.id}')` }
-                    ]
+
+        if (recommendations && recommendations.success && recommendations.data) {
+            const recData = recommendations.data;
+            if (recData.length > 0) {
+                recData.slice(0, 3).forEach(rec => {
+                    recommendationsHTML += UIComponents.createCard(
+                        `🤖 ${rec.title}`,
+                        rec.description,
+                        [
+                            { label: "Start Now", handler: `startRecommendation('${rec.id}')` },
+                            { label: "Learn More", handler: `learnMore('${rec.id}')` }
+                        ]
+                    );
+                });
+            } else {
+                recommendationsHTML = UIComponents.createCard(
+                    "🤖 AI Recommendations",
+                    "No recommendations available at the moment. Complete more activities to get personalized suggestions!",
+                    []
                 );
-            });
+            }
         } else {
             recommendationsHTML = UIComponents.createCard(
                 "🤖 AI Recommendations",
-                "No recommendations available at the moment. Complete more activities to get personalized suggestions!",
+                "AI recommendations will appear here once you start learning activities.",
                 []
             );
         }
-        
+
         setInner("ai-recommendations", recommendationsHTML);
-        
+
     } catch (error) {
         console.error("Failed to load AI recommendations:", error);
         setInner("ai-recommendations", UIComponents.createCard(
-            "Error",
-            "Failed to load AI recommendations",
+            "🤖 AI Recommendations",
+            "AI recommendations will appear here once you start learning activities.",
             []
         ));
     }
@@ -480,8 +478,8 @@ async function loadAvailableCourses() {
         const response = await compatApiClient.request("/courses?page=1&limit=10");
         console.log("📚 Courses response:", response);
 
-        if (response.status === 'success' && response.data && response.data.courses) {
-            const courses = response.data.courses;
+        if (response.success && response.courses) {
+            const courses = response.courses;
             console.log(`✅ Found ${courses.length} courses`);
 
             let coursesHTML = "";
