@@ -217,16 +217,145 @@ window.loadSectionData = loadSectionData;
 
 console.log('✅ All functions exposed to window');
 
+// DATABASE INITIALIZATION
+async function initializeDatabase() {
+    console.log('🔄 Initializing database content...');
+
+    try {
+        const response = await fetch('https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/content/initialize', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Database initialized:', data);
+            return true;
+        } else {
+            console.warn('⚠️ Database initialization failed:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.warn('⚠️ Database initialization error:', error);
+        return false;
+    }
+}
+
+// LOAD REAL DATA FROM API
+async function loadRealData() {
+    console.log('🔄 Loading real data from API...');
+
+    try {
+        // Test API health first
+        const healthResponse = await fetch('https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/health');
+        if (!healthResponse.ok) {
+            throw new Error('API not available');
+        }
+
+        // Load courses
+        const coursesResponse = await fetch('https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/courses');
+        if (coursesResponse.ok) {
+            const coursesData = await coursesResponse.json();
+            console.log('📚 Courses data:', coursesData);
+
+            if (coursesData.success && coursesData.courses && coursesData.courses.length > 0) {
+                displayRealCourses(coursesData.courses);
+                return true;
+            }
+        }
+
+        // If no courses, try to initialize database
+        console.log('📊 No courses found, initializing database...');
+        const initialized = await initializeDatabase();
+
+        if (initialized) {
+            // Try loading courses again after initialization
+            setTimeout(async () => {
+                const retryResponse = await fetch('https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/courses');
+                if (retryResponse.ok) {
+                    const retryData = await retryResponse.json();
+                    if (retryData.success && retryData.courses) {
+                        displayRealCourses(retryData.courses);
+                    }
+                }
+            }, 2000);
+        }
+
+        return false;
+    } catch (error) {
+        console.error('❌ Failed to load real data:', error);
+        return false;
+    }
+}
+
+function displayRealCourses(courses) {
+    console.log('📚 Displaying real courses:', courses);
+
+    const availableCourses = document.getElementById("available-courses");
+    if (availableCourses && courses.length > 0) {
+        let coursesHTML = '';
+
+        courses.forEach(course => {
+            coursesHTML += `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">📚</div>
+                        <div>
+                            <div class="card-title">${course.title}</div>
+                        </div>
+                    </div>
+                    <p>${course.description}</p>
+                    <div style="margin: 1rem 0;">
+                        <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">${course.level}</span>
+                        <span style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">${course.duration} weeks</span>
+                        <span style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Real Course</span>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <button class="btn btn-primary" onclick="startCourse('${course._id}')" style="margin-right: 0.5rem;">Start Course</button>
+                        <button class="btn btn-secondary" onclick="viewCourseDetails('${course._id}')">View Details</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        availableCourses.innerHTML = coursesHTML;
+        console.log('✅ Real courses displayed');
+    }
+}
+
 // INITIALIZATION
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('📄 DOM loaded - initializing dashboard');
+
+    // Load demo data first for immediate display
     loadDemoData();
+
+    // Then try to load real data
+    setTimeout(async () => {
+        const realDataLoaded = await loadRealData();
+        if (!realDataLoaded) {
+            console.log('📊 Using demo data as fallback');
+        }
+    }, 1000);
 });
 
 // If DOM already loaded
 if (document.readyState !== 'loading') {
     console.log('📄 DOM already ready - initializing dashboard');
+
+    // Load demo data first
     loadDemoData();
+
+    // Then try to load real data
+    setTimeout(async () => {
+        const realDataLoaded = await loadRealData();
+        if (!realDataLoaded) {
+            console.log('📊 Using demo data as fallback');
+        }
+    }, 1000);
 }
 
 console.log('✅ Simple dashboard script loaded');
