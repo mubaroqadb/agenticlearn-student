@@ -26,7 +26,8 @@
             --background-alt: #f9f2ee;    /* Alternative background */
 
             /* Neutrals - using palette colors */
-            --white: #fceee9;        /* Very light peach instead of pure white */
+            --white: #FFFFFF;        /* Pure white for text and outlines */
+            --bg-light: #fceee9;     /* Very light peach for backgrounds */
             --gray-50: #f8d3c5;      /* Light peach */
             --gray-100: #dde6d5;     /* Light sage green */
             --gray-200: #a3b899;     /* Medium sage green */
@@ -53,8 +54,8 @@
             --error: #d4756b;             /* Muted red that fits palette */
             --info: #a3b899;              /* Use primary-light for info */
 
-            /* Transitions */
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Transitions - minimal */
+            --transition: all 0.2s ease;
         }
 
         /* Reset & Base */
@@ -69,7 +70,7 @@
             font-size: 14px;
             line-height: 1.5;
             color: var(--gray-900);
-            background: var(--background);
+            background: var(--bg-light);
             overflow-x: hidden;
         }
 
@@ -108,7 +109,7 @@
         .sidebar-logo {
             width: 32px;
             height: 32px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: var(--primary);
             border-radius: 8px;
             display: flex;
             align-items: center;
@@ -151,12 +152,12 @@
         }
 
         .nav-item:hover {
-            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
+            background: var(--accent);
             color: var(--primary);
         }
 
         .nav-item.active {
-            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: var(--primary);
             color: white;
             border-right: 3px solid var(--secondary);
             font-weight: 600;
@@ -252,7 +253,7 @@
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
+            background: var(--secondary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -275,12 +276,12 @@
 
         /* Cards */
         .card {
-            background: #fceee9;  /* Very light peach from palette */
+            background: var(--bg-light);
             border-radius: 12px;
-            border: 1px solid #dde6d5;  /* Light sage green border */
+            border: 1px solid #dde6d5;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            transition: var(--transition);
+            transition: opacity 0.2s ease;
             position: relative;
             overflow: hidden;
         }
@@ -319,7 +320,7 @@
             width: 40px;
             height: 40px;
             border-radius: 10px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: var(--primary);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -405,28 +406,14 @@
         }
 
         .progress-fill {
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            background: var(--primary);
             height: 100%;
             border-radius: 6px;
-            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: width 0.3s ease;
             position: relative;
         }
 
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            animation: shimmer 2s infinite;
-        }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
 
         /* Grid */
         .grid {
@@ -1132,13 +1119,13 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Enhanced hover effects */
+        /* Minimal hover effects */
         .btn:hover {
-            transform: translateY(-2px);
+            opacity: 0.9;
         }
 
         .card:hover {
-            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         /* Smooth scrollbar */
@@ -1187,12 +1174,12 @@
         }
 
         .stat-card {
-            background: #fceee9;  /* Very light peach from palette */
+            background: var(--bg-light);
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(102, 123, 104, 0.1);
             text-align: center;
-            border: 1px solid #dde6d5;  /* Light sage green border */
+            border: 1px solid #dde6d5;
         }
 
         .stat-number {
