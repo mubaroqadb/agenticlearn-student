@@ -1,83 +1,148 @@
-// AgenticLearn Student Dashboard dengan JSCroot
-import { getCookie } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/cookie.js";
-import { setInner, onClick } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/element.js";
-import { redirect } from "https://cdn.jsdelivr.net/gh/jscroot/lib@0.0.4/url.js";
+// AgenticLearn Student Dashboard - Pure Vanilla JavaScript
+// No external dependencies, self-contained
 
-// Global variables for components
-let UIComponents, ARIAChat;
+console.log('🚀 Loading AgenticLearn Student Dashboard...');
 
-// Initialize components
-async function initializeComponents() {
-    try {
-        const uiModule = await import("https://mubaroqadb.github.io/agenticlearn-shared/js/ui-components.js");
-        UIComponents = uiModule.UIComponents;
-        console.log("✅ UIComponents loaded");
-    } catch (error) {
-        console.warn("⚠️ Failed to load UIComponents, using fallback");
-        // Fallback UIComponents
-        UIComponents = {
-            createCard: (title, content, actions = []) => {
-                const actionsHTML = actions.map(action =>
-                    `<button class="btn" onclick="${action.handler}">${action.label}</button>`
-                ).join(' ');
-                return `
-                    <div class="card" style="background: white; padding: 1rem; margin: 1rem 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <h3 style="margin: 0 0 0.5rem 0; color: #2563eb;">${title}</h3>
-                        <div>${content}</div>
-                        ${actionsHTML ? `<div style="margin-top: 1rem;">${actionsHTML}</div>` : ''}
-                    </div>
-                `;
-            },
-            createProgressBar: (percentage, label) => {
-                return `
-                    <div style="margin: 1rem 0;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                            <span>${label}</span>
-                            <span>${percentage}%</span>
-                        </div>
-                        <div style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
-                            <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, #059669, #2563eb); transition: width 0.3s ease;"></div>
-                        </div>
-                    </div>
-                `;
-            },
-            showNotification: (message, type = 'info') => {
-                console.log(`${type.toUpperCase()}: ${message}`);
-                // Simple notification fallback
-                const notification = document.createElement('div');
-                notification.style.cssText = `
-                    position: fixed; top: 20px; right: 20px; z-index: 1000;
-                    background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#2563eb'};
-                    color: white; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                    max-width: 300px; animation: slideIn 0.3s ease-out;
-                `;
-                notification.textContent = message;
-                document.body.appendChild(notification);
+// Utility functions
+function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+    return null;
+}
 
-                setTimeout(() => {
-                    notification.style.animation = 'slideOut 0.3s ease-out';
-                    setTimeout(() => notification.remove(), 300);
-                }, 3000);
-            }
-        };
-    }
-
-    try {
-        const ariaModule = await import("https://mubaroqadb.github.io/agenticlearn-shared/js/aria-chat.js");
-        ARIAChat = ariaModule.ARIAChat;
-        console.log("✅ ARIAChat loaded");
-    } catch (error) {
-        console.warn("⚠️ Failed to load ARIAChat, using fallback");
-        ARIAChat = class {
-            constructor() {
-                console.log("ARIA Chat fallback initialized");
-            }
-            show() { console.log("ARIA Chat show"); }
-            hide() { console.log("ARIA Chat hide"); }
-            toggle() { console.log("ARIA Chat toggle"); }
-        };
+function setInner(id, content) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.innerHTML = content;
+    } else {
+        console.warn(`Element with id '${id}' not found`);
     }
 }
+
+function onClick(id, handler) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.addEventListener('click', handler);
+    } else {
+        console.warn(`Element with id '${id}' not found for click handler`);
+    }
+}
+
+function redirect(url) {
+    window.location.href = url;
+}
+
+// Self-contained UI Components
+const UIComponents = {
+    createCard: function(title, content, actions = []) {
+        let actionsHTML = '';
+        if (actions.length > 0) {
+            actionsHTML = '<div style="margin-top: 1rem;">';
+            actions.forEach(action => {
+                actionsHTML += `<button class="btn btn-primary" onclick="${action.handler}" style="margin-right: 0.5rem;">${action.label}</button>`;
+            });
+            actionsHTML += '</div>';
+        }
+
+        return `
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <div class="card-header">
+                    <div class="card-icon">${title.split(' ')[0]}</div>
+                    <div>
+                        <div class="card-title">${title.substring(2)}</div>
+                    </div>
+                </div>
+                ${content}
+                ${actionsHTML}
+            </div>
+        `;
+    },
+
+    createProgressBar: function(percentage, label) {
+        return `
+            <div style="margin: 1rem 0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-size: 14px; color: var(--gray-600);">${label}</span>
+                    <span style="font-size: 14px; font-weight: 600; color: var(--primary);">${percentage}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${percentage}%"></div>
+                </div>
+            </div>
+        `;
+    },
+
+    showNotification: function(message, type = 'info') {
+        console.log(`[${type.toUpperCase()}] ${message}`);
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#19b69f'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            z-index: 10000;
+            font-size: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+};
+
+// Self-contained API Client
+const compatApiClient = {
+    async request(endpoint) {
+        try {
+            const token = getCookie("access_token") || getCookie("login");
+            const config = window.AgenticLearnConfig || {};
+            const baseURL = config.apiBaseURL || "https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn";
+
+            console.log(`🔄 Making request to: ${baseURL}${endpoint}`);
+
+            const response = await fetch(`${baseURL}${endpoint}`, {
+                headers: {
+                    "Authorization": token ? `Bearer ${token}` : "",
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                }
+            });
+
+            console.log(`📡 Response status: ${response.status}`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            console.log("📊 Response data:", data);
+            return data;
+        } catch (error) {
+            console.error("❌ API Request failed:", error);
+            throw error;
+        }
+    }
+};
+
+// ARIA Chat fallback
+class ARIAChat {
+    constructor() {
+        console.log("ARIA Chat initialized");
+    }
+    show() { console.log("ARIA Chat show"); }
+    hide() { console.log("ARIA Chat hide"); }
+    toggle() { console.log("ARIA Chat toggle"); }
+}
+
+// Global instances
+let ariaChat = null;
 
 // Simple API client for direct backend calls
 const compatApiClient = {
@@ -117,11 +182,13 @@ const compatApiClient = {
 let ariaChat = null;
 
 async function initializeStudentDashboard() {
+    console.log('🚀 Initializing Student Dashboard...');
+
     // Set dashboard start time for carbon tracking
     window.dashboardStartTime = Date.now();
 
-    // Initialize components first
-    await initializeComponents();
+    // Initialize ARIA Chat
+    ariaChat = new ARIAChat();
 
     const token = getCookie("login");
 
@@ -151,9 +218,6 @@ async function initializeStudentDashboard() {
 
         // Setup event listeners
         setupEventListeners();
-
-        // Initialize ARIA Chat
-        initializeARIA();
 
         // Update carbon indicator
         updateCarbonIndicator();
@@ -3101,13 +3165,65 @@ function forceLoadDemoData() {
     }, 100);
 }
 
-// Try to load demo data immediately
+// ===== EXPOSE ALL FUNCTIONS TO WINDOW =====
+// This ensures all functions are available globally for HTML onclick handlers
+
+// Core functions
+window.initializeStudentDashboard = initializeStudentDashboard;
+window.loadStudentProgress = loadStudentProgress;
+window.loadEnrolledCourses = loadEnrolledCourses;
+window.loadAvailableCourses = loadAvailableCourses;
+window.loadCurrentModule = loadCurrentModule;
+window.loadAIRecommendations = loadAIRecommendations;
+window.loadSectionData = loadSectionData;
+
+// Course functions
+window.startCourse = startCourse;
+window.viewCourseDetails = viewCourseDetails;
+window.continueModule = continueModule;
+window.viewModuleLessons = viewModuleLessons;
+window.viewCourseProgress = viewCourseProgress;
+
+// AI functions
+window.startRecommendation = startRecommendation;
+window.learnMore = learnMore;
+
+// Performance functions
+window.loadPerformanceReport = loadPerformanceReport;
+window.loadOptimizationStatus = loadOptimizationStatus;
+window.loadCarbonReport = loadCarbonReport;
+
+// UI functions
+window.toggleARIAChat = toggleARIAChat;
+window.toggleARIATutor = toggleARIATutor;
+window.initializeContent = initializeContent;
+window.runSystemTest = runSystemTest;
+
+// Demo functions
+window.continueDemoModule = continueDemoModule;
+window.viewDemoLessons = viewDemoLessons;
+
+// Utility functions
+window.getCookie = getCookie;
+window.setInner = setInner;
+window.onClick = onClick;
+window.redirect = redirect;
+
+// Components
+window.UIComponents = UIComponents;
+window.compatApiClient = compatApiClient;
+
+console.log('✅ All functions exposed to window object');
+
+// Initialize dashboard
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('📄 DOM Content Loaded - Initializing Dashboard');
         initializeStudentDashboard();
         setTimeout(forceLoadDemoData, 500);
     });
 } else {
+    console.log('📄 DOM Already Ready - Initializing Dashboard');
     initializeStudentDashboard();
     setTimeout(forceLoadDemoData, 500);
 }

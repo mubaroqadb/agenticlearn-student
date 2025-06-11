@@ -8,8 +8,7 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌱</text></svg>">
 
-    <!-- Import Shared CSS -->
-    <link rel="stylesheet" href="https://mubaroqadb.github.io/agenticlearn-shared/css/green-components.css">
+    <!-- Local CSS - No external dependencies -->
 
     <style>
         /* AgenticLearn Dashboard - Modern Color Palette */
@@ -746,7 +745,20 @@
 
                         <div class="grid" id="stats-grid">
                             <div class="stat-card">
-                                <div class="loading"></div> Loading stats...
+                                <div class="stat-number">1</div>
+                                <div class="stat-label">Enrolled Courses</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">3/8</div>
+                                <div class="stat-label">Lessons Progress</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">85%</div>
+                                <div class="stat-label">Average Score</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">35%</div>
+                                <div class="stat-label">Overall Progress</div>
                             </div>
                         </div>
                     </div>
@@ -791,8 +803,27 @@
                         </div>
 
                         <div id="enrolled-courses">
-                            <div style="text-align: center; padding: 2rem;">
-                                <div class="loading"></div> Loading enrolled courses...
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="card-icon">📚</div>
+                                    <div>
+                                        <div class="card-title">Digital Business Fundamentals</div>
+                                        <div class="card-subtitle">Currently enrolled</div>
+                                    </div>
+                                </div>
+                                <p>Learn the essentials of digital business transformation</p>
+                                <div style="margin: 1rem 0;">
+                                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
+                                    <span style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
+                                    <span style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">3/8 lessons</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 35%"></div>
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    <button class="btn btn-primary" onclick="startCourse('demo-course-1')" style="margin-right: 0.5rem;">Continue Learning</button>
+                                    <button class="btn btn-secondary" onclick="viewCourseDetails('demo-course-1')">View Progress</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1121,13 +1152,22 @@
         }
     </style>
 
-    <!-- Import performance monitoring and optimization -->
-    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/performance-monitor.js"></script>
-    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/performance-optimizer.js"></script>
-    <script type="module" src="https://mubaroqadb.github.io/agenticlearn-shared/js/system-test.js"></script>
+    <!-- Clean Dependencies - No Conflicts -->
+    <script>
+        console.log('🚀 Initializing AgenticLearn Dashboard...');
 
-    <!-- Import main dashboard script as ES6 module -->
-    <script type="module" src="js/student-dashboard.js"></script>
+        // Global configuration
+        window.AgenticLearnConfig = {
+            apiBaseURL: "https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn",
+            debugMode: true,
+            demoMode: true // Enable demo data when API fails
+        };
+
+        console.log('✅ Configuration loaded');
+    </script>
+
+    <!-- Import main dashboard script -->
+    <script src="js/student-dashboard.js"></script>
 
     <!-- Sidebar Navigation Script -->
     <script>
