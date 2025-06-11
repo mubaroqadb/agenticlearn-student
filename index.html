@@ -12,14 +12,17 @@
     <link rel="stylesheet" href="https://mubaroqadb.github.io/agenticlearn-shared/css/green-components.css">
 
     <style>
-        /* AgenticLearn Dashboard - Green Computing Architecture */
+        /* AgenticLearn Dashboard - Modern Color Palette */
         :root {
-            /* Green Computing Colors */
-            --primary: #2E7D32;
-            --primary-light: #4CAF50;
-            --primary-dark: #1B5E20;
-            --secondary: #FF6B35;
-            --accent: #00BCD4;
+            /* Modern Color Palette */
+            --primary: #19b69f;
+            --primary-light: #2dd4ba;
+            --primary-dark: #138a7a;
+            --secondary: #e06432;
+            --secondary-light: #f07a4a;
+            --secondary-dark: #c54d1f;
+            --accent: #f8ebeb;
+            --accent-dark: #f0d6d6;
 
             /* Neutrals */
             --white: #FFFFFF;
@@ -27,19 +30,21 @@
             --gray-100: #F5F5F5;
             --gray-200: #EEEEEE;
             --gray-300: #E0E0E0;
+            --gray-400: #BDBDBD;
+            --gray-500: #9E9E9E;
             --gray-600: #757575;
             --gray-700: #616161;
             --gray-800: #424242;
             --gray-900: #212121;
 
-            /* Sidebar */
+            /* Layout */
             --sidebar-width: 280px;
             --sidebar-collapsed: 80px;
 
             /* Shadows */
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
+            --shadow-sm: 0 1px 3px rgba(25, 182, 159, 0.1);
+            --shadow-md: 0 4px 12px rgba(25, 182, 159, 0.15);
+            --shadow-lg: 0 8px 25px rgba(25, 182, 159, 0.2);
 
             /* Transitions */
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -57,7 +62,7 @@
             font-size: 14px;
             line-height: 1.5;
             color: var(--gray-800);
-            background: var(--gray-50);
+            background: linear-gradient(135deg, var(--accent) 0%, var(--white) 50%, var(--gray-50) 100%);
             overflow-x: hidden;
         }
 
@@ -104,6 +109,7 @@
             color: white;
             font-size: 18px;
             flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
         }
 
         .sidebar-title {
@@ -138,14 +144,15 @@
         }
 
         .nav-item:hover {
-            background: var(--gray-50);
+            background: linear-gradient(90deg, var(--accent) 0%, transparent 100%);
             color: var(--primary);
         }
 
         .nav-item.active {
-            background: linear-gradient(90deg, var(--primary) 0%, transparent 100%);
-            color: var(--primary);
-            border-right: 3px solid var(--primary);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border-right: 3px solid var(--secondary);
+            font-weight: 600;
         }
 
         .nav-icon {
@@ -230,20 +237,22 @@
             gap: 0.75rem;
             padding: 0.5rem 1rem;
             border-radius: 8px;
-            background: var(--gray-50);
+            background: var(--accent);
+            border: 1px solid var(--accent-dark);
         }
 
         .user-avatar {
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-weight: 600;
             font-size: 14px;
+            box-shadow: var(--shadow-sm);
         }
 
         .user-name {
@@ -276,7 +285,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
             transform: scaleX(0);
             transition: var(--transition);
         }
@@ -309,6 +318,7 @@
             justify-content: center;
             color: white;
             font-size: 18px;
+            box-shadow: var(--shadow-sm);
         }
 
         .card-title {
@@ -378,16 +388,17 @@
 
         /* Progress Bar */
         .progress-bar {
-            background: #e5e7eb;
+            background: var(--accent);
             height: 12px;
             border-radius: 6px;
             overflow: hidden;
             margin: 1.5rem 0;
             position: relative;
+            border: 1px solid var(--accent-dark);
         }
 
         .progress-fill {
-            background: linear-gradient(90deg, #2E7D32, #4CAF50);
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             height: 100%;
             border-radius: 6px;
             transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -437,7 +448,7 @@
             left: 0;
             right: 0;
             height: 3px;
-            background: linear-gradient(90deg, #2E7D32, #00BCD4);
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
         }
 
         .stat-card:hover {
@@ -448,7 +459,7 @@
         .stat-number {
             font-size: 1.875rem;
             font-weight: 700;
-            color: #2E7D32;
+            color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
@@ -495,34 +506,36 @@
         }
 
         .btn-primary {
-            background: #2E7D32;
+            background: var(--primary);
             color: white;
         }
 
         .btn-primary:hover {
-            background: #1B5E20;
+            background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
+            box-shadow: 0 8px 25px rgba(25, 182, 159, 0.3);
         }
 
         .btn-secondary {
-            background: #FF6B35;
+            background: var(--secondary);
             color: white;
         }
 
         .btn-secondary:hover {
-            background: #e55a2b;
+            background: var(--secondary-dark);
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(224, 100, 50, 0.3);
         }
 
         .btn-success {
-            background: #00BCD4;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
         }
 
         .btn-success:hover {
-            background: #00acc1;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(25, 182, 159, 0.4);
         }
 
         /* Loading */
@@ -530,8 +543,8 @@
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 2px solid #e5e7eb;
-            border-top: 2px solid #2E7D32;
+            border: 2px solid var(--accent);
+            border-top: 2px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -551,14 +564,14 @@
         .section-icon {
             width: 48px;
             height: 48px;
-            background: linear-gradient(135deg, #2E7D32, #4CAF50);
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-light));
             border-radius: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.25rem;
             color: white;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-md);
         }
 
         .section-title {
@@ -906,13 +919,13 @@
         right: 20px;
         width: 60px;
         height: 60px;
-        background: linear-gradient(135deg, #2E7D32, #4CAF50);
+        background: linear-gradient(135deg, var(--primary), var(--primary-light));
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        box-shadow: 0 4px 16px rgba(46, 125, 50, 0.3);
+        box-shadow: 0 4px 16px rgba(25, 182, 159, 0.3);
         z-index: 999;
         transition: all 0.3s ease;
         color: white;
@@ -921,33 +934,34 @@
         🤖
     </div>
 
-    <!-- Green Computing Carbon Indicator -->
+    <!-- Carbon Indicator -->
     <div id="carbon-indicator" style="
         position: fixed;
         bottom: 20px;
         right: 20px;
-        background: #2E7D32;
+        background: var(--secondary);
         color: white;
         padding: 0.5rem 1rem;
         border-radius: 20px;
         font-size: 0.75rem;
         font-weight: 500;
         z-index: 998;
-        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.3);
+        box-shadow: 0 2px 8px rgba(224, 100, 50, 0.3);
     ">
         🌱 0.000g CO2
     </div>
 
 
 
-    <!-- Add loading spinner CSS -->
+    <!-- Additional Styles -->
     <style>
+        /* Enhanced loading spinner */
         .loading {
             display: inline-block;
             width: 20px;
             height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #2563eb;
+            border: 3px solid var(--accent);
+            border-top: 3px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -955,6 +969,33 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        /* Enhanced hover effects */
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Smooth scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--accent);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
         }
     </style>
 
