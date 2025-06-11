@@ -13,37 +13,45 @@
     <style>
         /* AgenticLearn Dashboard - Modern Color Palette */
         :root {
-            /* Modern Color Palette */
-            --primary: #19b69f;
-            --primary-light: #2dd4ba;
-            --primary-dark: #138a7a;
-            --secondary: #e06432;
-            --secondary-light: #f07a4a;
-            --secondary-dark: #c54d1f;
-            --accent: #f8ebeb;
-            --accent-dark: #f0d6d6;
+            /* New Natural Palette */
+            --primary: #667b68;           /* Dark sage green */
+            --primary-light: #a3b899;     /* Medium sage green */
+            --primary-dark: #4a5a4c;      /* Darker sage green */
+            --secondary: #f8d3c5;         /* Warm peach */
+            --secondary-light: #fce4d6;   /* Light peach */
+            --secondary-dark: #f5c2a8;    /* Darker peach */
+            --accent: #dde6d5;            /* Light sage green */
+            --accent-dark: #c8d4bb;       /* Darker light sage */
+            --background: #fceee9;        /* Very light peach */
+            --background-alt: #f9f2ee;    /* Alternative background */
 
-            /* Neutrals */
+            /* Neutrals - warmer tones to match palette */
             --white: #FFFFFF;
-            --gray-50: #FAFAFA;
-            --gray-100: #F5F5F5;
-            --gray-200: #EEEEEE;
-            --gray-300: #E0E0E0;
-            --gray-400: #BDBDBD;
-            --gray-500: #9E9E9E;
-            --gray-600: #757575;
-            --gray-700: #616161;
-            --gray-800: #424242;
-            --gray-900: #212121;
+            --gray-50: #faf9f8;
+            --gray-100: #f5f3f1;
+            --gray-200: #ebe7e3;
+            --gray-300: #d6d0ca;
+            --gray-400: #a8a199;
+            --gray-500: #7a7269;
+            --gray-600: #5c5449;
+            --gray-700: #423e35;
+            --gray-800: #2d2a24;
+            --gray-900: #1a1815;
 
             /* Layout */
             --sidebar-width: 280px;
             --sidebar-collapsed: 80px;
 
-            /* Shadows */
-            --shadow-sm: 0 1px 3px rgba(25, 182, 159, 0.1);
-            --shadow-md: 0 4px 12px rgba(25, 182, 159, 0.15);
-            --shadow-lg: 0 8px 25px rgba(25, 182, 159, 0.2);
+            /* Shadows - using new primary color */
+            --shadow-sm: 0 1px 3px rgba(102, 123, 104, 0.1);
+            --shadow-md: 0 4px 12px rgba(102, 123, 104, 0.15);
+            --shadow-lg: 0 8px 25px rgba(102, 123, 104, 0.2);
+
+            /* Status colors - adjusted to match palette */
+            --success: #667b68;           /* Use primary for success */
+            --warning: #f8d3c5;           /* Use secondary for warning */
+            --error: #d4756b;             /* Muted red that fits palette */
+            --info: #a3b899;              /* Use primary-light for info */
 
             /* Transitions */
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -61,7 +69,7 @@
             font-size: 14px;
             line-height: 1.5;
             color: var(--gray-800);
-            background: linear-gradient(135deg, var(--accent) 0%, var(--white) 50%, var(--gray-50) 100%);
+            background: linear-gradient(135deg, var(--background) 0%, var(--white) 30%, var(--accent) 70%, var(--background-alt) 100%);
             overflow-x: hidden;
         }
 
@@ -813,9 +821,9 @@
                                 </div>
                                 <p>Learn the essentials of digital business transformation</p>
                                 <div style="margin: 1rem 0;">
-                                    <span style="background: #19b69f; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
-                                    <span style="background: #e06432; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
-                                    <span style="background: #f8ebeb; color: #424242; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">3/8 lessons</span>
+                                    <span style="background: #667b68; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
+                                    <span style="background: #f8d3c5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
+                                    <span style="background: #dde6d5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">3/8 lessons</span>
                                 </div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 35%"></div>
@@ -1182,14 +1190,14 @@
             background: white;
             padding: 1.5rem;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(102, 123, 104, 0.1);
             text-align: center;
         }
 
         .stat-number {
             font-size: 2rem;
             font-weight: 700;
-            color: #19b69f;
+            color: #667b68;
             margin-bottom: 0.5rem;
         }
 

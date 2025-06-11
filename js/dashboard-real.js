@@ -135,9 +135,9 @@ function displayCourses(courses) {
                 </div>
                 <p>${course.description}</p>
                 <div style="margin: 1rem 0;">
-                    <span class="badge" style="background: #19b69f;">${course.level}</span>
-                    <span class="badge" style="background: #e06432;">${course.duration} weeks</span>
-                    <span class="badge" style="background: #f8ebeb; color: #424242;">Active</span>
+                    <span class="badge" style="background: #667b68;">${course.level}</span>
+                    <span class="badge" style="background: #f8d3c5; color: #2d2a24;">${course.duration} weeks</span>
+                    <span class="badge" style="background: #dde6d5; color: #2d2a24;">Active</span>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button class="btn btn-primary" onclick="enrollInCourse('${course._id || course.id}', '${course.title}')" style="margin-right: 0.5rem;">
@@ -240,7 +240,7 @@ async function enrollInCourse(courseId, courseTitle) {
         
         // Show success
         button.textContent = 'Enrolled ✓';
-        button.style.background = '#059669';
+        button.style.background = '#667b68';
         
         // Show notification
         showNotification(`✅ Successfully enrolled in ${courseTitle}!`, 'success');
@@ -276,8 +276,8 @@ function showCourseDetails(courseId) {
             <p><strong>Includes:</strong> Video lessons, practical exercises, assessments</p>
             <p><strong>Certificate:</strong> Yes, upon completion</p>
             <div style="margin-top: 2rem; text-align: right;">
-                <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" 
-                        style="background: #19b69f; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                <button onclick="this.closest('[style*=\"position: fixed\"]').remove()"
+                        style="background: #667b68; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
                     Close
                 </button>
             </div>
@@ -333,9 +333,9 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.style.cssText = `
         position: fixed; top: 20px; right: 20px; z-index: 10000;
-        background: ${type === 'success' ? '#059669' : type === 'error' ? '#dc2626' : '#19b69f'};
-        color: white; padding: 1rem 1.5rem; border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 300px;
+        background: ${type === 'success' ? '#667b68' : type === 'error' ? '#d4756b' : type === 'warning' ? '#f8d3c5' : '#a3b899'};
+        color: ${type === 'warning' ? '#2d2a24' : 'white'}; padding: 1rem 1.5rem; border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(102, 123, 104, 0.15); max-width: 300px;
         animation: slideIn 0.3s ease-out;
     `;
     notification.textContent = message;
