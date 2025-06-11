@@ -135,9 +135,9 @@ function displayCourses(courses) {
                 </div>
                 <p>${course.description}</p>
                 <div style="margin: 1rem 0;">
-                    <span class="badge" style="background: #667b68;">${course.level}</span>
-                    <span class="badge" style="background: #f8d3c5; color: #2d2a24;">${course.duration} weeks</span>
-                    <span class="badge" style="background: #dde6d5; color: #2d2a24;">Active</span>
+                    <span class="badge" style="background: #667b68; color: white;">${course.level}</span>
+                    <span class="badge" style="background: #f8d3c5; color: #1a1815;">${course.duration} weeks</span>
+                    <span class="badge" style="background: #dde6d5; color: #1a1815;">Active</span>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button class="btn btn-primary" onclick="enrollInCourse('${course._id || course.id}', '${course.title}')" style="margin-right: 0.5rem;">
@@ -334,9 +334,9 @@ function showNotification(message, type = 'info') {
     notification.style.cssText = `
         position: fixed; top: 20px; right: 20px; z-index: 10000;
         background: ${type === 'success' ? '#667b68' : type === 'error' ? '#d4756b' : type === 'warning' ? '#f8d3c5' : '#a3b899'};
-        color: ${type === 'warning' ? '#2d2a24' : 'white'}; padding: 1rem 1.5rem; border-radius: 8px;
+        color: ${type === 'warning' ? '#1a1815' : 'white'}; padding: 1rem 1.5rem; border-radius: 8px;
         box-shadow: 0 4px 12px rgba(102, 123, 104, 0.15); max-width: 300px;
-        animation: slideIn 0.3s ease-out;
+        animation: slideIn 0.3s ease-out; font-weight: 500;
     `;
     notification.textContent = message;
     document.body.appendChild(notification);

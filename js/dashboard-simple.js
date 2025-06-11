@@ -25,8 +25,8 @@ function loadDemoData() {
                 <p>Master the essentials of digital business transformation, e-commerce, and online marketing strategies.</p>
                 <div style="margin: 1rem 0;">
                     <span style="background: #667b68; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
-                    <span style="background: #f8d3c5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
-                    <span style="background: #dde6d5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">16 lessons</span>
+                    <span style="background: #f8d3c5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
+                    <span style="background: #dde6d5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">16 lessons</span>
                 </div>
                 <div style="margin-top: 1rem;">
                     <button class="btn btn-primary" onclick="startCourse('demo-course-1')" style="margin-right: 0.5rem;">Start Course</button>
@@ -310,8 +310,8 @@ function displayRealCourses(courses) {
                     <p>${course.description}</p>
                     <div style="margin: 1rem 0;">
                         <span style="background: #667b68; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">${course.level}</span>
-                        <span style="background: #f8d3c5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">${course.duration} weeks</span>
-                        <span style="background: #dde6d5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Real Course</span>
+                        <span style="background: #f8d3c5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">${course.duration} weeks</span>
+                        <span style="background: #dde6d5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">Real Course</span>
                     </div>
                     <div style="margin-top: 1rem;">
                         <button class="btn btn-primary" onclick="startCourse('${course._id}')" style="margin-right: 0.5rem;">Start Course</button>

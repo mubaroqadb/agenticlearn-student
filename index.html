@@ -25,18 +25,18 @@
             --background: #fceee9;        /* Very light peach */
             --background-alt: #f9f2ee;    /* Alternative background */
 
-            /* Neutrals - warmer tones to match palette */
-            --white: #FFFFFF;
-            --gray-50: #faf9f8;
-            --gray-100: #f5f3f1;
-            --gray-200: #ebe7e3;
-            --gray-300: #d6d0ca;
-            --gray-400: #a8a199;
-            --gray-500: #7a7269;
-            --gray-600: #5c5449;
-            --gray-700: #423e35;
-            --gray-800: #2d2a24;
-            --gray-900: #1a1815;
+            /* Neutrals - using palette colors */
+            --white: #fceee9;        /* Very light peach instead of pure white */
+            --gray-50: #f8d3c5;      /* Light peach */
+            --gray-100: #dde6d5;     /* Light sage green */
+            --gray-200: #a3b899;     /* Medium sage green */
+            --gray-300: #667b68;     /* Dark sage green */
+            --gray-400: #5c6b5e;     /* Darker sage */
+            --gray-500: #4a5a4c;     /* Even darker sage */
+            --gray-600: #3d4a3f;     /* Very dark sage */
+            --gray-700: #2f3a31;     /* Almost black sage */
+            --gray-800: #242b25;     /* Dark text color */
+            --gray-900: #1a1815;     /* Darkest text */
 
             /* Layout */
             --sidebar-width: 280px;
@@ -68,8 +68,8 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             font-size: 14px;
             line-height: 1.5;
-            color: var(--gray-800);
-            background: linear-gradient(135deg, var(--background) 0%, var(--white) 30%, var(--accent) 70%, var(--background-alt) 100%);
+            color: var(--gray-900);
+            background: var(--background);
             overflow-x: hidden;
         }
 
@@ -82,8 +82,8 @@
         /* Sidebar */
         .sidebar {
             width: var(--sidebar-width);
-            background: var(--white);
-            border-right: 1px solid var(--gray-200);
+            background: #dde6d5;  /* Light sage green from palette */
+            border-right: 1px solid #a3b899;  /* Medium sage green border */
             position: fixed;
             height: 100vh;
             left: 0;
@@ -194,8 +194,8 @@
 
         /* Top Bar */
         .top-bar {
-            background: var(--white);
-            border-bottom: 1px solid var(--gray-200);
+            background: #f8d3c5;  /* Light peach from palette */
+            border-bottom: 1px solid #a3b899;  /* Medium sage green border */
             padding: 1rem 2rem;
             display: flex;
             align-items: center;
@@ -275,9 +275,9 @@
 
         /* Cards */
         .card {
-            background: var(--white);
+            background: #fceee9;  /* Very light peach from palette */
             border-radius: 12px;
-            border: 1px solid var(--gray-200);
+            border: 1px solid #dde6d5;  /* Light sage green border */
             padding: 1.5rem;
             margin-bottom: 1.5rem;
             transition: var(--transition);
@@ -822,8 +822,8 @@
                                 <p>Learn the essentials of digital business transformation</p>
                                 <div style="margin: 1rem 0;">
                                     <span style="background: #667b68; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">Beginner</span>
-                                    <span style="background: #f8d3c5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
-                                    <span style="background: #dde6d5; color: #2d2a24; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">3/8 lessons</span>
+                                    <span style="background: #f8d3c5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; margin-right: 0.5rem;">8 weeks</span>
+                                    <span style="background: #dde6d5; color: #1a1815; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem;">3/8 lessons</span>
                                 </div>
                                 <div class="progress-bar">
                                     <div class="progress-fill" style="width: 35%"></div>
@@ -1187,11 +1187,12 @@
         }
 
         .stat-card {
-            background: white;
+            background: #fceee9;  /* Very light peach from palette */
             padding: 1.5rem;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(102, 123, 104, 0.1);
             text-align: center;
+            border: 1px solid #dde6d5;  /* Light sage green border */
         }
 
         .stat-number {
