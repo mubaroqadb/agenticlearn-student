@@ -12,59 +12,40 @@
     <link rel="stylesheet" href="https://mubaroqadb.github.io/agenticlearn-shared/css/green-components.css">
 
     <style>
-        /* AgenticLearn Student Dashboard - Green Computing Theme */
+        /* AgenticLearn Dashboard - Green Computing Architecture */
         :root {
-            /* Green Computing Colors - Matching Home */
-            --primary-color: #2E7D32;
+            /* Green Computing Colors */
+            --primary: #2E7D32;
             --primary-light: #4CAF50;
             --primary-dark: #1B5E20;
-            --secondary-color: #FF6B35;
-            --accent-color: #00BCD4;
+            --secondary: #FF6B35;
+            --accent: #00BCD4;
 
-            /* Grays */
+            /* Neutrals */
+            --white: #FFFFFF;
             --gray-50: #FAFAFA;
             --gray-100: #F5F5F5;
             --gray-200: #EEEEEE;
             --gray-300: #E0E0E0;
-            --gray-400: #BDBDBD;
-            --gray-500: #9E9E9E;
             --gray-600: #757575;
             --gray-700: #616161;
             --gray-800: #424242;
             --gray-900: #212121;
 
-            /* Typography */
-            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            --font-size-sm: 0.875rem;
-            --font-size-base: 1rem;
-            --font-size-lg: 1.125rem;
-            --font-size-xl: 1.25rem;
-            --font-size-2xl: 1.5rem;
-            --font-size-3xl: 1.875rem;
-
-            /* Spacing */
-            --spacing-2: 0.5rem;
-            --spacing-3: 0.75rem;
-            --spacing-4: 1rem;
-            --spacing-6: 1.5rem;
-            --spacing-8: 2rem;
+            /* Sidebar */
+            --sidebar-width: 280px;
+            --sidebar-collapsed: 80px;
 
             /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-
-            /* Border Radius */
-            --radius-lg: 0.5rem;
-            --radius-xl: 0.75rem;
-            --radius-2xl: 1rem;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.15);
 
             /* Transitions */
-            --transition-fast: 150ms ease-in-out;
-            --transition-normal: 300ms ease-in-out;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Reset & Base Styles */
+        /* Reset & Base */
         * {
             margin: 0;
             padding: 0;
@@ -72,29 +53,218 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 1rem;
-            line-height: 1.6;
-            color: #1f2937;
-            background: linear-gradient(135deg, #f9fafb 0%, #fff 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--gray-800);
+            background: var(--gray-50);
             overflow-x: hidden;
         }
 
-        /* Container */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--white);
+            border-right: 1px solid var(--gray-200);
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--gray-200);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .sidebar-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .sidebar-title {
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            transition: var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .nav-item:hover {
+            background: var(--gray-50);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, var(--primary) 0%, transparent 100%);
+            color: var(--primary);
+            border-right: 3px solid var(--primary);
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-text {
+            transition: var(--transition);
+        }
+
+        .sidebar.collapsed .nav-text {
+            opacity: 0;
+            width: 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: var(--transition);
+            min-height: 100vh;
+        }
+
+        .sidebar.collapsed + .main-content {
+            margin-left: var(--sidebar-collapsed);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--white);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--gray-900);
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: var(--gray-50);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: var(--gray-800);
+        }
+
+        /* Content Area */
+        .content {
+            padding: 2rem;
+            max-width: 1400px;
         }
 
         /* Cards */
         .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 1rem;
-            border: 1px solid #e5e7eb;
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--gray-200);
+            padding: 1.5rem;
             margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
+            transition: var(--transition);
             position: relative;
             overflow: hidden;
         }
@@ -105,10 +275,10 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #2E7D32, #4CAF50);
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
             transform: scaleX(0);
-            transition: all 0.3s ease;
+            transition: var(--transition);
         }
 
         .card:hover::before {
@@ -116,8 +286,41 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--gray-600);
+            margin-top: 0.25rem;
         }
 
         /* Header */
@@ -370,14 +573,36 @@
             margin-top: 0.5rem;
         }
 
+        /* Dashboard Sections */
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
-            .container {
-                padding: 1rem;
+            .sidebar {
+                width: var(--sidebar-collapsed);
+                transform: translateX(-100%);
             }
 
-            .header h1 {
-                font-size: 1.5rem;
+            .sidebar.collapsed {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar.collapsed + .main-content {
+                margin-left: 0;
+            }
+
+            .content {
+                padding: 1rem;
             }
 
             .grid {
@@ -386,235 +611,283 @@
             }
 
             .card {
-                padding: 1.5rem;
+                padding: 1rem;
+            }
+
+            .top-bar {
+                padding: 1rem;
+            }
+
+            .page-title {
+                font-size: 18px;
             }
         }
 
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-            .card {
-                background: rgba(30, 41, 59, 0.95);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #f3f4f6;
+        @media (max-width: 480px) {
+            .sidebar-header {
+                padding: 1rem;
             }
 
-            .stat-card {
-                background: rgba(30, 41, 59, 0.9);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: #f3f4f6;
+            .nav-item {
+                padding: 0.5rem 1rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Clean Header -->
-        <header class="header">
-            <div class="green-badge">🌱 Powered by JSCroot Green Computing</div>
-            <h1><span class="highlight">🌱 AgenticLearn</span></h1>
-            <p>Dashboard Pembelajaran Adaptif untuk <span id="user-name">Memuat...</span></p>
-        </header>
-
-        <!-- Progress Overview -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">📊</div>
-                <div>
-                    <div class="section-title">Progress Pembelajaran Anda</div>
-                    <div class="section-subtitle">Pantau kemajuan belajar Anda secara real-time</div>
-                </div>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">🌱</div>
+                <div class="sidebar-title">AgenticLearn</div>
             </div>
 
-            <div class="progress-bar">
-                <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
-            </div>
-
-            <div class="grid" id="stats-grid">
-                <div class="stat-card">
-                    <div class="loading"></div> Loading stats...
-                </div>
-            </div>
-        </section>
-
-        <!-- Enrolled Courses -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">📚</div>
-                <div>
-                    <div class="section-title">My Enrolled Courses</div>
-                    <div class="section-subtitle">Lanjutkan pembelajaran yang sedang berlangsung</div>
-                </div>
-            </div>
-            <div id="enrolled-courses">
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div> Loading enrolled courses...
-                </div>
-            </div>
-        </section>
-
-        <!-- Available Courses -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">🎯</div>
-                <div>
-                    <div class="section-title">Available Courses</div>
-                    <div class="section-subtitle">Jelajahi kursus baru untuk mengembangkan skill Anda</div>
-                </div>
-            </div>
-            <div id="available-courses">
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div> Loading courses from database...
-                </div>
-            </div>
-        </section>
-
-        <!-- Current Learning -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">📖</div>
-                <div>
-                    <div class="section-title">Lanjutkan Pembelajaran</div>
-                    <div class="section-subtitle">Modul yang sedang Anda pelajari</div>
-                </div>
-            </div>
-            <div id="current-module">
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div> Loading current module...
-                </div>
-            </div>
-        </section>
-
-        <!-- AI Recommendations -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">🤖</div>
-                <div>
-                    <div class="section-title">Rekomendasi AI untuk Anda</div>
-                    <div class="section-subtitle">Saran pembelajaran yang dipersonalisasi oleh ARIA</div>
-                </div>
-            </div>
-            <div id="ai-recommendations">
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div> Loading AI recommendations...
-                </div>
-            </div>
-        </section>
-
-        <!-- Assessment & Profiling -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">🎯</div>
-                <div>
-                    <div class="section-title">Assessment & Profiling</div>
-                    <div class="section-subtitle">Temukan gaya belajar dan tingkat kemampuan digital Anda</div>
-                </div>
-            </div>
-            <div class="grid">
-                <a href="assessment.html" class="btn btn-primary">
-                    🎯 Mulai Assessment
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="dashboard">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-text">Dashboard</div>
                 </a>
-                <button class="btn btn-success" id="btn-profile">
-                    👤 Lihat Profil Saya
-                </button>
-                <button class="btn btn-secondary" id="btn-recommendations">
-                    🤖 Rekomendasi AI
-                </button>
-            </div>
-        </section>
-
-        <!-- Goal Setting & Planning -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">🎯</div>
-                <div>
-                    <div class="section-title">Goal Setting & Planning</div>
-                    <div class="section-subtitle">Tetapkan tujuan pembelajaran yang SMART dan pantau progress</div>
-                </div>
-            </div>
-            <div class="grid">
-                <a href="goal-setting.html" class="btn btn-success">
-                    🎯 Set Learning Goals
+                <a href="#" class="nav-item" data-section="courses">
+                    <div class="nav-icon">📚</div>
+                    <div class="nav-text">My Courses</div>
                 </a>
-                <a href="goal-setting.html?view=goals" class="btn btn-secondary">
-                    📋 View My Goals
+                <a href="#" class="nav-item" data-section="learning">
+                    <div class="nav-icon">📖</div>
+                    <div class="nav-text">Continue Learning</div>
                 </a>
-                <button class="btn btn-primary" id="btn-daily-plan">
-                    📅 Daily Plan
-                </button>
-            </div>
-        </section>
+                <a href="assessment.html" class="nav-item">
+                    <div class="nav-icon">🎯</div>
+                    <div class="nav-text">Assessment</div>
+                </a>
+                <a href="goal-setting.html" class="nav-item">
+                    <div class="nav-icon">🎯</div>
+                    <div class="nav-text">Goals</div>
+                </a>
+                <a href="#" class="nav-item" data-section="ai">
+                    <div class="nav-icon">🤖</div>
+                    <div class="nav-text">AI Tutor</div>
+                </a>
+                <a href="#" class="nav-item" data-section="progress">
+                    <div class="nav-icon">📈</div>
+                    <div class="nav-text">Progress</div>
+                </a>
+                <a href="#" class="nav-item" data-section="analytics">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-text">Analytics</div>
+                </a>
+            </nav>
+        </aside>
 
-        <!-- Quick Actions -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">⚡</div>
-                <div>
-                    <div class="section-title">Aksi Cepat</div>
-                    <div class="section-subtitle">Akses fitur utama dengan satu klik</div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <line x1="3" y1="12" x2="21" y2="12"></line>
+                            <line x1="3" y1="18" x2="21" y2="18"></line>
+                        </svg>
+                    </button>
+                    <h1 class="page-title">Student Dashboard</h1>
                 </div>
-            </div>
-            <div class="grid">
-                <button class="btn btn-primary" id="btn-progress">
-                    📊 Progress Detail
-                </button>
-                <button class="btn btn-success" id="btn-chat">
-                    💬 Chat ARIA AI
-                </button>
-                <button class="btn btn-secondary" id="btn-content-init">
-                    🚀 Initialize Content
-                </button>
-                <button class="btn btn-primary" id="btn-aria-toggle">
-                    🤖 ARIA Tutor
-                </button>
-            </div>
-        </section>
+                <div class="top-bar-right">
+                    <div class="user-info">
+                        <div class="user-avatar">S</div>
+                        <div class="user-name" id="user-name">Loading...</div>
+                    </div>
+                </div>
+            </header>
 
-        <!-- Performance & Analytics -->
-        <section class="card">
-            <div class="section-header">
-                <div class="section-icon">📊</div>
-                <div>
-                    <div class="section-title">Performance & Analytics</div>
-                    <div class="section-subtitle">Monitor performa sistem dan penggunaan</div>
-                </div>
-            </div>
-            <div id="performance-metrics" style="margin-bottom: 1.5rem;">
-                <div style="text-align: center; padding: 2rem;">
-                    <div class="loading"></div> Loading performance data...
-                </div>
-            </div>
-            <div class="grid">
-                <button class="btn btn-primary" id="btn-performance-report">
-                    📈 Performance Report
-                </button>
-                <button class="btn btn-success" id="btn-optimization-status">
-                    ⚡ Optimization Status
-                </button>
-                <button class="btn btn-secondary" id="btn-carbon-report">
-                    🌱 Carbon Report
-                </button>
-                <button class="btn btn-primary" id="btn-system-test">
-                    🧪 System Test
-                </button>
-            </div>
-        </section>
+            <!-- Content -->
+            <div class="content">
 
-        <!-- Debug Controls (Hidden by default) -->
-        <section class="card" style="display: none;" id="debug-section">
-            <div class="section-header">
-                <div class="section-icon">🔧</div>
-                <div>
-                    <div class="section-title">Debug Controls</div>
-                    <div class="section-subtitle">Tools untuk development dan testing</div>
-                </div>
+                <!-- Dashboard Section -->
+                <section id="dashboard-section" class="dashboard-section active">
+                    <!-- Progress Overview -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div>
+                                <div class="card-title">Learning Progress</div>
+                                <div class="card-subtitle">Track your learning journey in real-time</div>
+                            </div>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+                        </div>
+
+                        <div class="grid" id="stats-grid">
+                            <div class="stat-card">
+                                <div class="loading"></div> Loading stats...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">⚡</div>
+                            <div>
+                                <div class="card-title">Quick Actions</div>
+                                <div class="card-subtitle">Access key features with one click</div>
+                            </div>
+                        </div>
+
+                        <div class="grid">
+                            <button class="btn btn-primary" id="btn-progress">
+                                📊 Progress Detail
+                            </button>
+                            <button class="btn btn-success" id="btn-chat">
+                                💬 Chat ARIA AI
+                            </button>
+                            <button class="btn btn-secondary" id="btn-content-init">
+                                🚀 Initialize Content
+                            </button>
+                            <button class="btn btn-primary" id="btn-aria-toggle">
+                                🤖 ARIA Tutor
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Courses Section -->
+                <section id="courses-section" class="dashboard-section" style="display: none;">
+                    <!-- Enrolled Courses -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📚</div>
+                            <div>
+                                <div class="card-title">My Enrolled Courses</div>
+                                <div class="card-subtitle">Continue learning from your active courses</div>
+                            </div>
+                        </div>
+
+                        <div id="enrolled-courses">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading enrolled courses...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Courses -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🎓</div>
+                            <div>
+                                <div class="card-title">Available Courses</div>
+                                <div class="card-subtitle">Discover new courses to expand your knowledge</div>
+                            </div>
+                        </div>
+
+                        <div id="available-courses">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading courses from database...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Learning Section -->
+                <section id="learning-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📖</div>
+                            <div>
+                                <div class="card-title">Continue Learning</div>
+                                <div class="card-subtitle">Pick up where you left off</div>
+                            </div>
+                        </div>
+
+                        <div id="current-module">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading current module...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- AI Section -->
+                <section id="ai-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">🤖</div>
+                            <div>
+                                <div class="card-title">AI Recommendations</div>
+                                <div class="card-subtitle">Personalized learning suggestions from ARIA AI</div>
+                            </div>
+                        </div>
+
+                        <div id="ai-recommendations">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading AI recommendations...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Progress Section -->
+                <section id="progress-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📈</div>
+                            <div>
+                                <div class="card-title">Detailed Progress</div>
+                                <div class="card-subtitle">Comprehensive view of your learning analytics</div>
+                            </div>
+                        </div>
+
+                        <div id="performance-metrics" style="margin-bottom: 1.5rem;">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading performance data...
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics-section" class="dashboard-section" style="display: none;">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📊</div>
+                            <div>
+                                <div class="card-title">Learning Analytics</div>
+                                <div class="card-subtitle">Deep insights into your learning patterns</div>
+                            </div>
+                        </div>
+
+                        <div class="grid">
+                            <button class="btn btn-primary" id="btn-performance-report">
+                                📈 Performance Report
+                            </button>
+                            <button class="btn btn-success" id="btn-optimization-status">
+                                ⚡ Optimization Status
+                            </button>
+                            <button class="btn btn-secondary" id="btn-carbon-report">
+                                🌱 Carbon Report
+                            </button>
+                            <button class="btn btn-primary" id="btn-system-test">
+                                🧪 System Test
+                            </button>
+                        </div>
+                    </div>
+                </section>
             </div>
-            <div class="grid">
-                <button class="btn btn-secondary" onclick="testAPI()">Test API</button>
-                <button class="btn btn-secondary" onclick="loadCourses()">Load Courses</button>
-                <button class="btn btn-secondary" onclick="loadModules()">Load Modules</button>
-                <button class="btn btn-secondary" onclick="showSuccess()">Test Notification</button>
-            </div>
-        </section>
+        </main>
     </div>
 
     <!-- Modern ARIA Chat Container -->
@@ -693,8 +966,61 @@
     <!-- Import main dashboard script as ES6 module -->
     <script type="module" src="js/student-dashboard.js"></script>
 
-    <!-- Global functions for button handlers -->
+    <!-- Sidebar Navigation Script -->
     <script>
+        // Sidebar functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const navItems = document.querySelectorAll('.nav-item[data-section]');
+            const sections = document.querySelectorAll('.dashboard-section');
+
+            // Toggle sidebar
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+            });
+
+            // Navigation handling
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    // Remove active class from all nav items
+                    navItems.forEach(nav => nav.classList.remove('active'));
+
+                    // Add active class to clicked item
+                    this.classList.add('active');
+
+                    // Hide all sections
+                    sections.forEach(section => section.style.display = 'none');
+
+                    // Show target section
+                    const targetSection = this.getAttribute('data-section') + '-section';
+                    const section = document.getElementById(targetSection);
+                    if (section) {
+                        section.style.display = 'block';
+                    }
+
+                    // Update page title
+                    const pageTitle = document.querySelector('.page-title');
+                    const navText = this.querySelector('.nav-text').textContent;
+                    pageTitle.textContent = navText;
+                });
+            });
+
+            // Mobile responsive
+            function handleResize() {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.add('collapsed');
+                } else {
+                    sidebar.classList.remove('collapsed');
+                }
+            }
+
+            window.addEventListener('resize', handleResize);
+            handleResize(); // Initial check
+        });
+
         // Global functions that buttons can call
         window.testAPI = async function() {
             try {
