@@ -662,35 +662,35 @@
             </div>
 
             <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="dashboard">
+                <a href="#" class="nav-item active" data-section="dashboard" data-page="dashboard">
                     <div class="nav-icon">📊</div>
                     <div class="nav-text">Dashboard</div>
                 </a>
-                <a href="#" class="nav-item" data-section="courses">
+                <a href="#" class="nav-item" data-section="courses" data-page="courses">
                     <div class="nav-icon">📚</div>
                     <div class="nav-text">My Courses</div>
                 </a>
-                <a href="#" class="nav-item" data-section="learning">
+                <a href="#" class="nav-item" data-section="learning" data-page="learning">
                     <div class="nav-icon">📖</div>
                     <div class="nav-text">Continue Learning</div>
                 </a>
-                <a href="#" class="nav-item" data-section="assessment">
+                <a href="#" class="nav-item" data-section="assessment" data-page="assessment">
                     <div class="nav-icon">🎯</div>
                     <div class="nav-text">Assessment</div>
                 </a>
-                <a href="#" class="nav-item" data-section="goals">
+                <a href="#" class="nav-item" data-section="goals" data-page="goals">
                     <div class="nav-icon">🎯</div>
                     <div class="nav-text">Goals</div>
                 </a>
-                <a href="#" class="nav-item" data-section="ai">
+                <a href="#" class="nav-item" data-section="ai" data-page="ai-tutor">
                     <div class="nav-icon">🤖</div>
                     <div class="nav-text">AI Tutor</div>
                 </a>
-                <a href="#" class="nav-item" data-section="progress">
+                <a href="#" class="nav-item" data-section="progress" data-page="progress">
                     <div class="nav-icon">📈</div>
                     <div class="nav-text">Progress</div>
                 </a>
-                <a href="#" class="nav-item" data-section="analytics">
+                <a href="#" class="nav-item" data-section="analytics" data-page="analytics">
                     <div class="nav-icon">📊</div>
                     <div class="nav-text">Analytics</div>
                 </a>
@@ -714,7 +714,11 @@
                 <div class="top-bar-right">
                     <div class="user-info">
                         <div class="user-avatar">S</div>
-                        <div class="user-name" id="user-name">Loading...</div>
+                        <div class="user-name">
+                            <span id="student-name">Loading...</span>
+                            <small id="student-level" style="display: block; color: #666;">Loading...</small>
+                        </div>
+                        <div id="student-points" style="font-size: 0.8rem; color: #666;">Loading...</div>
                     </div>
                 </div>
             </header>
@@ -723,7 +727,7 @@
             <div class="content">
 
                 <!-- Dashboard Section -->
-                <section id="dashboard-section" class="dashboard-section active">
+                <section id="dashboard-section" class="dashboard-section active page-content" data-page="dashboard">
                     <!-- Progress Overview -->
                     <div class="card">
                         <div class="card-header">
@@ -740,20 +744,28 @@
 
                         <div class="grid" id="stats-grid">
                             <div class="stat-card">
-                                <div class="stat-number">1</div>
+                                <div class="stat-number" id="enrolled-courses">1</div>
                                 <div class="stat-label">Enrolled Courses</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">3/8</div>
-                                <div class="stat-label">Lessons Progress</div>
+                                <div class="stat-number" id="completed-lessons">3</div>
+                                <div class="stat-label">Completed Lessons</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">85%</div>
-                                <div class="stat-label">Average Score</div>
+                                <div class="stat-number" id="study-streak">7 days</div>
+                                <div class="stat-label">Study Streak</div>
                             </div>
                             <div class="stat-card">
-                                <div class="stat-number">35%</div>
+                                <div class="stat-number" id="overall-progress">35%</div>
                                 <div class="stat-label">Overall Progress</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="total-study-time">15 hours</div>
+                                <div class="stat-label">Total Study Time</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number" id="points-earned">1250</div>
+                                <div class="stat-label">Points Earned</div>
                             </div>
                         </div>
                     </div>
@@ -778,15 +790,32 @@
                             <button class="btn btn-secondary" onclick="initializeContent()">
                                 🚀 Initialize Content
                             </button>
-                            <button class="btn btn-primary" onclick="toggleARIATutor()">
-                                🤖 ARIA Tutor
+                            <button class="btn btn-primary" onclick="refreshStudentData()">
+                                🔄 Refresh Data
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-icon">📈</div>
+                            <div>
+                                <div class="card-title">Recent Activity</div>
+                                <div class="card-subtitle">Your latest learning activities</div>
+                            </div>
+                        </div>
+
+                        <div id="recent-activity-list">
+                            <div style="text-align: center; padding: 2rem;">
+                                <div class="loading"></div> Loading recent activity...
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Courses Section -->
-                <section id="courses-section" class="dashboard-section" style="display: none;">
+                <section id="courses-section" class="dashboard-section page-content" data-page="courses" style="display: none;">
                     <!-- Enrolled Courses -->
                     <div class="card">
                         <div class="card-header">
@@ -797,7 +826,7 @@
                             </div>
                         </div>
 
-                        <div id="enrolled-courses">
+                        <div id="enrolled-courses-list">
                             <div class="card">
                                 <div class="card-header">
                                     <div class="card-icon">📚</div>
@@ -842,7 +871,7 @@
                 </section>
 
                 <!-- Learning Section -->
-                <section id="learning-section" class="dashboard-section" style="display: none;">
+                <section id="learning-section" class="dashboard-section page-content" data-page="learning" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">📖</div>
@@ -861,7 +890,7 @@
                 </section>
 
                 <!-- AI Section -->
-                <section id="ai-section" class="dashboard-section" style="display: none;">
+                <section id="ai-section" class="dashboard-section page-content" data-page="ai-tutor" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">🤖</div>
@@ -871,7 +900,7 @@
                             </div>
                         </div>
 
-                        <div id="ai-recommendations">
+                        <div id="ai-recommendations-list">
                             <div style="text-align: center; padding: 2rem;">
                                 <div class="loading"></div> Loading AI recommendations...
                             </div>
@@ -880,7 +909,7 @@
                 </section>
 
                 <!-- Assessment Section -->
-                <section id="assessment-section" class="dashboard-section" style="display: none;">
+                <section id="assessment-section" class="dashboard-section page-content" data-page="assessment" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">🎯</div>
@@ -931,9 +960,9 @@
                                 </div>
                             </div>
 
-                            <div id="assessment-history">
+                            <div id="available-assessments-list">
                                 <div style="text-align: center; padding: 2rem;">
-                                    <div class="loading"></div> Loading assessment history...
+                                    <div class="loading"></div> Loading available assessments...
                                 </div>
                             </div>
                         </div>
@@ -941,7 +970,7 @@
                 </section>
 
                 <!-- Goals Section -->
-                <section id="goals-section" class="dashboard-section" style="display: none;">
+                <section id="goals-section" class="dashboard-section page-content" data-page="goals" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">🎯</div>
@@ -992,9 +1021,9 @@
                                 </div>
                             </div>
 
-                            <div id="goals-progress">
+                            <div id="active-goals-list">
                                 <div style="text-align: center; padding: 2rem;">
-                                    <div class="loading"></div> Loading goals progress...
+                                    <div class="loading"></div> Loading active goals...
                                 </div>
                             </div>
                         </div>
@@ -1002,7 +1031,7 @@
                 </section>
 
                 <!-- Progress Section -->
-                <section id="progress-section" class="dashboard-section" style="display: none;">
+                <section id="progress-section" class="dashboard-section page-content" data-page="progress" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">📈</div>
@@ -1021,7 +1050,7 @@
                 </section>
 
                 <!-- Analytics Section -->
-                <section id="analytics-section" class="dashboard-section" style="display: none;">
+                <section id="analytics-section" class="dashboard-section page-content" data-page="analytics" style="display: none;">
                     <div class="card">
                         <div class="card-header">
                             <div class="card-icon">📊</div>
@@ -1150,6 +1179,9 @@
     <!-- Real Dashboard Implementation -->
     <script src="js/dashboard-real.js"></script>
 
+    <!-- Student Portal Integration - Applied from Frontend Educator Analysis -->
+    <script src="js/student-portal-integration.js"></script>
+
     <!-- Database Population Script -->
     <script src="scripts/populate-database.js"></script>
 
@@ -1199,6 +1231,193 @@
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
+        }
+
+        /* Course Cards */
+        .course-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .course-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .course-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .course-status.in_progress {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.3s ease;
+        }
+
+        /* Recommendation Cards */
+        .recommendation-card {
+            border-left: 4px solid #2196F3;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .rec-priority.high {
+            background: #ff4444;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .rec-priority.medium {
+            background: #ffaa00;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* Activity Timeline */
+        .activity-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .activity-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-time {
+            color: #666;
+            font-size: 0.8rem;
+        }
+
+        /* Assessment Cards */
+        .assessment-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+        }
+
+        .assessment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .assessment-meta {
+            display: flex;
+            gap: 1rem;
+            margin: 0.5rem 0;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Goal Cards */
+        .goal-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .goal-progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .milestone {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0;
+        }
+
+        .milestone.completed {
+            color: #155724;
+        }
+
+        .milestone.pending {
+            color: #856404;
+        }
+
+        .milestone-icon {
+            margin-right: 0.5rem;
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-success {
+            background: #4CAF50;
+        }
+
+        .notification-error {
+            background: #f44336;
+        }
+
+        .notification-info {
+            background: #2196F3;
         }
     </style>
 
