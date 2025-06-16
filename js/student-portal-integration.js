@@ -117,6 +117,31 @@ class StudentAPIClient {
         return await this.request('/student/ai/recommendations');
     }
 
+    // ✅ NEW: Notification endpoints
+    async getNotifications() {
+        return await this.request('/student/notifications');
+    }
+
+    async markNotificationRead(notificationId) {
+        return await this.request('/notifications/mark-read', {
+            method: 'POST',
+            body: JSON.stringify({
+                notification_id: notificationId,
+                user_id: this.getUserId() || 'student_demo',
+                user_type: 'student'
+            })
+        });
+    }
+
+    getUserId() {
+        const userData = localStorage.getItem('user_data');
+        if (userData) {
+            const parsed = JSON.parse(userData);
+            return parsed.id || parsed.student_id;
+        }
+        return null;
+    }
+
     async chatWithAI(message) {
         return await this.request('/student/ai/chat', {
             method: 'POST',

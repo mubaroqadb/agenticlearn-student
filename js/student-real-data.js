@@ -58,6 +58,19 @@ class StudentAPIClient {
         try {
             const response = await fetch(url, config);
             const data = await response.json();
+
+            if (!response.ok) {
+                // ✅ NEW: Handle structured error format
+                const error = data.error || {};
+                throw new Error(`${error.code || 'API_ERROR'}: ${error.message || 'Request failed'}`);
+            }
+
+            // ✅ NEW: Display cache status if available
+            if (data.cached) {
+                console.log(`📦 ${endpoint} loaded from cache`);
+                this.displayCacheStatus(true);
+            }
+
             console.log(`✅ API ${endpoint}:`, data);
             return data;
         } catch (error) {
@@ -101,6 +114,40 @@ class StudentAPIClient {
 
     async getActivity() {
         return await this.request('/student/activity/recent');
+    }
+
+    // ✅ NEW: Notification endpoints
+    async getNotifications() {
+        return await this.request('/student/notifications');
+    }
+
+    async markNotificationRead(notificationId) {
+        return await this.request('/notifications/mark-read', {
+            method: 'POST',
+            body: JSON.stringify({
+                notification_id: notificationId,
+                user_id: this.getUserId() || 'student_demo',
+                user_type: 'student'
+            })
+        });
+    }
+
+    getUserId() {
+        const userData = localStorage.getItem('user_data');
+        if (userData) {
+            const parsed = JSON.parse(userData);
+            return parsed.id || parsed.student_id;
+        }
+        return null;
+    }
+
+    // ✅ NEW: Cache status display
+    displayCacheStatus(cached) {
+        const cacheIndicator = document.getElementById('cacheStatus');
+        if (cacheIndicator) {
+            cacheIndicator.textContent = cached ? '📦 Cached' : '';
+            cacheIndicator.style.display = cached ? 'inline' : 'none';
+        }
     }
 }
 
@@ -271,6 +318,12 @@ class StudentPortalManager {
             const availableCoursesResponse = await this.api.getAvailableCourses();
             if (availableCoursesResponse.success) {
                 this.updateAvailableCourses(availableCoursesResponse.data);
+            }
+
+            // ✅ NEW: Load notifications
+            const notificationsResponse = await this.api.getNotifications();
+            if (notificationsResponse.success) {
+                this.updateNotifications(notificationsResponse.data);
             }
 
         } catch (error) {
@@ -509,6 +562,63 @@ class StudentPortalManager {
         console.log(`✅ Recent activity updated: ${activities.length} activities`);
     }
 
+    // ✅ NEW: Update notifications display
+    updateNotifications(notificationsData) {
+        const notifications = notificationsData.notifications || [];
+        const unreadCount = notificationsData.unread_count || 0;
+
+        // Update notification badge
+        this.updateNotificationBadge(unreadCount);
+
+        // Update notifications container
+        const container = document.getElementById('notificationsContainer');
+        if (!container) return;
+
+        if (!notifications || notifications.length === 0) {
+            container.innerHTML = `
+                <div class="card" style="text-align: center; padding: 2rem;">
+                    <h3>🔔 No Notifications</h3>
+                    <p>You're all caught up! No new notifications.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const notificationsHTML = notifications.map(notif => `
+            <div class="notification ${notif.read ? 'read' : 'unread'}"
+                 data-id="${notif.id}"
+                 onclick="markNotificationAsRead('${notif.id}')">
+                <div class="notification-header">
+                    <h4>${notif.title}</h4>
+                    <span class="priority ${notif.priority}">${notif.priority}</span>
+                </div>
+                <p>${notif.message}</p>
+                <div class="notification-meta">
+                    <time>${new Date(notif.created_at).toLocaleString()}</time>
+                    ${!notif.read ? '<span class="unread-indicator">●</span>' : ''}
+                </div>
+            </div>
+        `).join('');
+
+        container.innerHTML = notificationsHTML;
+        console.log(`✅ Notifications updated: ${notifications.length} notifications, ${unreadCount} unread`);
+    }
+
+    updateNotificationBadge(unreadCount) {
+        const badge = document.getElementById('notificationBadge');
+        if (badge) {
+            badge.textContent = unreadCount;
+            badge.style.display = unreadCount > 0 ? 'inline' : 'none';
+        }
+
+        // Update header notification icon
+        const headerBadge = document.getElementById('headerNotificationBadge');
+        if (headerBadge) {
+            headerBadge.textContent = unreadCount;
+            headerBadge.style.display = unreadCount > 0 ? 'inline' : 'none';
+        }
+    }
+
     updateAvailableCourses(courses) {
         const container = document.getElementById('available-courses-list') || document.getElementById('available-courses');
         if (!container) return;
@@ -682,6 +792,61 @@ window.scrollToAvailableCourses = function() {
     const coursesSection = document.getElementById('available-courses');
     if (coursesSection) {
         coursesSection.scrollIntoView({ behavior: 'smooth' });
+    }
+};
+
+// ✅ NEW: Global notification functions
+window.markNotificationAsRead = async function(notificationId) {
+    if (window.studentPortal) {
+        try {
+            const response = await window.studentPortal.api.markNotificationRead(notificationId);
+            if (response.success) {
+                // Update UI to mark as read
+                const notificationElement = document.querySelector(`[data-id="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.classList.remove('unread');
+                    notificationElement.classList.add('read');
+
+                    // Remove unread indicator
+                    const unreadIndicator = notificationElement.querySelector('.unread-indicator');
+                    if (unreadIndicator) {
+                        unreadIndicator.remove();
+                    }
+                }
+
+                // Update badge count
+                const currentBadge = document.getElementById('notificationBadge');
+                if (currentBadge) {
+                    const currentCount = parseInt(currentBadge.textContent) || 0;
+                    const newCount = Math.max(0, currentCount - 1);
+                    window.studentPortal.updateNotificationBadge(newCount);
+                }
+
+                console.log(`✅ Notification ${notificationId} marked as read`);
+            }
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+        }
+    }
+};
+
+window.refreshNotifications = async function() {
+    if (window.studentPortal) {
+        try {
+            const response = await window.studentPortal.api.getNotifications();
+            if (response.success) {
+                window.studentPortal.updateNotifications(response.data);
+            }
+        } catch (error) {
+            console.error('Failed to refresh notifications:', error);
+        }
+    }
+};
+
+window.toggleNotificationsPanel = function() {
+    const panel = document.getElementById('notificationsPanel');
+    if (panel) {
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     }
 };
 
