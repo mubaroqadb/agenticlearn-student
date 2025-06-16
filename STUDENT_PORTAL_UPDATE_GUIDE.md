@@ -71,10 +71,10 @@ Ensure these elements exist for data binding:
 ```javascript
 // Check authentication on page load
 function checkStudentAuth() {
-    const token = getCookie('student_login');
+    const token = getCookie('student_login') || getCookie('access_token') || getCookie('login');
     if (!token) {
-        // Redirect to auth page with student type
-        window.location.href = 'https://mubaroqadb.github.io/agenticlearn-auth/?type=student';
+        // Show login modal instead of redirecting to external auth
+        showStudentLoginModal();
         return false;
     }
     return true;
@@ -86,6 +86,14 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeStudentPortal();
     }
 });
+
+// Student login modal (integrated within portal)
+function showStudentLoginModal() {
+    // Implementation handled by StudentPortalManager
+    if (window.studentPortal) {
+        window.studentPortal.showLoginModal();
+    }
+}
 ```
 
 ## 📱 **Step 3: Menu State Persistence**

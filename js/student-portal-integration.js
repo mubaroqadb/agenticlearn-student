@@ -5,7 +5,8 @@
 class StudentAPIClient {
     constructor() {
         this.baseURL = 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn';
-        this.token = this.getCookie('student_token');
+        // Use AuthTokenManager if available, fallback to manual cookie check
+        this.token = window.AuthTokenManager ? window.AuthTokenManager.getToken() : this.getCookie('student_token');
     }
 
     getCookie(name) {
@@ -17,11 +18,15 @@ class StudentAPIClient {
 
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
+
+        // Get fresh token for each request
+        const token = window.AuthTokenManager ? window.AuthTokenManager.getToken() : this.token;
+
         const config = {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                ...(this.token && { 'Authorization': `Bearer ${this.token}` })
+                ...(window.AuthTokenManager ? window.AuthTokenManager.getAuthHeader() : (token && { 'Authorization': `Bearer ${token}` }))
             },
             ...options
         };
@@ -217,14 +222,120 @@ class StudentPortalManager {
     }
 
     checkAuthentication() {
-        const token = this.api.getCookie('student_login');
-        if (!token) {
-            console.log("🔐 No authentication token found, redirecting to login...");
-            // Redirect to auth page
-            window.location.href = 'https://mubaroqadb.github.io/agenticlearn-auth/?type=student';
-            return false;
+        // Use AuthTokenManager if available, fallback to manual check
+        if (window.AuthTokenManager) {
+            const isAuth = window.AuthTokenManager.isAuthenticated();
+            if (!isAuth) {
+                console.log("🔐 No authentication token found, redirecting to auth...");
+                this.redirectToAuth();
+                return false;
+            }
+            return true;
+        } else {
+            // Fallback to manual token check
+            const token = this.api.getCookie('student_login') || this.api.getCookie('access_token') || this.api.getCookie('login');
+            if (!token) {
+                console.log("🔐 No authentication token found, showing login modal...");
+                this.showLoginModal();
+                return false;
+            }
+            return true;
         }
-        return true;
+    }
+
+    redirectToAuth() {
+        if (window.AuthTokenManager) {
+            window.AuthTokenManager.redirectToAuth('student');
+        } else {
+            // Fallback redirect
+            const currentUrl = encodeURIComponent(window.location.href);
+            const authUrl = `https://mubaroqadb.github.io/agenticlearn-auth/?type=student&redirect=${currentUrl}`;
+            window.location.href = authUrl;
+        }
+    }
+
+    showLoginModal() {
+        // Create login modal for student portal
+        const modalHTML = `
+            <div id="student-login-modal" class="modal-overlay" onclick="this.remove()">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h2>🎓 Student Login</h2>
+                        <button class="modal-close" onclick="document.getElementById('student-login-modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please login to access your student portal.</p>
+                        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
+                            <h4 style="color: #2563eb; margin-bottom: 0.5rem;">Demo Credentials:</h4>
+                            <p style="margin: 0; font-family: monospace;">
+                                Email: demo@student.com<br>
+                                Password: demo123
+                            </p>
+                        </div>
+                        <form id="student-login-form" onsubmit="window.studentPortal.handleLogin(event)">
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" id="email" name="email" value="demo@student.com" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="password" id="password" name="password" value="demo123" required>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="document.getElementById('student-login-form').submit()">Login</button>
+                        <button class="btn btn-secondary" onclick="document.getElementById('student-login-modal').remove()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    async handleLogin(event) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const credentials = {
+            email: formData.get('email'),
+            password: formData.get('password')
+        };
+
+        try {
+            this.showNotification("Logging in...", "info");
+            const response = await fetch("https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/auth/login", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(credentials)
+            });
+
+            const data = await response.json();
+            if (data.success && data.token) {
+                // Use AuthTokenManager if available
+                if (window.AuthTokenManager) {
+                    window.AuthTokenManager.setToken(data.token);
+                } else {
+                    // Fallback to manual cookie setting
+                    document.cookie = `access_token=${data.token}; path=/; max-age=86400`;
+                    document.cookie = `student_login=${data.token}; path=/; max-age=86400`;
+                    document.cookie = `login=${data.token}; path=/; max-age=86400`;
+                }
+
+                this.showNotification("Login successful! 🎉", "success");
+                document.getElementById('student-login-modal').remove();
+
+                // Reinitialize portal with authentication
+                await this.initialize();
+            } else {
+                this.showNotification(data.message || "Login failed", "error");
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            this.showNotification("Login failed", "error");
+        }
     }
 
     async loadAllData() {

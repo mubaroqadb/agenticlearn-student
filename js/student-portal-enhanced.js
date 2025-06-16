@@ -19,7 +19,8 @@ let quizStartTime = null;
 async function initializeStudentPortal() {
     const token = getCookie("access_token") || getCookie("login");
     if (!token) {
-        redirect(`https://${GITHUB_USERNAME}.github.io/agenticlearn-auth`);
+        // Show login modal instead of redirecting to educator frontend
+        showStudentLoginModal();
         return;
     }
 
@@ -278,10 +279,12 @@ function logout() {
     deleteCookie("user_email");
     deleteCookie("user_name");
     deleteCookie("login");
-    
+    deleteCookie("student_login");
+
     showNotification("Logged out successfully", "success");
     setTimeout(() => {
-        redirect(`https://${GITHUB_USERNAME}.github.io/agenticlearn-auth`);
+        // Reload current page to show login modal
+        window.location.reload();
     }, 1000);
 }
 
