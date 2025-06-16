@@ -4,9 +4,23 @@
 
 class StudentAPIClient {
     constructor() {
-        this.baseURL = 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn';
-        // Use AuthTokenManager if available, fallback to manual cookie check
-        this.token = window.AuthTokenManager ? window.AuthTokenManager.getToken() : this.getCookie('student_token');
+        this.baseURL = window.AgenticLearnConfig ? window.AgenticLearnConfig.API_BASE : 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn';
+        // Use PASETO token with correct token names
+        this.pasetoToken = this.getPasetoToken();
+    }
+
+    getPasetoToken() {
+        // Try multiple token names for compatibility - PASETO tokens
+        const tokenNames = window.AgenticLearnConfig ? window.AgenticLearnConfig.TOKEN_NAMES : ['paseto_token', 'login', 'access_token', 'student_token'];
+        for (const name of tokenNames) {
+            const token = this.getCookie(name);
+            if (token && token !== 'null' && token !== 'undefined') {
+                console.log(`✅ PASETO token found with name: ${name}`);
+                return token;
+            }
+        }
+        console.log('❌ No PASETO token found');
+        return null;
     }
 
     getCookie(name) {
@@ -19,15 +33,21 @@ class StudentAPIClient {
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
 
-        // Get fresh token for each request
-        const token = window.AuthTokenManager ? window.AuthTokenManager.getToken() : this.token;
+        // Get fresh PASETO token for each request
+        const pasetoToken = this.getPasetoToken();
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // ✅ CRITICAL: Use 'login' header with PASETO token (NOT Authorization Bearer)
+        if (pasetoToken) {
+            headers['login'] = pasetoToken;
+        }
 
         const config = {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(window.AuthTokenManager ? window.AuthTokenManager.getAuthHeader() : (token && { 'Authorization': `Bearer ${token}` }))
-            },
+            headers: { ...headers, ...options.headers },
             ...options
         };
 
@@ -268,14 +288,19 @@ class StudentPortalManager {
                         <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; margin-bottom: 1rem;">
                             <h4 style="color: #2563eb; margin-bottom: 0.5rem;">Demo Credentials:</h4>
                             <p style="margin: 0; font-family: monospace;">
-                                Email: demo@student.com<br>
+                                Nomor Telepon: 082119000486<br>
                                 Password: demo123
                             </p>
                         </div>
                         <form id="student-login-form" onsubmit="window.studentPortal.handleLogin(event)">
                             <div class="form-group">
-                                <label for="email">Email:</label>
-                                <input type="email" id="email" name="email" value="demo@student.com" required>
+                                <label for="phonenumber">Nomor Telepon:</label>
+                                <input type="tel" id="phonenumber" name="phonenumber"
+                                       value="082119000486"
+                                       placeholder="082119000486"
+                                       pattern="08[0-9]{8,11}"
+                                       required>
+                                <small>Format: 082119000486</small>
                             </div>
                             <div class="form-group">
                                 <label for="password">Password:</label>
@@ -297,14 +322,27 @@ class StudentPortalManager {
     async handleLogin(event) {
         event.preventDefault();
         const formData = new FormData(event.target);
+
+        // ✅ CRITICAL: Use phone number instead of email
+        const phonenumber = formData.get('phonenumber');
+        const password = formData.get('password');
+
+        // Validate phone number format
+        if (window.AgenticLearnConfig && !window.AgenticLearnConfig.validatePhone(phonenumber)) {
+            this.showNotification(window.AgenticLearnConfig.MESSAGES.INVALID_PHONE, "error");
+            return;
+        }
+
         const credentials = {
-            email: formData.get('email'),
-            password: formData.get('password')
+            phonenumber: phonenumber, // NOT email
+            password: password
         };
 
         try {
             this.showNotification("Logging in...", "info");
-            const response = await fetch("https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn/auth/login", {
+
+            // ✅ CRITICAL: Use student login endpoint
+            const response = await fetch(`${this.api.baseURL}/student/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -313,15 +351,15 @@ class StudentPortalManager {
             });
 
             const data = await response.json();
-            if (data.success && data.token) {
-                // Use AuthTokenManager if available
-                if (window.AuthTokenManager) {
-                    window.AuthTokenManager.setToken(data.token);
-                } else {
-                    // Fallback to manual cookie setting
-                    document.cookie = `access_token=${data.token}; path=/; max-age=86400`;
-                    document.cookie = `student_login=${data.token}; path=/; max-age=86400`;
-                    document.cookie = `login=${data.token}; path=/; max-age=86400`;
+
+            // ✅ CRITICAL: Check for PASETO token in response
+            if (data.success && data.paseto) {
+                // Store PASETO token with multiple names for compatibility
+                this.setPasetoToken(data.paseto);
+
+                // Store user data (phone number, not email)
+                if (data.student) {
+                    this.setUserData(data.student);
                 }
 
                 this.showNotification("Login successful! 🎉", "success");
@@ -336,6 +374,30 @@ class StudentPortalManager {
             console.error("Login error:", error);
             this.showNotification("Login failed", "error");
         }
+    }
+
+    setPasetoToken(pasetoToken) {
+        this.api.pasetoToken = pasetoToken;
+
+        // Store with multiple names for compatibility
+        const cookieOptions = window.AgenticLearnConfig ? window.AgenticLearnConfig.COOKIE_OPTIONS : 'path=/; max-age=86400';
+        document.cookie = `paseto_token=${pasetoToken}; ${cookieOptions}`;
+        document.cookie = `login=${pasetoToken}; ${cookieOptions}`;
+        document.cookie = `access_token=${pasetoToken}; ${cookieOptions}`;
+
+        // Also store in localStorage
+        localStorage.setItem('paseto_token', pasetoToken);
+
+        console.log('✅ PASETO token stored successfully');
+    }
+
+    setUserData(userData) {
+        // ✅ CRITICAL: Store phone number (not email)
+        localStorage.setItem('user_data', JSON.stringify(userData));
+        localStorage.setItem('user_phone', userData.phonenumber);
+        localStorage.setItem('user_name', userData.name);
+
+        console.log('✅ User data stored:', { phone: userData.phonenumber, name: userData.name });
     }
 
     async loadAllData() {

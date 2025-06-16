@@ -6,8 +6,23 @@ console.log('🎓 Loading Student Portal with Real Data Integration...');
 // Real API Client for AgenticAI Backend
 class StudentAPIClient {
     constructor() {
-        this.baseURL = 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn';
-        this.token = this.getCookie('student_token') || this.getCookie('login');
+        this.baseURL = window.AgenticLearnConfig ? window.AgenticLearnConfig.API_BASE : 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid/api/agenticlearn';
+        // Use PASETO token instead of JWT
+        this.pasetoToken = this.getPasetoToken();
+    }
+
+    getPasetoToken() {
+        // Try multiple token names for compatibility - PASETO tokens
+        const tokenNames = window.AgenticLearnConfig ? window.AgenticLearnConfig.TOKEN_NAMES : ['paseto_token', 'login', 'access_token', 'student_token'];
+        for (const name of tokenNames) {
+            const token = this.getCookie(name);
+            if (token && token !== 'null' && token !== 'undefined') {
+                console.log(`✅ PASETO token found with name: ${name}`);
+                return token;
+            }
+        }
+        console.log('❌ No PASETO token found');
+        return null;
     }
 
     getCookie(name) {
@@ -19,12 +34,20 @@ class StudentAPIClient {
 
     async request(endpoint, options = {}) {
         const url = `${this.baseURL}${endpoint}`;
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        // ✅ CRITICAL: Use 'login' header with PASETO token (NOT Authorization Bearer)
+        const pasetoToken = this.getPasetoToken();
+        if (pasetoToken) {
+            headers['login'] = pasetoToken;
+        }
+
         const config = {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(this.token && { 'Authorization': `Bearer ${this.token}` })
-            },
+            headers: { ...headers, ...options.headers },
             ...options
         };
 
