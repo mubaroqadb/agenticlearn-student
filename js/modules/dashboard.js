@@ -7,7 +7,8 @@
 import { UIComponents } from '../components/ui-components.js';
 
 export class DashboardModule {
-    constructor() {
+    constructor(apiClient) {
+        this.api = apiClient;
         this.dashboardData = null;
         this.refreshInterval = null;
     }
@@ -55,13 +56,11 @@ export class DashboardModule {
      */
     async loadDashboardData() {
         try {
-            // Get API client from global scope
-            const apiClient = window.studentPortal?.api;
-            if (!apiClient) {
+            if (!this.api) {
                 throw new Error('API client not available');
             }
 
-            const response = await apiClient.getDashboardData();
+            const response = await this.api.getDashboardData();
             this.dashboardData = response.data || response;
 
         } catch (error) {

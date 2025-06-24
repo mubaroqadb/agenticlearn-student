@@ -6,7 +6,8 @@
 import { UIComponents } from '../components/ui-components.js';
 
 export class GradesModule {
-    constructor() {
+    constructor(apiClient) {
+        this.api = apiClient;
         this.grades = [];
         this.gpaData = null;
     }
@@ -33,9 +34,8 @@ export class GradesModule {
 
     async loadGrades() {
         try {
-            const apiClient = window.studentPortal?.api;
-            if (apiClient) {
-                const response = await apiClient.getGrades();
+            if (this.api) {
+                const response = await this.api.getGrades();
                 this.grades = response.data || response.grades || [];
                 this.gpaData = response.gpa || null;
             }

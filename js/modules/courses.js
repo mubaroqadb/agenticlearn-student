@@ -6,7 +6,8 @@
 import { UIComponents } from '../components/ui-components.js';
 
 export class CoursesModule {
-    constructor() {
+    constructor(apiClient) {
+        this.api = apiClient;
         this.courses = [];
     }
 
@@ -35,9 +36,8 @@ export class CoursesModule {
 
     async loadCourses() {
         try {
-            const apiClient = window.studentPortal?.api;
-            if (apiClient) {
-                const response = await apiClient.getCourses();
+            if (this.api) {
+                const response = await this.api.getCourses();
                 this.courses = response.data || response.courses || [];
             }
         } catch (error) {

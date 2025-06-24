@@ -131,11 +131,11 @@ class StudentPortal {
         console.log('🔧 Initializing modules...');
 
         this.state.modules = {
-            dashboard: new DashboardModule(),
-            courses: new CoursesModule(),
-            assignments: new AssignmentsModule(),
-            grades: new GradesModule(),
-            profile: new ProfileModule()
+            dashboard: new DashboardModule(this.api),
+            courses: new CoursesModule(this.api),
+            assignments: new AssignmentsModule(this.api),
+            grades: new GradesModule(this.api),
+            profile: new ProfileModule(this.api)
         };
 
         // Initialize each module

@@ -7,7 +7,8 @@
 import { UIComponents } from '../components/ui-components.js';
 
 export class ProfileModule {
-    constructor() {
+    constructor(apiClient) {
+        this.api = apiClient;
         this.profile = null;
         this.isEditing = false;
     }
@@ -46,13 +47,11 @@ export class ProfileModule {
      */
     async loadProfile() {
         try {
-            // Get API client from global scope
-            const apiClient = window.studentPortal?.api;
-            if (!apiClient) {
+            if (!this.api) {
                 throw new Error('API client not available');
             }
 
-            const response = await apiClient.getProfile();
+            const response = await this.api.getProfile();
             // Backend returns profile in different structure
             this.profile = response.profile || response.data || response;
             
@@ -321,13 +320,12 @@ export class ProfileModule {
             this.profile = { ...this.profile, ...formData };
 
             // Save to backend
-            const apiClient = window.studentPortal?.api;
-            if (apiClient) {
-                await apiClient.updateProfile(formData);
+            if (this.api) {
+                await this.api.updateProfile(formData);
             }
 
             // Refresh profile data from backend to ensure consistency
-            const freshProfile = await apiClient.getProfile();
+            const freshProfile = await this.api.getProfile();
             const updatedProfile = freshProfile.profile || freshProfile.data || freshProfile;
             
             // Update local profile with fresh data
