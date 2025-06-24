@@ -18,6 +18,7 @@ import { ProfileModule } from './modules/profile.js';
 import { AssessmentModule } from './modules/assessment.js';
 import { GoalsModule } from './modules/goals.js';
 import { AITutorModule } from './modules/ai-tutor.js';
+import { StudyPlannerModule } from './modules/study-planner.js';
 
 /**
  * Student Portal Application Class
@@ -141,7 +142,8 @@ class StudentPortal {
             profile: new ProfileModule(this.api),
             assessment: new AssessmentModule(this.api),
             goals: new GoalsModule(this.api),
-            'ai-tutor': new AITutorModule(this.api)
+            'ai-tutor': new AITutorModule(this.api),
+            'study-planner': new StudyPlannerModule(this.api)
         };
 
         // Initialize each module

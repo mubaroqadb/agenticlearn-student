@@ -21,6 +21,9 @@ export const API_CONFIG = {
         STUDENT_AI_INSIGHTS: '/api/agenticlearn/student/ai/insights',
         STUDENT_AI_RECOMMENDATIONS: '/api/agenticlearn/student/ai/recommendations',
         STUDENT_GRADE_ANALYTICS: '/api/agenticlearn/student/analytics/grades',
+        STUDENT_STUDY_PLANS: '/api/agenticlearn/student/study/plans',
+        STUDENT_STUDY_SESSIONS: '/api/agenticlearn/student/study/sessions',
+        STUDENT_STUDY_ANALYTICS: '/api/agenticlearn/student/study/analytics',
         STUDENT_PROGRESS: '/api/agenticlearn/student/progress/overall',
 
         // Communication endpoints

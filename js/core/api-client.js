@@ -388,4 +388,45 @@ export class APIClient {
     async getGradeAnalytics() {
         return this.request(this.endpoints.STUDENT_GRADE_ANALYTICS);
     }
+
+    /**
+     * Get study plans
+     */
+    async getStudyPlans() {
+        return this.request(this.endpoints.STUDENT_STUDY_PLANS);
+    }
+
+    /**
+     * Get study sessions
+     */
+    async getStudySessions() {
+        return this.request(this.endpoints.STUDENT_STUDY_SESSIONS);
+    }
+
+    /**
+     * Get study analytics
+     */
+    async getStudyAnalytics() {
+        return this.request(this.endpoints.STUDENT_STUDY_ANALYTICS);
+    }
+
+    /**
+     * Create study plan
+     */
+    async createStudyPlan(planData) {
+        return this.request(this.endpoints.STUDENT_STUDY_PLANS, {
+            method: 'POST',
+            body: JSON.stringify(planData)
+        });
+    }
+
+    /**
+     * Create study session
+     */
+    async createStudySession(sessionData) {
+        return this.request(this.endpoints.STUDENT_STUDY_SESSIONS, {
+            method: 'POST',
+            body: JSON.stringify(sessionData)
+        });
+    }
 }
