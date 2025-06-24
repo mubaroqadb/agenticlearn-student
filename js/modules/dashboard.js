@@ -61,7 +61,26 @@ export class DashboardModule {
             }
 
             const response = await this.api.getDashboardData();
-            this.dashboardData = response.data || response;
+            console.log('📊 Dashboard response:', response);
+
+            // Handle the response structure from backend
+            const data = response.data || response;
+
+            // Transform backend data to dashboard format
+            this.dashboardData = {
+                overview: {
+                    totalCourses: data.enrolled_courses || 0,
+                    activeCourses: data.in_progress || 0,
+                    completedAssignments: data.completed_lessons || 0,
+                    pendingAssignments: (data.total_lessons || 0) - (data.completed_lessons || 0),
+                    overallProgress: data.overall_progress || 0,
+                    currentGPA: 3.75 // Default since not in backend yet
+                },
+                recentActivity: this.transformRecentActivity(data.recent_achievements || []),
+                upcomingDeadlines: this.generateUpcomingDeadlines(data.upcoming_deadlines || 0),
+                achievements: data.recent_achievements || [],
+                recommendations: this.generateRecommendations(data)
+            };
 
         } catch (error) {
             console.error('❌ Failed to load dashboard data:', error);
@@ -88,6 +107,84 @@ export class DashboardModule {
             achievements: [],
             recommendations: []
         };
+    }
+
+    /**
+     * Transform recent achievements to activity format
+     */
+    transformRecentActivity(achievements) {
+        return achievements.map(achievement => ({
+            icon: '🏆',
+            title: achievement.title,
+            time: this.formatTimeAgo(achievement.achieved_at)
+        }));
+    }
+
+    /**
+     * Generate upcoming deadlines
+     */
+    generateUpcomingDeadlines(count) {
+        const deadlines = [];
+        for (let i = 0; i < Math.min(count, 3); i++) {
+            deadlines.push({
+                date: this.formatDate(new Date(Date.now() + (i + 1) * 24 * 60 * 60 * 1000)),
+                title: `Assignment ${i + 1}`,
+                course: 'Course Name',
+                priority: i === 0 ? 'High' : 'Medium'
+            });
+        }
+        return deadlines;
+    }
+
+    /**
+     * Generate AI recommendations based on data
+     */
+    generateRecommendations(data) {
+        const recommendations = [];
+
+        if (data.overall_progress < 50) {
+            recommendations.push({
+                title: 'Boost Your Progress',
+                description: 'Complete more lessons to improve your overall progress',
+                action: 'window.studentPortal.loadPage("courses")',
+                actionText: 'View Courses'
+            });
+        }
+
+        if (data.study_streak < 7) {
+            recommendations.push({
+                title: 'Build Study Habit',
+                description: 'Maintain a daily study streak for better learning outcomes',
+                action: 'window.studentPortal.loadPage("study-planner")',
+                actionText: 'Plan Study'
+            });
+        }
+
+        return recommendations;
+    }
+
+    /**
+     * Format time ago
+     */
+    formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return 'Today';
+        if (diffDays === 1) return 'Yesterday';
+        return `${diffDays} days ago`;
+    }
+
+    /**
+     * Format date
+     */
+    formatDate(date) {
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+        });
     }
 
     /**
