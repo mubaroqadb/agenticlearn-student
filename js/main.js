@@ -2,6 +2,9 @@
  * AgenticLearn Student Portal - Main Application Entry Point
  * Modular architecture with clean code principles
  * Green computing: Vanilla JS ES6+, no external dependencies
+ *
+ * DEVELOPMENT MODE: No authentication required
+ * This allows frontend development without auth dependencies
  */
 
 import { API_CONFIG } from './core/config.js';
@@ -22,9 +25,10 @@ class StudentPortal {
             student: null,
             currentPage: 'dashboard',
             isBackendConnected: false,
-            modules: {}
+            modules: {},
+            developmentMode: true // No auth required
         };
-        
+
         this.api = new APIClient();
         this.initialized = false;
     }
@@ -35,6 +39,7 @@ class StudentPortal {
     async initialize() {
         try {
             console.log('🚀 Initializing AgenticLearn Student Portal...');
+            console.log('🔧 Development Mode: Auth bypassed for frontend development');
 
             // 1. Test backend connection - NO FALLBACK per green computing requirements
             const connectionResult = await this.api.testConnection();
