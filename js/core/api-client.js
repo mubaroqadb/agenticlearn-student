@@ -350,4 +350,42 @@ export class APIClient {
             body: JSON.stringify({ progress })
         });
     }
+
+    /**
+     * Get AI chat history
+     */
+    async getAIChatHistory() {
+        return this.request(this.endpoints.STUDENT_AI_CHAT);
+    }
+
+    /**
+     * Send message to AI tutor
+     */
+    async sendAIMessage(message) {
+        return this.request(this.endpoints.STUDENT_AI_CHAT, {
+            method: 'POST',
+            body: JSON.stringify({ message })
+        });
+    }
+
+    /**
+     * Get AI insights
+     */
+    async getAIInsights() {
+        return this.request(this.endpoints.STUDENT_AI_INSIGHTS);
+    }
+
+    /**
+     * Get AI recommendations
+     */
+    async getAIRecommendations() {
+        return this.request(this.endpoints.STUDENT_AI_RECOMMENDATIONS);
+    }
+
+    /**
+     * Get grade analytics
+     */
+    async getGradeAnalytics() {
+        return this.request(this.endpoints.STUDENT_GRADE_ANALYTICS);
+    }
 }

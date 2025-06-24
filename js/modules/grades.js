@@ -10,6 +10,14 @@ export class GradesModule {
         this.api = apiClient;
         this.grades = [];
         this.gpaData = null;
+        this.isLoading = false;
+        this.currentTab = 'overview'; // overview, courses, analytics
+        this.filters = {
+            course: 'all',
+            semester: 'current',
+            gradeRange: 'all'
+        };
+        this.analytics = null;
     }
 
     async initialize() {
