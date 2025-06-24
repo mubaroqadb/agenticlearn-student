@@ -146,9 +146,18 @@ export class CoursesModule {
     }
 
     renderCoursesOverview(container) {
-        const totalLessons = this.courses.reduce((acc, c) => acc + c.totalLessons, 0);
-        const completedLessons = this.courses.reduce((acc, c) => acc + c.completedLessons, 0);
-        const pendingAssignments = this.courses.reduce((acc, c) => acc + c.assignments.filter(a => a.status === 'pending').length, 0);
+        // Safety check for courses data
+        if (!this.courses || !Array.isArray(this.courses)) {
+            console.warn('⚠️ Courses data not available, using empty array');
+            this.courses = [];
+        }
+
+        const totalLessons = this.courses.reduce((acc, c) => acc + (c.totalLessons || 0), 0);
+        const completedLessons = this.courses.reduce((acc, c) => acc + (c.completedLessons || 0), 0);
+        const pendingAssignments = this.courses.reduce((acc, c) => {
+            const assignments = c.assignments || [];
+            return acc + assignments.filter(a => a.status === 'pending').length;
+        }, 0);
 
         const coursesHTML = `
             <div class="courses-container">
@@ -173,7 +182,7 @@ export class CoursesModule {
                     )}
                     ${UIComponents.createStatsCard(
                         { title: 'Average Progress', icon: '📊', color: '#10b981' },
-                        { value: Math.round(this.courses.reduce((acc, c) => acc + c.progress, 0) / this.courses.length) + '%', change: 'Overall', trend: 'up' }
+                        { value: this.courses.length > 0 ? Math.round(this.courses.reduce((acc, c) => acc + (c.progress || 0), 0) / this.courses.length) + '%' : '0%', change: 'Overall', trend: 'up' }
                     )}
                 </div>
 
@@ -204,7 +213,12 @@ export class CoursesModule {
     }
 
     renderContinueLearning() {
-        const inProgressCourses = this.courses.filter(c => c.progress > 0 && c.progress < 100);
+        // Safety check for courses data
+        if (!this.courses || !Array.isArray(this.courses)) {
+            return '<p style="text-align: center; color: #6b7280; padding: 2rem;">No courses available</p>';
+        }
+
+        const inProgressCourses = this.courses.filter(c => (c.progress || 0) > 0 && (c.progress || 0) < 100);
         if (inProgressCourses.length === 0) {
             return '<p style="text-align: center; color: #6b7280; padding: 2rem;">All caught up! 🎉</p>';
         }
@@ -224,8 +238,12 @@ export class CoursesModule {
     }
 
     renderEnhancedCourseCard(course) {
-        const nextLesson = course.lessons.find(l => !l.completed);
-        const pendingAssignments = course.assignments.filter(a => a.status === 'pending').length;
+        // Safety checks for course data
+        const lessons = course.lessons || [];
+        const assignments = course.assignments || [];
+
+        const nextLesson = lessons.find(l => !l.completed);
+        const pendingAssignments = assignments.filter(a => a.status === 'pending').length;
 
         return `
             <div class="course-card enhanced" data-course-id="${course.id}">
@@ -246,21 +264,21 @@ export class CoursesModule {
                     <div class="course-stats">
                         <div class="stat-item">
                             <span class="stat-icon">📚</span>
-                            <span class="stat-text">${course.completedLessons}/${course.totalLessons} lessons</span>
+                            <span class="stat-text">${course.completedLessons || 0}/${course.totalLessons || 0} lessons</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-icon">⏱️</span>
-                            <span class="stat-text">${course.estimatedTime}</span>
+                            <span class="stat-text">${course.estimatedTime || 'N/A'}</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-icon">📊</span>
-                            <span class="stat-text">${course.difficulty}</span>
+                            <span class="stat-text">${course.difficulty || 'N/A'}</span>
                         </div>
                     </div>
 
                     <!-- Progress -->
                     <div class="course-progress">
-                        ${UIComponents.createProgressBar(course.progress, 'Course Progress', '#667b68')}
+                        ${UIComponents.createProgressBar(course.progress || 0, 'Course Progress', '#667b68')}
                     </div>
 
                     <!-- Next Lesson -->
