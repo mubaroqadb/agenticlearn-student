@@ -84,30 +84,12 @@ export class DashboardModule {
 
         } catch (error) {
             console.error('❌ Failed to load dashboard data:', error);
-            // Use default data structure for now
-            this.dashboardData = this.getDefaultDashboardData();
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load dashboard data. Please check your connection and try again.');
         }
     }
 
-    /**
-     * Get default dashboard data structure
-     */
-    getDefaultDashboardData() {
-        return {
-            overview: {
-                totalCourses: 0,
-                activeCourses: 0,
-                completedAssignments: 0,
-                pendingAssignments: 0,
-                overallProgress: 0,
-                currentGPA: 0
-            },
-            recentActivity: [],
-            upcomingDeadlines: [],
-            achievements: [],
-            recommendations: []
-        };
-    }
+
 
     /**
      * Transform recent achievements to activity format

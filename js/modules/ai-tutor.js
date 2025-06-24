@@ -78,70 +78,8 @@ export class AITutorModule {
             }
         } catch (error) {
             console.error('❌ Failed to load AI data:', error);
-            // Default AI data following educator pattern
-            this.chatHistory = [
-                {
-                    id: 'msg1',
-                    type: 'ai',
-                    message: 'Hello! I\'m ARIA, your AI learning assistant. How can I help you with your studies today?',
-                    timestamp: new Date(Date.now() - 60000).toISOString(),
-                    avatar: '🤖'
-                },
-                {
-                    id: 'msg2',
-                    type: 'user',
-                    message: 'Can you help me understand calculus integration?',
-                    timestamp: new Date(Date.now() - 30000).toISOString(),
-                    avatar: '👤'
-                },
-                {
-                    id: 'msg3',
-                    type: 'ai',
-                    message: 'Of course! Integration is the reverse process of differentiation. Let me break it down for you with some examples...',
-                    timestamp: new Date().toISOString(),
-                    avatar: '🤖'
-                }
-            ];
-
-            this.insights = [
-                {
-                    id: 'insight1',
-                    title: 'Learning Pattern Analysis',
-                    description: 'You learn best during morning hours (9-11 AM) with 85% better retention',
-                    type: 'pattern',
-                    priority: 'high',
-                    icon: '📊'
-                },
-                {
-                    id: 'insight2',
-                    title: 'Subject Strength',
-                    description: 'Programming concepts show strong understanding - consider advanced topics',
-                    type: 'strength',
-                    priority: 'medium',
-                    icon: '💪'
-                }
-            ];
-
-            this.recommendations = [
-                {
-                    id: 'rec1',
-                    title: 'Focus on Mathematics',
-                    description: 'Spend 30 minutes daily on calculus practice problems',
-                    action: 'Create Study Plan',
-                    priority: 'high',
-                    category: 'study_plan',
-                    icon: '📚'
-                },
-                {
-                    id: 'rec2',
-                    title: 'Join Study Group',
-                    description: 'Connect with peers for collaborative learning in CS101',
-                    action: 'Find Study Group',
-                    priority: 'medium',
-                    category: 'collaboration',
-                    icon: '👥'
-                }
-            ];
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load AI data. Please check your connection and try again.');
         } finally {
             this.isLoading = false;
         }

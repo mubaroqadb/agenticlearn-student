@@ -68,38 +68,12 @@ export class AssessmentModule {
 
         } catch (error) {
             console.error('❌ Failed to load assessment data:', error);
-            // Use default data structure
-            this.assessmentData = this.getDefaultAssessmentData();
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load assessment data. Please check your connection and try again.');
         }
     }
 
-    /**
-     * Get default assessment data structure
-     */
-    getDefaultAssessmentData() {
-        return {
-            digitalSkills: {
-                completed: false,
-                score: null,
-                level: null,
-                completedAt: null
-            },
-            learningStyle: {
-                completed: false,
-                style: null,
-                preferences: [],
-                completedAt: null
-            },
-            techComfort: {
-                completed: false,
-                level: null,
-                areas: [],
-                completedAt: null
-            },
-            overallProgress: 0,
-            recommendations: []
-        };
-    }
+
 
     /**
      * Render assessment interface

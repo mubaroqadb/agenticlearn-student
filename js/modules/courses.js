@@ -46,86 +46,8 @@ export class CoursesModule {
             }
         } catch (error) {
             console.error('❌ Failed to load courses:', error);
-            // Enhanced courses data with learning materials
-            this.courses = [
-                {
-                    id: 'cs101',
-                    name: 'Introduction to Computer Science',
-                    code: 'CS101',
-                    instructor: 'Dr. Sarah Johnson',
-                    progress: 75,
-                    status: 'active',
-                    nextClass: '2024-01-15 10:00',
-                    description: 'Fundamentals of programming and computational thinking',
-                    totalLessons: 12,
-                    completedLessons: 9,
-                    currentLesson: 'Variables and Data Types',
-                    difficulty: 'Beginner',
-                    estimatedTime: '8 weeks',
-                    category: 'Programming',
-                    lessons: [
-                        { id: 'cs101-1', title: 'Introduction to Programming', completed: true, duration: '45 min', type: 'video' },
-                        { id: 'cs101-2', title: 'Setting Up Development Environment', completed: true, duration: '30 min', type: 'tutorial' },
-                        { id: 'cs101-3', title: 'Variables and Data Types', completed: false, duration: '60 min', type: 'interactive' },
-                        { id: 'cs101-4', title: 'Control Structures', completed: false, duration: '75 min', type: 'video' }
-                    ],
-                    assignments: [
-                        { id: 'cs101-a1', title: 'Hello World Program', dueDate: '2024-01-20', status: 'completed', score: 95 },
-                        { id: 'cs101-a2', title: 'Calculator Project', dueDate: '2024-01-25', status: 'pending', score: null }
-                    ]
-                },
-                {
-                    id: 'math201',
-                    name: 'Calculus II',
-                    code: 'MATH201',
-                    instructor: 'Prof. Michael Chen',
-                    progress: 60,
-                    status: 'active',
-                    nextClass: '2024-01-16 14:00',
-                    description: 'Advanced calculus concepts and applications',
-                    totalLessons: 15,
-                    completedLessons: 9,
-                    currentLesson: 'Integration by Parts',
-                    difficulty: 'Intermediate',
-                    estimatedTime: '12 weeks',
-                    category: 'Mathematics',
-                    lessons: [
-                        { id: 'math201-1', title: 'Review of Calculus I', completed: true, duration: '50 min', type: 'video' },
-                        { id: 'math201-2', title: 'Integration Techniques', completed: true, duration: '65 min', type: 'interactive' },
-                        { id: 'math201-3', title: 'Integration by Parts', completed: false, duration: '70 min', type: 'video' },
-                        { id: 'math201-4', title: 'Partial Fractions', completed: false, duration: '80 min', type: 'tutorial' }
-                    ],
-                    assignments: [
-                        { id: 'math201-a1', title: 'Integration Practice Set 1', dueDate: '2024-01-18', status: 'completed', score: 88 },
-                        { id: 'math201-a2', title: 'Applications of Integration', dueDate: '2024-01-28', status: 'pending', score: null }
-                    ]
-                },
-                {
-                    id: 'eng102',
-                    name: 'Digital Marketing Fundamentals',
-                    code: 'ENG102',
-                    instructor: 'Ms. Lisa Wang',
-                    progress: 30,
-                    status: 'active',
-                    nextClass: '2024-01-17 09:00',
-                    description: 'Learn modern digital marketing strategies and tools',
-                    totalLessons: 10,
-                    completedLessons: 3,
-                    currentLesson: 'Social Media Marketing',
-                    difficulty: 'Beginner',
-                    estimatedTime: '6 weeks',
-                    category: 'Business',
-                    lessons: [
-                        { id: 'eng102-1', title: 'Introduction to Digital Marketing', completed: true, duration: '40 min', type: 'video' },
-                        { id: 'eng102-2', title: 'Content Marketing Basics', completed: true, duration: '55 min', type: 'interactive' },
-                        { id: 'eng102-3', title: 'Social Media Marketing', completed: false, duration: '60 min', type: 'video' },
-                        { id: 'eng102-4', title: 'Email Marketing Campaigns', completed: false, duration: '45 min', type: 'tutorial' }
-                    ],
-                    assignments: [
-                        { id: 'eng102-a1', title: 'Marketing Plan Draft', dueDate: '2024-01-22', status: 'pending', score: null }
-                    ]
-                }
-            ];
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load courses data. Please check your connection and try again.');
         }
     }
 

@@ -48,38 +48,9 @@ export class GradesModule {
                 this.gpaData = response.gpa || null;
             }
         } catch (error) {
-            // Default grades for demo
-            this.grades = [
-                {
-                    course: 'CS101',
-                    courseName: 'Introduction to Computer Science',
-                    assignments: [
-                        { name: 'Assignment 1', score: 85, maxScore: 100, weight: 20 },
-                        { name: 'Midterm Exam', score: 78, maxScore: 100, weight: 30 },
-                        { name: 'Final Project', score: 92, maxScore: 100, weight: 50 }
-                    ],
-                    currentGrade: 'B+',
-                    gpa: 3.3
-                },
-                {
-                    course: 'MATH201',
-                    courseName: 'Calculus II',
-                    assignments: [
-                        { name: 'Problem Set 1', score: 90, maxScore: 100, weight: 25 },
-                        { name: 'Problem Set 2', score: 88, maxScore: 100, weight: 25 },
-                        { name: 'Midterm', score: 82, maxScore: 100, weight: 50 }
-                    ],
-                    currentGrade: 'A-',
-                    gpa: 3.7
-                }
-            ];
-            
-            this.gpaData = {
-                current: 3.5,
-                cumulative: 3.4,
-                credits: 45,
-                trend: 'up'
-            };
+            console.error('❌ Failed to load grades:', error);
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load grades data. Please check your connection and try again.');
         }
     }
 

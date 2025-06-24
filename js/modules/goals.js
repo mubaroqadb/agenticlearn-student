@@ -67,29 +67,12 @@ export class GoalsModule {
 
         } catch (error) {
             console.error('❌ Failed to load goals data:', error);
-            // Use default data structure
-            this.goalsData = this.getDefaultGoalsData();
+            // Show error to user instead of using fallback data
+            throw new Error('Unable to load goals data. Please check your connection and try again.');
         }
     }
 
-    /**
-     * Get default goals data structure
-     */
-    getDefaultGoalsData() {
-        return {
-            activeGoals: [],
-            completedGoals: [],
-            totalGoals: 0,
-            completionRate: 0,
-            categories: {
-                career: 0,
-                skill: 0,
-                project: 0,
-                academic: 0
-            },
-            upcomingMilestones: []
-        };
-    }
+
 
     /**
      * Render goals interface
