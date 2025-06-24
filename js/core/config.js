@@ -14,6 +14,8 @@ export const API_CONFIG = {
         STUDENT_DASHBOARD: '/api/agenticlearn/student/dashboard/stats',
         STUDENT_COURSES: '/api/agenticlearn/student/courses/enrolled',
         STUDENT_ASSIGNMENTS: '/api/agenticlearn/student/assignments',
+        STUDENT_ASSESSMENTS: '/api/agenticlearn/student/assessments',
+        STUDENT_GOALS: '/api/agenticlearn/student/goals',
         STUDENT_GRADES: '/api/agenticlearn/student/grades',
         STUDENT_PROGRESS: '/api/agenticlearn/student/progress/overall',
 

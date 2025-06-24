@@ -217,4 +217,93 @@ export class APIClient {
     async getAnalytics() {
         return this.request(this.endpoints.STUDENT_ANALYTICS);
     }
+
+    /**
+     * Get assessment status and results
+     */
+    async getAssessmentStatus() {
+        return this.request(this.endpoints.STUDENT_ASSESSMENTS);
+    }
+
+    /**
+     * Start assessment
+     */
+    async startAssessment(assessmentType) {
+        return this.request(`${this.endpoints.STUDENT_ASSESSMENTS}/${assessmentType}/start`, {
+            method: 'POST'
+        });
+    }
+
+    /**
+     * Submit assessment answer
+     */
+    async submitAssessmentAnswer(assessmentType, questionId, answer) {
+        return this.request(`${this.endpoints.STUDENT_ASSESSMENTS}/${assessmentType}/answer`, {
+            method: 'POST',
+            body: JSON.stringify({ questionId, answer })
+        });
+    }
+
+    /**
+     * Complete assessment and get results
+     */
+    async completeAssessment(assessmentType, answers) {
+        return this.request(`${this.endpoints.STUDENT_ASSESSMENTS}/${assessmentType}/complete`, {
+            method: 'POST',
+            body: JSON.stringify({ answers })
+        });
+    }
+
+    /**
+     * Get assessment results
+     */
+    async getAssessmentResults(assessmentType) {
+        return this.request(`${this.endpoints.STUDENT_ASSESSMENTS}/${assessmentType}/results`);
+    }
+
+    /**
+     * Get student goals
+     */
+    async getGoals() {
+        return this.request(this.endpoints.STUDENT_GOALS);
+    }
+
+    /**
+     * Create new goal
+     */
+    async createGoal(goalData) {
+        return this.request(this.endpoints.STUDENT_GOALS, {
+            method: 'POST',
+            body: JSON.stringify(goalData)
+        });
+    }
+
+    /**
+     * Update goal
+     */
+    async updateGoal(goalId, goalData) {
+        return this.request(`${this.endpoints.STUDENT_GOALS}/${goalId}`, {
+            method: 'PUT',
+            body: JSON.stringify(goalData)
+        });
+    }
+
+    /**
+     * Delete goal
+     */
+    async deleteGoal(goalId) {
+        return this.request(`${this.endpoints.STUDENT_GOALS}/${goalId}`, {
+            method: 'DELETE'
+        });
+    }
+
+    /**
+     * Update goal progress
+     */
+    async updateGoalProgress(goalId, progress) {
+        return this.request(`${this.endpoints.STUDENT_GOALS}/${goalId}/progress`, {
+            method: 'PUT',
+            body: JSON.stringify({ progress })
+        });
+    }
 }

@@ -15,6 +15,8 @@ import { CoursesModule } from './modules/courses.js';
 import { AssignmentsModule } from './modules/assignments.js';
 import { GradesModule } from './modules/grades.js';
 import { ProfileModule } from './modules/profile.js';
+import { AssessmentModule } from './modules/assessment.js';
+import { GoalsModule } from './modules/goals.js';
 
 /**
  * Student Portal Application Class
@@ -135,7 +137,9 @@ class StudentPortal {
             courses: new CoursesModule(this.api),
             assignments: new AssignmentsModule(this.api),
             grades: new GradesModule(this.api),
-            profile: new ProfileModule(this.api)
+            profile: new ProfileModule(this.api),
+            assessment: new AssessmentModule(this.api),
+            goals: new GoalsModule(this.api)
         };
 
         // Initialize each module
@@ -153,8 +157,8 @@ class StudentPortal {
      * Setup navigation event handlers
      */
     setupNavigation() {
-        // Sidebar navigation
-        document.querySelectorAll('.nav-item').forEach(item => {
+        // Sidebar navigation - Fix selector to match HTML structure
+        document.querySelectorAll('.menu-item').forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
                 const page = item.dataset.page;
@@ -180,11 +184,11 @@ class StudentPortal {
         try {
             console.log(`📄 Loading page: ${pageName}`);
 
-            // Update active navigation
-            document.querySelectorAll('.nav-item').forEach(item => {
+            // Update active navigation - Fix selector to match HTML structure
+            document.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active');
             });
-            
+
             const activeNavItem = document.querySelector(`[data-page="${pageName}"]`);
             if (activeNavItem) {
                 activeNavItem.classList.add('active');
@@ -205,6 +209,9 @@ class StudentPortal {
             const module = this.state.modules[pageName];
             if (module && typeof module.render === 'function') {
                 await module.render();
+            } else {
+                // For pages without modules, show placeholder content
+                this.renderPlaceholderContent(pageName, targetPage);
             }
 
             // Update state
@@ -239,12 +246,76 @@ class StudentPortal {
     }
 
     /**
+     * Render placeholder content for pages without modules
+     */
+    renderPlaceholderContent(pageName, container) {
+        if (!container) return;
+
+        const placeholderContent = {
+            'ai-tutor': {
+                title: '🤖 AI Tutor',
+                content: 'Chat with ARIA, your AI learning assistant',
+                icon: '🤖'
+            },
+            'study-planner': {
+                title: '📅 Study Planner',
+                content: 'Plan your study schedule and track your progress',
+                icon: '📅'
+            },
+            'resources': {
+                title: '📚 Learning Resources',
+                content: 'Access study materials and additional resources',
+                icon: '📚'
+            },
+            'messages': {
+                title: '💌 Messages',
+                content: 'View messages from instructors and classmates',
+                icon: '💌'
+            },
+            'announcements': {
+                title: '📢 Announcements',
+                content: 'Stay updated with important announcements',
+                icon: '📢'
+            },
+            'settings': {
+                title: '⚙️ Settings',
+                content: 'Customize your learning experience',
+                icon: '⚙️'
+            }
+        };
+
+        const pageInfo = placeholderContent[pageName] || {
+            title: `📄 ${pageName.charAt(0).toUpperCase() + pageName.slice(1)}`,
+            content: 'This feature is coming soon!',
+            icon: '📄'
+        };
+
+        container.innerHTML = `
+            <div class="placeholder-content">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">${pageInfo.icon}</div>
+                        <div>
+                            <div class="card-title">${pageInfo.title}</div>
+                            <div class="card-subtitle">${pageInfo.content}</div>
+                        </div>
+                    </div>
+                    <div style="padding: 2rem; text-align: center; color: #6b7280;">
+                        <p>🚧 This feature is under development</p>
+                        <p>Check back soon for updates!</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
      * Render header with student information
      */
     renderHeader() {
         if (this.state.student) {
             console.log('🎨 Rendering header for:', this.state.student.name);
-            
+
             // Update header profile section
             const headerElement = document.querySelector('header');
             if (headerElement) {
@@ -262,7 +333,7 @@ class StudentPortal {
                     console.log('✅ Header profile section updated');
                 }
             }
-            
+
             // Update sidebar footer name
             const sidebarName = document.getElementById('sidebar-student-name');
             if (sidebarName) {
