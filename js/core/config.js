@@ -6,29 +6,30 @@
 export const API_CONFIG = {
     // Backend API Configuration
     BASE_URL: 'https://asia-southeast2-agenticai-462517.cloudfunctions.net/domyid',
-    
-    // Student-specific endpoints
+
+    // Student-specific endpoints (matching backend routes)
     ENDPOINTS: {
         // Core student endpoints
         STUDENT_PROFILE: '/api/agenticlearn/student/profile',
-        STUDENT_DASHBOARD: '/api/agenticlearn/student/dashboard',
-        STUDENT_COURSES: '/api/agenticlearn/student/courses',
+        STUDENT_DASHBOARD: '/api/agenticlearn/student/dashboard/stats',
+        STUDENT_COURSES: '/api/agenticlearn/student/courses/enrolled',
         STUDENT_ASSIGNMENTS: '/api/agenticlearn/student/assignments',
         STUDENT_GRADES: '/api/agenticlearn/student/grades',
-        STUDENT_PROGRESS: '/api/agenticlearn/student/progress',
-        
+        STUDENT_PROGRESS: '/api/agenticlearn/student/progress/overall',
+
         // Communication endpoints
         STUDENT_MESSAGES: '/api/agenticlearn/student/messages',
         STUDENT_ANNOUNCEMENTS: '/api/agenticlearn/student/announcements',
-        
+
         // AI & Learning tools
-        STUDENT_AI_TUTOR: '/api/agenticlearn/student/ai-tutor',
-        STUDENT_STUDY_PLAN: '/api/agenticlearn/student/study-plan',
+        STUDENT_AI_TUTOR: '/api/agenticlearn/student/ai/chat',
+        STUDENT_AI_RECOMMENDATIONS: '/api/agenticlearn/student/ai/recommendations',
+        STUDENT_STUDY_PLAN: '/api/agenticlearn/student/goals/daily-plan',
         STUDENT_RESOURCES: '/api/agenticlearn/student/resources',
         STUDENT_ANALYTICS: '/api/agenticlearn/student/analytics',
-        STUDENT_ACTIVITY: '/api/agenticlearn/student/activity'
+        STUDENT_ACTIVITY: '/api/agenticlearn/student/activity/recent'
     },
-    
+
     // Request configuration
     TIMEOUT: 10000, // 10 seconds
     RETRY_ATTEMPTS: 3,

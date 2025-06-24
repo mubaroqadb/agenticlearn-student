@@ -26,7 +26,7 @@ class StudentPortal {
             currentPage: 'dashboard',
             isBackendConnected: false,
             modules: {},
-            developmentMode: true // No auth required
+            developmentMode: false // Use real backend
         };
 
         this.api = new APIClient();

@@ -10,7 +10,7 @@ export class APIClient {
     constructor() {
         this.baseURL = API_CONFIG.BASE_URL;
         this.endpoints = API_CONFIG.ENDPOINTS;
-        this.developmentMode = true; // No auth required in development
+        this.developmentMode = false; // Use real backend now
     }
 
     /**
@@ -59,31 +59,6 @@ export class APIClient {
      */
     async testConnection() {
         console.log("🔄 Testing AgenticAI backend connection...");
-
-        if (this.developmentMode) {
-            console.log("🔧 Development Mode: Using mock student profile");
-            // Return mock student profile for development
-            return {
-                success: true,
-                profile: {
-                    name: "Alex Student",
-                    email: "alex.student@agenticlearn.edu",
-                    role: "student",
-                    student_id: "STU001",
-                    program: "Computer Science",
-                    year: "2nd Year",
-                    gpa: 3.5,
-                    credits_completed: 45,
-                    learning_style: "Visual",
-                    study_time: "Morning",
-                    notifications: true,
-                    phone: "+1 (555) 987-6543",
-                    date_of_birth: "2002-05-15",
-                    bio: "Passionate computer science student interested in AI and machine learning."
-                }
-            };
-        }
-
         console.log("🔗 Testing profile endpoint:", `${this.baseURL}${this.endpoints.STUDENT_PROFILE}`);
 
         // Get real profile data from backend
@@ -123,38 +98,6 @@ export class APIClient {
      * Get student dashboard data
      */
     async getDashboardData() {
-        if (this.developmentMode) {
-            return {
-                success: true,
-                data: {
-                    overview: {
-                        totalCourses: 4,
-                        activeCourses: 3,
-                        completedAssignments: 12,
-                        pendingAssignments: 3,
-                        overallProgress: 75,
-                        currentGPA: 3.5
-                    },
-                    recentActivity: [
-                        { icon: '📝', title: 'Submitted Assignment 3', time: '2 hours ago' },
-                        { icon: '📚', title: 'Completed Chapter 5 Reading', time: '1 day ago' },
-                        { icon: '🎯', title: 'Achieved 90% in Quiz 2', time: '2 days ago' }
-                    ],
-                    upcomingDeadlines: [
-                        { date: 'Jan 20', title: 'Programming Project', course: 'CS101', priority: 'high' },
-                        { date: 'Jan 22', title: 'Math Problem Set', course: 'MATH201', priority: 'medium' }
-                    ],
-                    achievements: [
-                        { icon: '🏆', title: 'Perfect Attendance', description: 'Attended all classes this month' },
-                        { icon: '⭐', title: 'Top Performer', description: 'Scored highest in midterm exam' }
-                    ],
-                    recommendations: [
-                        { title: 'Review Calculus Concepts', description: 'Based on your recent quiz performance', actionText: 'Start Review' },
-                        { title: 'Join Study Group', description: 'Connect with classmates for collaborative learning', actionText: 'Find Groups' }
-                    ]
-                }
-            };
-        }
         return this.request(this.endpoints.STUDENT_DASHBOARD);
     }
 
@@ -162,43 +105,6 @@ export class APIClient {
      * Get student courses
      */
     async getCourses() {
-        if (this.developmentMode) {
-            return {
-                success: true,
-                courses: [
-                    {
-                        id: 'cs101',
-                        name: 'Introduction to Computer Science',
-                        code: 'CS101',
-                        instructor: 'Dr. Sarah Johnson',
-                        progress: 75,
-                        status: 'active',
-                        nextClass: '2024-01-15 10:00',
-                        description: 'Fundamentals of programming and computational thinking'
-                    },
-                    {
-                        id: 'math201',
-                        name: 'Calculus II',
-                        code: 'MATH201',
-                        instructor: 'Prof. Michael Chen',
-                        progress: 60,
-                        status: 'active',
-                        nextClass: '2024-01-16 14:00',
-                        description: 'Advanced calculus concepts and applications'
-                    },
-                    {
-                        id: 'phys101',
-                        name: 'Physics I',
-                        code: 'PHYS101',
-                        instructor: 'Dr. Emily Rodriguez',
-                        progress: 85,
-                        status: 'active',
-                        nextClass: '2024-01-17 09:00',
-                        description: 'Classical mechanics and thermodynamics'
-                    }
-                ]
-            };
-        }
         return this.request(this.endpoints.STUDENT_COURSES);
     }
 
@@ -213,43 +119,6 @@ export class APIClient {
      * Get student assignments
      */
     async getAssignments() {
-        if (this.developmentMode) {
-            return {
-                success: true,
-                assignments: [
-                    {
-                        id: 'assign1',
-                        title: 'Programming Project 1',
-                        course: 'CS101',
-                        dueDate: '2024-01-20',
-                        status: 'pending',
-                        priority: 'high',
-                        description: 'Create a simple calculator application using Python',
-                        points: 100
-                    },
-                    {
-                        id: 'assign2',
-                        title: 'Calculus Problem Set 3',
-                        course: 'MATH201',
-                        dueDate: '2024-01-18',
-                        status: 'submitted',
-                        priority: 'medium',
-                        description: 'Solve integration problems from Chapter 7',
-                        points: 50
-                    },
-                    {
-                        id: 'assign3',
-                        title: 'Physics Lab Report',
-                        course: 'PHYS101',
-                        dueDate: '2024-01-25',
-                        status: 'pending',
-                        priority: 'medium',
-                        description: 'Write lab report on pendulum motion experiment',
-                        points: 75
-                    }
-                ]
-            };
-        }
         return this.request(this.endpoints.STUDENT_ASSIGNMENTS);
     }
 
@@ -267,52 +136,6 @@ export class APIClient {
      * Get student grades
      */
     async getGrades() {
-        if (this.developmentMode) {
-            return {
-                success: true,
-                grades: [
-                    {
-                        course: 'CS101',
-                        courseName: 'Introduction to Computer Science',
-                        assignments: [
-                            { name: 'Assignment 1', score: 85, maxScore: 100, weight: 20 },
-                            { name: 'Midterm Exam', score: 78, maxScore: 100, weight: 30 },
-                            { name: 'Final Project', score: 92, maxScore: 100, weight: 50 }
-                        ],
-                        currentGrade: 'B+',
-                        gpa: 3.3
-                    },
-                    {
-                        course: 'MATH201',
-                        courseName: 'Calculus II',
-                        assignments: [
-                            { name: 'Problem Set 1', score: 90, maxScore: 100, weight: 25 },
-                            { name: 'Problem Set 2', score: 88, maxScore: 100, weight: 25 },
-                            { name: 'Midterm', score: 82, maxScore: 100, weight: 50 }
-                        ],
-                        currentGrade: 'A-',
-                        gpa: 3.7
-                    },
-                    {
-                        course: 'PHYS101',
-                        courseName: 'Physics I',
-                        assignments: [
-                            { name: 'Lab Report 1', score: 95, maxScore: 100, weight: 30 },
-                            { name: 'Quiz 1', score: 87, maxScore: 100, weight: 20 },
-                            { name: 'Midterm', score: 91, maxScore: 100, weight: 50 }
-                        ],
-                        currentGrade: 'A',
-                        gpa: 4.0
-                    }
-                ],
-                gpa: {
-                    current: 3.7,
-                    cumulative: 3.5,
-                    credits: 45,
-                    trend: 'up'
-                }
-            };
-        }
         return this.request(this.endpoints.STUDENT_GRADES);
     }
 
