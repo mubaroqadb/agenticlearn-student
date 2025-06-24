@@ -58,10 +58,10 @@ export class APIClient {
      * Test backend connection and get student profile
      */
     async testConnection() {
-        console.log("🔄 Testing AgenticAI backend connection...");
+        console.log("🔄 Testing AgenticAI backend connection... [FIXED VERSION]");
 
         try {
-            // Test with health endpoint first
+            // Test with health endpoint first (FIXED - no longer using profile endpoint)
             console.log("🔗 Testing health endpoint:", `${this.baseURL}/api/agenticlearn/health`);
             const healthResponse = await this.request('/api/agenticlearn/health');
             console.log("📥 Health response:", healthResponse);
