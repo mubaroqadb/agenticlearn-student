@@ -156,7 +156,14 @@ export class APIClient {
      * Get course details
      */
     async getCourseDetails(courseId) {
-        return this.request(`${this.endpoints.STUDENT_COURSES}/${courseId}`);
+        return this.request(this.endpoints.STUDENT_COURSE_DETAILS(courseId));
+    }
+
+    /**
+     * Get available courses for enrollment
+     */
+    async getAvailableCourses() {
+        return this.request(this.endpoints.STUDENT_AVAILABLE_COURSES);
     }
 
     /**

@@ -40,14 +40,49 @@ export class CoursesModule {
 
     async loadCourses() {
         try {
-            if (this.api) {
-                const response = await this.api.getCourses();
-                this.courses = response.data || response.courses || [];
+            console.log('📚 Loading enrolled courses from backend...');
+
+            if (!this.api) {
+                throw new Error('API client not available');
             }
+
+            const response = await this.api.getCourses();
+
+            if (!response.success) {
+                throw new Error(`Backend error: ${response.error || 'Unknown error'}`);
+            }
+
+            this.courses = response.data || [];
+            console.log('✅ Courses loaded from database:', this.courses);
+
         } catch (error) {
             console.error('❌ Failed to load courses:', error);
-            // Show error to user instead of using fallback data
-            throw new Error('Unable to load courses data. Please check your connection and try again.');
+            throw new Error(`Failed to load courses: ${error.message}`);
+        }
+    }
+
+    async loadCourseDetails(courseId) {
+        try {
+            console.log(`📖 Loading course details for: ${courseId}`);
+
+            if (!this.api) {
+                throw new Error('API client not available');
+            }
+
+            const response = await this.api.getCourseDetails(courseId);
+
+            if (!response.success) {
+                throw new Error(`Backend error: ${response.error || 'Unknown error'}`);
+            }
+
+            const courseDetails = response.data;
+            console.log('✅ Course details loaded from database:', courseDetails);
+
+            return courseDetails;
+
+        } catch (error) {
+            console.error('❌ Failed to load course details:', error);
+            throw new Error(`Failed to load course details: ${error.message}`);
         }
     }
 
@@ -240,12 +275,22 @@ export class CoursesModule {
         return this.renderEnhancedCourseCard(course);
     }
 
-    viewCourse(courseId) {
-        console.log(`📖 Opening course: ${courseId}`);
-        this.currentCourse = this.courses.find(c => c.id === courseId);
-        if (this.currentCourse) {
-            this.viewMode = 'course-detail';
-            this.render();
+    async viewCourse(courseId) {
+        try {
+            console.log(`📖 Opening course: ${courseId}`);
+
+            // Load detailed course data from backend
+            this.currentCourse = await this.loadCourseDetails(courseId);
+
+            if (this.currentCourse) {
+                this.viewMode = 'course-detail';
+                this.render();
+            } else {
+                throw new Error('Course not found');
+            }
+        } catch (error) {
+            console.error('❌ Failed to view course:', error);
+            UIComponents.showNotification(`Failed to load course: ${error.message}`, 'error');
         }
     }
 
@@ -302,9 +347,10 @@ export class CoursesModule {
         }
 
         const course = this.currentCourse;
-        const completedLessons = course.lessons.filter(l => l.completed).length;
-        const pendingAssignments = course.assignments.filter(a => a.status === 'pending');
-        const completedAssignments = course.assignments.filter(a => a.status === 'completed');
+        const completedLessons = course.completed_lessons || 0;
+        const totalLessons = course.total_lessons || 0;
+        const pendingAssignments = (course.assignments || []).filter(a => a.status === 'pending');
+        const completedAssignments = (course.assignments || []).filter(a => a.status === 'completed');
 
         const courseDetailHTML = `
             <div class="course-detail-container">
@@ -314,7 +360,7 @@ export class CoursesModule {
                         ← Back to Courses
                     </button>
                     <div class="course-breadcrumb">
-                        <span>Courses</span> / <span>${course.name}</span>
+                        <span>Courses</span> / <span>${course.title}</span>
                     </div>
                 </div>
 
@@ -322,32 +368,36 @@ export class CoursesModule {
                 <div class="course-detail-header">
                     <div class="course-detail-info">
                         <div class="course-detail-meta">
-                            <span class="course-code">${course.code}</span>
                             <span class="course-category">${course.category}</span>
-                            ${UIComponents.createBadge(course.difficulty, 'info')}
+                            ${UIComponents.createBadge(course.level, 'info')}
+                            ${UIComponents.createBadge(course.enrollment_status, course.enrollment_status === 'completed' ? 'success' : 'warning')}
                         </div>
-                        <h1 class="course-detail-title">${course.name}</h1>
+                        <h1 class="course-detail-title">${course.title}</h1>
                         <p class="course-detail-instructor">👨‍🏫 ${course.instructor}</p>
                         <p class="course-detail-description">${course.description}</p>
 
                         <div class="course-detail-stats">
                             <div class="detail-stat">
-                                <span class="stat-value">${completedLessons}/${course.totalLessons}</span>
+                                <span class="stat-value">${completedLessons}/${totalLessons}</span>
                                 <span class="stat-label">Lessons Completed</span>
                             </div>
                             <div class="detail-stat">
-                                <span class="stat-value">${course.progress}%</span>
+                                <span class="stat-value">${course.progress || 0}%</span>
                                 <span class="stat-label">Progress</span>
                             </div>
                             <div class="detail-stat">
-                                <span class="stat-value">${course.estimatedTime}</span>
+                                <span class="stat-value">${course.duration} weeks</span>
                                 <span class="stat-label">Duration</span>
+                            </div>
+                            <div class="detail-stat">
+                                <span class="stat-value">${course.estimated_hours}h</span>
+                                <span class="stat-label">Est. Time</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="course-detail-progress">
-                        ${UIComponents.createProgressBar(course.progress, 'Course Progress', '#667b68')}
+                        ${UIComponents.createProgressBar(course.progress || 0, 'Course Progress', '#667b68')}
                     </div>
                 </div>
 
@@ -366,8 +416,8 @@ export class CoursesModule {
 
                 <!-- Lessons Tab -->
                 <div id="lessons-tab" class="tab-content active">
-                    <div class="lessons-grid">
-                        ${course.lessons.map((lesson, index) => this.renderLessonCard(lesson, index + 1)).join('')}
+                    <div class="modules-grid">
+                        ${(course.modules || []).map((module, index) => this.renderModuleCard(module, index + 1)).join('')}
                     </div>
                 </div>
 
@@ -671,6 +721,81 @@ export class CoursesModule {
                 this.render();
             }
         }
+    }
+
+    renderModuleCard(module, moduleNumber) {
+        const lessons = module.lessons || [];
+        const completedLessons = lessons.filter(l => l.completed).length;
+        const progressPercent = lessons.length > 0 ? Math.round((completedLessons / lessons.length) * 100) : 0;
+
+        return `
+            <div class="module-card">
+                <div class="module-header">
+                    <div class="module-meta">
+                        <span class="module-number">Module ${moduleNumber}</span>
+                        <span class="module-weeks">Week ${module.week_start}-${module.week_end}</span>
+                    </div>
+                    <h3 class="module-title">${module.title}</h3>
+                    <p class="module-description">${module.description}</p>
+                </div>
+
+                <div class="module-progress">
+                    ${UIComponents.createProgressBar(progressPercent, `${completedLessons}/${lessons.length} lessons completed`, '#667b68')}
+                </div>
+
+                <div class="module-lessons">
+                    <h4>📚 Lessons (${lessons.length})</h4>
+                    <div class="lessons-list">
+                        ${lessons.map((lesson, index) => this.renderLessonItem(lesson, index + 1)).join('')}
+                    </div>
+                </div>
+
+                <div class="module-actions">
+                    <button class="btn btn-primary" onclick="window.studentPortal.modules.courses.startModule('${module.id}')">
+                        ${completedLessons === 0 ? '🚀 Start Module' : '▶️ Continue Module'}
+                    </button>
+                    <button class="btn btn-secondary" onclick="window.studentPortal.modules.courses.viewModuleDetails('${module.id}')">
+                        📖 View Details
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    renderLessonItem(lesson, lessonNumber) {
+        const statusIcon = lesson.completed ? '✅' : '⏳';
+        const statusClass = lesson.completed ? 'completed' : 'pending';
+
+        return `
+            <div class="lesson-item ${statusClass}">
+                <div class="lesson-info">
+                    <span class="lesson-status">${statusIcon}</span>
+                    <div class="lesson-details">
+                        <span class="lesson-title">${lesson.title}</span>
+                        <span class="lesson-meta">${lesson.duration}min • ${lesson.type}</span>
+                    </div>
+                </div>
+                <button class="btn btn-sm ${lesson.completed ? 'btn-secondary' : 'btn-primary'}"
+                        onclick="window.studentPortal.modules.courses.startLesson('${lesson.id}')">
+                    ${lesson.completed ? '👁️ Review' : '▶️ Start'}
+                </button>
+            </div>
+        `;
+    }
+
+    startModule(moduleId) {
+        console.log(`🚀 Starting module: ${moduleId}`);
+        UIComponents.showNotification('🚧 Module learning interface coming soon!', 'info');
+    }
+
+    viewModuleDetails(moduleId) {
+        console.log(`📖 Viewing module details: ${moduleId}`);
+        UIComponents.showNotification('🚧 Module details view coming soon!', 'info');
+    }
+
+    startLesson(lessonId) {
+        console.log(`📚 Starting lesson: ${lessonId}`);
+        UIComponents.showNotification('🚧 Lesson interface coming soon!', 'info');
     }
 
     addCoursesStyles() {
@@ -1081,6 +1206,135 @@ export class CoursesModule {
 
             .tab-content.active {
                 display: block;
+            }
+
+            /* Modules Grid */
+            .modules-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+                gap: 1.5rem;
+                margin-top: 1rem;
+            }
+
+            .module-card {
+                background: white;
+                border-radius: 12px;
+                padding: 1.5rem;
+                border: 1px solid #e5e7eb;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                transition: all 0.3s ease;
+            }
+
+            .module-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+
+            .module-header {
+                margin-bottom: 1rem;
+            }
+
+            .module-meta {
+                display: flex;
+                gap: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .module-number {
+                background: #667b68;
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+
+            .module-weeks {
+                background: #f3f4f6;
+                color: #6b7280;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+            }
+
+            .module-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin: 0.5rem 0;
+            }
+
+            .module-description {
+                color: #6b7280;
+                font-size: 0.875rem;
+                line-height: 1.5;
+            }
+
+            .module-progress {
+                margin: 1rem 0;
+            }
+
+            .module-lessons h4 {
+                font-size: 1rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 0.75rem;
+            }
+
+            .lessons-list {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .lesson-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem;
+                background: #f9fafb;
+                border-radius: 8px;
+                border: 1px solid #e5e7eb;
+            }
+
+            .lesson-item.completed {
+                background: #f0f9ff;
+                border-color: #bae6fd;
+            }
+
+            .lesson-info {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                flex: 1;
+            }
+
+            .lesson-details {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .lesson-title {
+                font-weight: 500;
+                color: #1f2937;
+                font-size: 0.875rem;
+            }
+
+            .lesson-meta {
+                font-size: 0.75rem;
+                color: #6b7280;
+            }
+
+            .module-actions {
+                display: flex;
+                gap: 0.75rem;
+                margin-top: 1rem;
+            }
+
+            .module-actions .btn {
+                flex: 1;
             }
 
             /* Lessons Grid */
