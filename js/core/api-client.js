@@ -174,6 +174,27 @@ export class APIClient {
     }
 
     /**
+     * Get AI chat history
+     */
+    async getAIChatHistory() {
+        return this.request(this.endpoints.AI_CHAT_HISTORY);
+    }
+
+    /**
+     * Get AI insights
+     */
+    async getAIInsights() {
+        return this.request(this.endpoints.AI_INSIGHTS);
+    }
+
+    /**
+     * Get AI recommendations
+     */
+    async getAIRecommendations() {
+        return this.request(this.endpoints.AI_RECOMMENDATIONS);
+    }
+
+    /**
      * Get student assignments
      */
     async getAssignments() {

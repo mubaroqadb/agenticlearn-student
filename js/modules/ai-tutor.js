@@ -52,7 +52,21 @@ export class AITutorModule {
 
         } catch (error) {
             console.error('❌ Failed to render AI tutor:', error);
-            UIComponents.showNotification('Failed to load AI tutor: ' + error.message, 'error');
+
+            const container = document.getElementById('ai-tutor-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Failed to Load AI Tutor</h3>
+                        <p>${error.message}</p>
+                        <p class="error-details">Please ensure the backend is running and database is populated.</p>
+                        <button class="btn btn-primary" onclick="window.studentPortal.modules.aiTutor.retry()">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -61,58 +75,43 @@ export class AITutorModule {
      */
     async loadAIData() {
         try {
+            console.log('🤖 Loading AI data from backend...');
             this.isLoading = true;
 
-            if (this.api) {
-                // Load chat history
-                const chatResponse = await this.api.getAIChatHistory();
-                this.chatHistory = chatResponse.data || chatResponse.messages || [];
-
-                // Load AI insights
-                const insightsResponse = await this.api.getAIInsights();
-                this.insights = insightsResponse.data || insightsResponse.insights || [];
-
-                // Load recommendations
-                const recommendationsResponse = await this.api.getAIRecommendations();
-                this.recommendations = recommendationsResponse.data || recommendationsResponse.recommendations || [];
+            if (!this.api) {
+                throw new Error('API client not available');
             }
+
+            // Load chat history
+            const chatResponse = await this.api.getAIChatHistory();
+            if (!chatResponse.success) {
+                throw new Error(`Failed to load chat history: ${chatResponse.error || 'Unknown error'}`);
+            }
+            this.chatHistory = chatResponse.data || [];
+
+            // Load AI insights
+            const insightsResponse = await this.api.getAIInsights();
+            if (!insightsResponse.success) {
+                throw new Error(`Failed to load insights: ${insightsResponse.error || 'Unknown error'}`);
+            }
+            this.insights = insightsResponse.data || [];
+
+            // Load recommendations
+            const recommendationsResponse = await this.api.getAIRecommendations();
+            if (!recommendationsResponse.success) {
+                throw new Error(`Failed to load recommendations: ${recommendationsResponse.error || 'Unknown error'}`);
+            }
+            this.recommendations = recommendationsResponse.data || [];
+
+            console.log('✅ AI data loaded from database:', {
+                chatHistory: this.chatHistory.length,
+                insights: this.insights.length,
+                recommendations: this.recommendations.length
+            });
+
         } catch (error) {
             console.error('❌ Failed to load AI data:', error);
-            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
-
-            // TEMPORARY fallback data - will be removed after backend deployment
-            this.chatHistory = [
-                {
-                    id: 'temp_msg1',
-                    type: 'ai',
-                    message: 'Hello! I\'m ARIA, your AI learning assistant. Backend deployment is pending.',
-                    timestamp: new Date().toISOString(),
-                    avatar: '🤖'
-                }
-            ];
-
-            this.insights = [
-                {
-                    id: 'temp_insight1',
-                    title: 'Backend Deployment Pending',
-                    description: 'AI insights will be available after backend deployment',
-                    type: 'system',
-                    priority: 'medium',
-                    icon: '⚠️'
-                }
-            ];
-
-            this.recommendations = [
-                {
-                    id: 'temp_rec1',
-                    title: 'Backend Deployment Required',
-                    description: 'AI recommendations will be available after backend deployment',
-                    action: 'Wait for Deployment',
-                    priority: 'medium',
-                    category: 'system',
-                    icon: '⚠️'
-                }
-            ];
+            throw new Error(`Failed to load AI data: ${error.message}`);
         } finally {
             this.isLoading = false;
         }
@@ -782,5 +781,25 @@ export class AITutorModule {
         if (container) {
             this.renderAIInterface(container);
         }
+    }
+
+    /**
+     * Retry loading AI data
+     */
+    async retry() {
+        try {
+            console.log('🔄 Retrying AI tutor load...');
+            await this.render();
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            UIComponents.showNotification('Retry failed: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Refresh AI data
+     */
+    async refresh() {
+        await this.retry();
     }
 }
