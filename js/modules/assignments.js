@@ -27,40 +27,44 @@ export class AssignmentsModule {
 
         } catch (error) {
             console.error('❌ Failed to render assignments:', error);
-            UIComponents.showNotification('Failed to load assignments: ' + error.message, 'error');
+
+            const container = document.getElementById('assignments-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Failed to Load Assignments</h3>
+                        <p>${error.message}</p>
+                        <p class="error-details">Please ensure the backend is running and database is populated.</p>
+                        <button class="btn btn-primary" onclick="window.studentPortal.modules.assignments.retry()">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
     async loadAssignments() {
         try {
-            if (this.api) {
-                const response = await this.api.getAssignments();
-                this.assignments = response.data || response.assignments || [];
+            console.log('📝 Loading assignments from backend...');
+
+            if (!this.api) {
+                throw new Error('API client not available');
             }
+
+            const response = await this.api.getAssignments();
+
+            if (!response.success) {
+                throw new Error(`Backend error: ${response.error || 'Unknown error'}`);
+            }
+
+            this.assignments = response.data || [];
+            console.log('✅ Assignments loaded from database:', this.assignments);
+
         } catch (error) {
-            // Default assignments for demo
-            this.assignments = [
-                {
-                    id: 'assign1',
-                    title: 'Programming Project 1',
-                    course: 'CS101',
-                    dueDate: '2024-01-20',
-                    status: 'pending',
-                    priority: 'high',
-                    description: 'Create a simple calculator application',
-                    points: 100
-                },
-                {
-                    id: 'assign2',
-                    title: 'Calculus Problem Set 3',
-                    course: 'MATH201',
-                    dueDate: '2024-01-18',
-                    status: 'submitted',
-                    priority: 'medium',
-                    description: 'Solve integration problems',
-                    points: 50
-                }
-            ];
+            console.error('❌ Failed to load assignments:', error);
+            throw new Error(`Failed to load assignments: ${error.message}`);
         }
     }
 
@@ -388,5 +392,18 @@ export class AssignmentsModule {
     async refresh() {
         console.log('🔄 Refreshing assignments data...');
         await this.render();
+    }
+
+    /**
+     * Retry loading assignments
+     */
+    async retry() {
+        try {
+            console.log('🔄 Retrying assignments load...');
+            await this.render();
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            UIComponents.showNotification('Retry failed: ' + error.message, 'error');
+        }
     }
 }
