@@ -167,6 +167,13 @@ export class APIClient {
     }
 
     /**
+     * Get student profile
+     */
+    async getProfile() {
+        return this.request(this.endpoints.STUDENT_PROFILE);
+    }
+
+    /**
      * Get student assignments
      */
     async getAssignments() {

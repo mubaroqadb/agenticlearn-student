@@ -15,6 +15,7 @@ export const API_CONFIG = {
         STUDENT_COURSES: '/api/agenticlearn/student/courses/enrolled',
         STUDENT_COURSE_DETAILS: (courseId) => `/api/agenticlearn/student/courses/${courseId}`,
         STUDENT_AVAILABLE_COURSES: '/api/agenticlearn/student/courses/available',
+        STUDENT_PROFILE: '/api/agenticlearn/student/profile',
         STUDENT_ASSIGNMENTS: '/api/agenticlearn/student/assignments',
         STUDENT_ASSESSMENTS: '/api/agenticlearn/student/assessments',
         STUDENT_GOALS: '/api/agenticlearn/student/goals',
