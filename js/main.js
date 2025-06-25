@@ -415,11 +415,11 @@ class StudentPortal {
                 const profileSection = headerElement.querySelector('.profile-section');
                 if (profileSection) {
                     profileSection.innerHTML = `
-                        <div class="profile-info">
-                            <div class="profile-name">${this.state.student.name}</div>
-                            <div class="profile-role">${this.state.student.role || 'Student'}</div>
+                        <div class="profile-info" style="text-align: right;">
+                            <div class="profile-name" style="font-size: 0.875rem; font-weight: 600; color: var(--gray-900);">${this.state.student.name}</div>
+                            <div class="profile-role" style="font-size: 0.75rem; color: var(--gray-600);">${this.state.student.role || 'Student'}</div>
                         </div>
-                        <div class="profile-avatar">
+                        <div class="profile-avatar" style="width: 40px; height: 40px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">
                             ${this.state.student.name.charAt(0)}
                         </div>
                     `;
@@ -434,6 +434,12 @@ class StudentPortal {
                 console.log('✅ Sidebar name updated:', this.state.student.name);
             } else {
                 console.warn('⚠️ Sidebar name element not found');
+            }
+
+            // Update page subtitle with personalized greeting
+            const pageSubtitle = document.getElementById('page-subtitle');
+            if (pageSubtitle) {
+                pageSubtitle.textContent = `Welcome back, ${this.state.student.name}!`;
             }
         } else {
             console.warn('⚠️ No student data available for header rendering');
