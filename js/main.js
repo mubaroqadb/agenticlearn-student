@@ -94,6 +94,9 @@ class StudentPortal {
             // 5. Setup navigation
             this.setupNavigation();
 
+            // 5.1. Validate navigation setup
+            this.validateNavigation();
+
             // 6. Load initial page
             await this.loadPage('dashboard');
 
@@ -166,14 +169,25 @@ class StudentPortal {
      * Setup navigation event handlers
      */
     setupNavigation() {
-        // Sidebar navigation - Fix selector to match HTML structure
-        document.querySelectorAll('.menu-item').forEach(item => {
+        console.log('🧭 Setting up navigation...');
+
+        // Sidebar navigation - Enhanced with better error handling
+        const menuItems = document.querySelectorAll('.menu-item');
+        console.log(`📋 Found ${menuItems.length} menu items`);
+
+        menuItems.forEach((item, index) => {
+            const page = item.dataset.page;
+            console.log(`📄 Menu item ${index}: ${page}`);
+
+            if (!page) {
+                console.warn(`⚠️ Menu item ${index} missing data-page attribute`);
+                return;
+            }
+
             item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const page = item.dataset.page;
-                if (page) {
-                    this.loadPage(page);
-                }
+                console.log(`🔄 Navigation clicked: ${page}`);
+                this.loadPage(page);
             });
         });
 
@@ -184,6 +198,21 @@ class StudentPortal {
                 document.querySelector('.sidebar').classList.toggle('collapsed');
             });
         }
+
+        // Add keyboard navigation support
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1': e.preventDefault(); this.loadPage('dashboard'); break;
+                    case '2': e.preventDefault(); this.loadPage('courses'); break;
+                    case '3': e.preventDefault(); this.loadPage('assignments'); break;
+                    case '4': e.preventDefault(); this.loadPage('assessment'); break;
+                    case '5': e.preventDefault(); this.loadPage('goals'); break;
+                }
+            }
+        });
+
+        console.log('✅ Navigation setup complete');
     }
 
     /**
@@ -206,12 +235,17 @@ class StudentPortal {
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');
+                page.style.display = 'none';
             });
 
             // Show target page
             const targetPage = document.getElementById(`page-${pageName}`);
             if (targetPage) {
                 targetPage.classList.add('active');
+                targetPage.style.display = 'block';
+            } else {
+                console.warn(`⚠️ Page element not found: page-${pageName}`);
+                throw new Error(`Page not found: ${pageName}`);
             }
 
             // Load module content
@@ -381,6 +415,65 @@ class StudentPortal {
             console.warn('⚠️ No student data available for header rendering');
         }
     }
+
+    /**
+     * Validate navigation setup
+     */
+    validateNavigation() {
+        console.log('🔍 Validating navigation setup...');
+
+        const issues = [];
+
+        // Check menu items
+        const menuItems = document.querySelectorAll('.menu-item');
+        menuItems.forEach((item, index) => {
+            const page = item.dataset.page;
+            if (!page) {
+                issues.push(`Menu item ${index} missing data-page attribute`);
+                return;
+            }
+
+            // Check if corresponding page exists
+            const pageElement = document.getElementById(`page-${page}`);
+            if (!pageElement) {
+                issues.push(`Page element missing for: page-${page}`);
+            }
+        });
+
+        // Check page elements
+        const pageElements = document.querySelectorAll('.page-content');
+        console.log(`📄 Found ${pageElements.length} page elements`);
+
+        if (issues.length > 0) {
+            console.warn('⚠️ Navigation validation issues:', issues);
+            return false;
+        }
+
+        console.log('✅ Navigation validation passed');
+        return true;
+    }
+
+    /**
+     * Debug navigation state
+     */
+    debugNavigation() {
+        console.log('🐛 Navigation Debug Info:');
+        console.log('Current page:', this.state.currentPage);
+        console.log('Available modules:', Object.keys(this.state.modules));
+
+        const activeMenus = document.querySelectorAll('.menu-item.active');
+        console.log('Active menu items:', activeMenus.length);
+
+        const visiblePages = document.querySelectorAll('.page-content.active');
+        console.log('Visible pages:', visiblePages.length);
+
+        return {
+            currentPage: this.state.currentPage,
+            modules: Object.keys(this.state.modules),
+            activeMenus: activeMenus.length,
+            visiblePages: visiblePages.length
+        };
+    }
 }
 
 // ===== APPLICATION STARTUP =====
@@ -396,6 +489,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         window.startAssessment = (assessmentType) => portal.startAssessment(assessmentType);
         window.loadPage = (pageName) => portal.loadPage(pageName);
         window.refreshData = () => portal.refreshData();
+        window.debugNavigation = () => portal.debugNavigation();
 
         console.log('🎉 Student Portal initialization complete with global methods exposed!');
 
