@@ -36,21 +36,45 @@ export class GradesModule {
 
         } catch (error) {
             console.error('❌ Failed to render grades:', error);
-            UIComponents.showNotification('Failed to load grades: ' + error.message, 'error');
+
+            const container = document.getElementById('grades-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Failed to Load Grades</h3>
+                        <p>${error.message}</p>
+                        <p class="error-details">Please ensure the backend is running and database is populated.</p>
+                        <button class="btn btn-primary" onclick="window.studentPortal.modules.grades.retry()">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
     async loadGrades() {
         try {
-            if (this.api) {
-                const response = await this.api.getGrades();
-                this.grades = response.data || response.grades || [];
-                this.gpaData = response.gpa || null;
+            console.log('📊 Loading grades from backend...');
+
+            if (!this.api) {
+                throw new Error('API client not available');
             }
+
+            const response = await this.api.getGrades();
+
+            if (!response.success) {
+                throw new Error(`Backend error: ${response.error || 'Unknown error'}`);
+            }
+
+            this.grades = response.data || [];
+            this.gpaData = response.gpa || null;
+            console.log('✅ Grades loaded from database:', this.grades);
+
         } catch (error) {
             console.error('❌ Failed to load grades:', error);
-            // Show error to user instead of using fallback data
-            throw new Error('Unable to load grades data. Please check your connection and try again.');
+            throw new Error(`Failed to load grades: ${error.message}`);
         }
     }
 
@@ -419,5 +443,18 @@ export class GradesModule {
     async refresh() {
         console.log('🔄 Refreshing grades data...');
         await this.render();
+    }
+
+    /**
+     * Retry loading grades
+     */
+    async retry() {
+        try {
+            console.log('🔄 Retrying grades load...');
+            await this.render();
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            UIComponents.showNotification('Retry failed: ' + error.message, 'error');
+        }
     }
 }
