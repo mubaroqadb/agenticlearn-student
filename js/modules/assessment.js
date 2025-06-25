@@ -102,7 +102,14 @@ export class AssessmentModule {
      * Render assessment interface
      */
     renderAssessmentInterface(container) {
-        const { digitalSkills, learningStyle, techComfort, overallProgress, recommendations } = this.assessmentData;
+        // Safely destructure with default values to prevent null/undefined errors
+        const {
+            digitalSkills = { completed: false, score: null, level: null },
+            learningStyle = { completed: false, style: null, preferences: [] },
+            techComfort = { completed: false, level: null, areas: [] },
+            overallProgress = 0,
+            recommendations = []
+        } = this.assessmentData || {};
 
         const assessmentHTML = `
             <!-- Assessment Header -->
@@ -222,11 +229,16 @@ export class AssessmentModule {
      * Render completed assessment
      */
     renderCompletedAssessment(type, data) {
+        // Safely handle data with fallbacks
+        const safeData = data || {};
+        const score = safeData.score || safeData.level || safeData.style || 'Completed';
+        const completedAt = safeData.completedAt || 'Recently';
+
         return `
             <div class="completed-assessment">
                 <div class="assessment-result">
-                    <div class="result-score">${data.score || data.level || data.style || 'Completed'}</div>
-                    <div class="result-date">Completed: ${data.completedAt || 'Recently'}</div>
+                    <div class="result-score">${score}</div>
+                    <div class="result-date">Completed: ${completedAt}</div>
                 </div>
                 <div class="assessment-actions">
                     <button class="btn btn-secondary" onclick="window.assessmentModule.viewResults('${type}')">
