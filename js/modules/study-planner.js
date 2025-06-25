@@ -57,7 +57,21 @@ export class StudyPlannerModule {
 
         } catch (error) {
             console.error('❌ Failed to render study planner:', error);
-            UIComponents.showNotification('Failed to load study planner: ' + error.message, 'error');
+
+            const container = document.getElementById('study-planner-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Failed to Load Study Planner</h3>
+                        <p>${error.message}</p>
+                        <p class="error-details">Please ensure the backend is running and database is populated.</p>
+                        <button class="btn btn-primary" onclick="window.studentPortal.modules.studyPlanner.retry()">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -66,63 +80,43 @@ export class StudyPlannerModule {
      */
     async loadStudyData() {
         try {
+            console.log('📅 Loading study data from backend...');
             this.isLoading = true;
 
-            if (this.api) {
-                // Load study plans
-                const plansResponse = await this.api.getStudyPlans();
-                this.studyPlans = plansResponse.data || plansResponse.plans || [];
-
-                // Load study sessions
-                const sessionsResponse = await this.api.getStudySessions();
-                this.studySessions = sessionsResponse.data || sessionsResponse.sessions || [];
-
-                // Load study analytics
-                const analyticsResponse = await this.api.getStudyAnalytics();
-                this.analytics = analyticsResponse.data || analyticsResponse;
+            if (!this.api) {
+                throw new Error('API client not available');
             }
+
+            // Load study plans
+            const plansResponse = await this.api.getStudyPlans();
+            if (!plansResponse.success) {
+                throw new Error(`Failed to load study plans: ${plansResponse.error || 'Unknown error'}`);
+            }
+            this.studyPlans = plansResponse.data || [];
+
+            // Load study sessions
+            const sessionsResponse = await this.api.getStudySessions();
+            if (!sessionsResponse.success) {
+                throw new Error(`Failed to load study sessions: ${sessionsResponse.error || 'Unknown error'}`);
+            }
+            this.studySessions = sessionsResponse.data || [];
+
+            // Load study analytics
+            const analyticsResponse = await this.api.getStudyAnalytics();
+            if (!analyticsResponse.success) {
+                throw new Error(`Failed to load study analytics: ${analyticsResponse.error || 'Unknown error'}`);
+            }
+            this.analytics = analyticsResponse.data || {};
+
+            console.log('✅ Study data loaded from database:', {
+                studyPlans: this.studyPlans.length,
+                studySessions: this.studySessions.length,
+                analytics: this.analytics
+            });
+
         } catch (error) {
             console.error('❌ Failed to load study data:', error);
-            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
-
-            // TEMPORARY fallback data - will be removed after backend deployment
-            this.studyPlans = [
-                {
-                    id: 'temp_plan1',
-                    title: 'Backend Deployment Pending',
-                    course: 'SYSTEM',
-                    courseName: 'System Status',
-                    startDate: '2025-06-25',
-                    endDate: '2025-06-26',
-                    priority: 'high',
-                    status: 'pending',
-                    progress: 0,
-                    totalHours: 1,
-                    completedHours: 0,
-                    sessions: []
-                }
-            ];
-
-            this.studySessions = [];
-
-            this.analytics = {
-                totalStudyTime: 0,
-                averageSessionLength: 0,
-                productivityScore: 0,
-                streakDays: 0,
-                preferredStudyTime: 'TBD',
-                mostProductiveSubject: 'TBD',
-                weeklyGoal: 0,
-                weeklyProgress: 0,
-                recommendations: [
-                    {
-                        type: 'system',
-                        title: 'Backend Deployment Required',
-                        description: 'Study analytics will be available after backend deployment',
-                        priority: 'high'
-                    }
-                ]
-            };
+            throw new Error(`Failed to load study data: ${error.message}`);
         } finally {
             this.isLoading = false;
         }
@@ -752,6 +746,19 @@ export class StudyPlannerModule {
         const container = document.getElementById('study-planner-content');
         if (container) {
             this.renderStudyPlannerInterface(container);
+        }
+    }
+
+    /**
+     * Retry loading study data
+     */
+    async retry() {
+        try {
+            console.log('🔄 Retrying study planner load...');
+            await this.render();
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            UIComponents.showNotification('Retry failed: ' + error.message, 'error');
         }
     }
 }

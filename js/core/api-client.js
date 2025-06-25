@@ -195,6 +195,27 @@ export class APIClient {
     }
 
     /**
+     * Get study plans
+     */
+    async getStudyPlans() {
+        return this.request(this.endpoints.STUDY_PLANS);
+    }
+
+    /**
+     * Get study sessions
+     */
+    async getStudySessions() {
+        return this.request(this.endpoints.STUDY_SESSIONS);
+    }
+
+    /**
+     * Get study analytics
+     */
+    async getStudyAnalytics() {
+        return this.request(this.endpoints.STUDY_ANALYTICS);
+    }
+
+    /**
      * Get student assignments
      */
     async getAssignments() {
