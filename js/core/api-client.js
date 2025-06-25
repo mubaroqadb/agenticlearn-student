@@ -216,6 +216,13 @@ export class APIClient {
     }
 
     /**
+     * Get student goals
+     */
+    async getStudentGoals() {
+        return this.request(this.endpoints.STUDENT_GOALS);
+    }
+
+    /**
      * Get student assignments
      */
     async getAssignments() {

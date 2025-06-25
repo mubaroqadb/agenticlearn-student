@@ -343,4 +343,102 @@ export class UIComponents {
             }
         }
     }
+
+    /**
+     * Create empty state component
+     */
+    static createEmptyState(title, description, action = null) {
+        const actionHTML = action ? `
+            <button class="btn btn-primary" onclick="${action.onclick}">
+                ${action.label}
+            </button>
+        ` : '';
+
+        return `
+            <div class="empty-state" style="
+                text-align: center;
+                padding: 4rem 2rem;
+                color: var(--gray-500);
+            ">
+                <div class="empty-icon" style="
+                    font-size: 4rem;
+                    margin-bottom: 1rem;
+                    opacity: 0.5;
+                ">📭</div>
+                <h3 class="empty-title" style="
+                    font-size: 1.5rem;
+                    font-weight: 600;
+                    color: var(--gray-700);
+                    margin-bottom: 0.5rem;
+                ">${title}</h3>
+                <p class="empty-description" style="
+                    color: var(--gray-500);
+                    margin-bottom: 2rem;
+                    max-width: 400px;
+                    margin-left: auto;
+                    margin-right: auto;
+                ">${description}</p>
+                ${actionHTML}
+            </div>
+        `;
+    }
+
+    /**
+     * Create a metric card
+     */
+    static createMetricCard(title, value, icon, change = null) {
+        const changeHTML = change ? `
+            <div class="metric-change ${change.type}" style="
+                font-size: 0.75rem;
+                font-weight: 500;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                ${change.type === 'positive' ? 'background: var(--success); color: white;' : ''}
+                ${change.type === 'negative' ? 'background: var(--error); color: white;' : ''}
+            ">
+                ${change.value}
+            </div>
+        ` : '';
+
+        return `
+            <div class="metric-card" style="
+                background: var(--white);
+                border-radius: 12px;
+                padding: 1.5rem;
+                border: 1px solid var(--accent);
+                box-shadow: var(--shadow-sm);
+                transition: var(--transition);
+            ">
+                <div class="metric-header" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 1rem;
+                ">
+                    <div class="metric-icon" style="
+                        width: 40px;
+                        height: 40px;
+                        border-radius: 10px;
+                        background: var(--primary);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: white;
+                        font-size: 1.25rem;
+                    ">${icon}</div>
+                    ${changeHTML}
+                </div>
+                <div class="metric-value" style="
+                    font-size: 2rem;
+                    font-weight: 700;
+                    color: var(--gray-900);
+                    margin-bottom: 0.25rem;
+                ">${value}</div>
+                <div class="metric-label" style="
+                    font-size: 0.875rem;
+                    color: var(--gray-600);
+                ">${title}</div>
+            </div>
+        `;
+    }
 }

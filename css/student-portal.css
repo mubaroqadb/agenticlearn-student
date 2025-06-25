@@ -291,6 +291,34 @@ body {
     margin: 1rem 0;
 }
 
+/* ===== EMPTY STATES ===== */
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.empty-description {
+    color: var(--gray-500);
+    margin-bottom: 2rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

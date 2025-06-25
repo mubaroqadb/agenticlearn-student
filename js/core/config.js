@@ -22,6 +22,7 @@ export const API_CONFIG = {
         STUDY_PLANS: '/api/agenticlearn/student/study/plans',
         STUDY_SESSIONS: '/api/agenticlearn/student/study/sessions',
         STUDY_ANALYTICS: '/api/agenticlearn/student/study/analytics',
+        STUDENT_GOALS: '/api/agenticlearn/student/goals',
         STUDENT_ASSIGNMENTS: '/api/agenticlearn/student/assignments',
         STUDENT_ASSESSMENTS: '/api/agenticlearn/student/assessments',
         STUDENT_GOALS: '/api/agenticlearn/student/goals',
