@@ -114,8 +114,9 @@ class StudentPortal {
                 modules: this.state.modules
             };
 
-            // 9. Expose assessment module globally for HTML onclick handlers
+            // 9. Expose modules globally for HTML onclick handlers
             window.assessmentModule = this.state.modules.assessment;
+            window.goalsModule = this.state.modules.goals;
 
             // 9. Expose global functions for modules
             window.renderHeader = this.renderHeader.bind(this);

@@ -742,10 +742,20 @@
 
                 <!-- Goals Page -->
                 <div id="page-goals" class="page-content">
+                    <div class="page-header">
+                        <h2>🎯 Goal Management</h2>
+                        <p>Set SMART learning goals and track your progress</p>
+                        <div class="page-actions">
+                            <button class="btn btn-primary" onclick="window.goalsModule.showCreateGoalModal()">
+                                ➕ Create New Goal
+                            </button>
+                        </div>
+                    </div>
+
                     <div id="goals-content">
                         <div class="loading-state">
                             <div class="loading-spinner"></div>
-                            <h3>🎯 Loading Goals Center...</h3>
+                            <h3>🎯 Loading Goals...</h3>
                         </div>
                     </div>
                 </div>

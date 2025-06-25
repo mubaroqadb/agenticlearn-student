@@ -48,7 +48,21 @@ export class GoalsModule {
 
         } catch (error) {
             console.error('❌ Failed to render goals:', error);
-            UIComponents.showNotification('Failed to load goals: ' + error.message, 'error');
+
+            const container = document.getElementById('goals-content');
+            if (container) {
+                container.innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">❌</div>
+                        <h3>Failed to Load Goals</h3>
+                        <p>${error.message}</p>
+                        <p class="error-details">Please ensure the backend is running and database is populated.</p>
+                        <button class="btn btn-primary" onclick="window.goalsModule.retry()">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
         }
     }
 
@@ -61,34 +75,21 @@ export class GoalsModule {
                 throw new Error('API client not available');
             }
 
-            // Try to load goals from backend
-            const response = await this.api.getGoals();
-            this.goalsData = response.data || response;
+            console.log('📡 Loading goals data from backend...');
+
+            // Load goals from backend - NO FALLBACK DATA
+            const response = await this.api.getStudentGoals();
+
+            if (!response.success) {
+                throw new Error(`Backend error: ${response.error || 'Unknown error'}`);
+            }
+
+            this.goalsData = response.data;
+            console.log('✅ Goals data loaded from database:', this.goalsData);
 
         } catch (error) {
             console.error('❌ Failed to load goals data:', error);
-            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
-
-            // TEMPORARY fallback data - will be removed after backend deployment
-            this.goalsData = {
-                activeGoals: [
-                    {
-                        id: 'temp_goal_1',
-                        title: 'Complete Digital Literacy Course',
-                        description: 'Finish all modules and achieve 80% score',
-                        category: 'academic',
-                        priority: 'high',
-                        targetDate: '2025-07-15T00:00:00Z',
-                        progress: 75,
-                        status: 'active'
-                    }
-                ],
-                completedGoals: [],
-                totalGoals: 1,
-                completionRate: 0,
-                categories: { academic: 1, skill: 0, career: 0, project: 0 },
-                upcomingMilestones: []
-            };
+            throw new Error(`Failed to load goals: ${error.message}`);
         }
     }
 
@@ -565,5 +566,33 @@ export class GoalsModule {
         if (container) {
             this.renderGoalsInterface(container);
         }
+    }
+
+    /**
+     * Retry loading goals
+     */
+    async retry() {
+        try {
+            console.log('🔄 Retrying goals load...');
+            await this.render();
+        } catch (error) {
+            console.error('❌ Retry failed:', error);
+            UIComponents.showNotification('Retry failed: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Refresh goals data
+     */
+    async refresh() {
+        await this.retry();
+    }
+
+    /**
+     * Create new goal
+     */
+    createNewGoal() {
+        console.log('🎯 Creating new goal...');
+        UIComponents.showNotification('🚧 Create Goal feature coming soon!', 'info');
     }
 }
