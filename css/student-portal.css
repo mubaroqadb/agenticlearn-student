@@ -1,0 +1,302 @@
+/* AgenticLearn Student Portal - Modular CSS */
+
+/* ===== CSS VARIABLES ===== */
+:root {
+    /* Natural Palette - Consistent with Educator Portal */
+    --primary: #667b68;           /* Dark sage green */
+    --primary-light: #a3b899;     /* Medium sage green */
+    --primary-dark: #4a5a4c;      /* Darker sage green */
+    --secondary: #f8d3c5;         /* Warm peach */
+    --secondary-light: #fce4d6;   /* Light peach */
+    --secondary-dark: #f5c2a8;    /* Darker peach */
+    --accent: #dde6d5;            /* Light sage green */
+    --accent-dark: #c8d4bb;       /* Darker light sage */
+    --background: #fceee9;        /* Very light peach */
+    --background-alt: #f9f2ee;    /* Alternative background */
+
+    /* Neutrals - using palette colors */
+    --white: #FFFFFF;        /* Pure white for text and outlines */
+    --bg-light: #fceee9;     /* Very light peach for backgrounds */
+    --gray-50: #f8d3c5;      /* Light peach */
+    --gray-100: #dde6d5;     /* Light sage green */
+    --gray-200: #a3b899;     /* Medium sage green */
+    --gray-300: #667b68;     /* Dark sage green */
+    --gray-400: #5c6b5e;     /* Darker sage */
+    --gray-500: #4a5a4c;     /* Even darker sage */
+    --gray-600: #3d4a3f;     /* Very dark sage */
+    --gray-700: #2f3a31;     /* Almost black sage */
+    --gray-800: #242b25;     /* Dark text color */
+    --gray-900: #1a1815;     /* Darkest text */
+
+    /* Status colors - adjusted to match palette */
+    --success: #667b68;           /* Use primary for success */
+    --warning: #f8d3c5;           /* Use secondary for warning */
+    --error: #d4756b;             /* Muted red that fits palette */
+    --info: #a3b899;              /* Use primary-light for info */
+
+    /* Shadows - using new primary color */
+    --shadow-sm: 0 1px 3px rgba(102, 123, 104, 0.1);
+    --shadow-md: 0 4px 12px rgba(102, 123, 104, 0.15);
+    --shadow-lg: 0 8px 25px rgba(102, 123, 104, 0.2);
+
+    /* Transitions - minimal */
+    --transition: all 0.2s ease;
+}
+
+/* ===== RESET & BASE ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--gray-900);
+    background: var(--bg-light);
+    overflow-x: hidden;
+}
+
+/* ===== LAYOUT ===== */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* ===== CARDS ===== */
+.card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--accent);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transform: scaleX(0);
+    transition: var(--transition);
+}
+
+.card:hover::before {
+    transform: scaleX(1);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--accent);
+}
+
+.card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: var(--gray-500);
+    margin-top: 0.25rem;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: var(--accent);
+    color: var(--gray-800);
+    border: 1px solid var(--accent-dark);
+}
+
+.btn-secondary:hover {
+    background: var(--accent-dark);
+    transform: translateY(-1px);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+}
+
+/* ===== PROGRESS BARS ===== */
+.progress-container {
+    margin-bottom: 1rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--gray-200);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--gray-700);
+}
+
+/* ===== BADGES ===== */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-success {
+    background: var(--success);
+    color: white;
+}
+
+.badge-warning {
+    background: var(--warning);
+    color: var(--gray-800);
+}
+
+.badge-error {
+    background: var(--error);
+    color: white;
+}
+
+.badge-info {
+    background: var(--info);
+    color: white;
+}
+
+/* ===== LOADING STATES ===== */
+.loading-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--gray-200);
+    border-top: 3px solid var(--primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ===== ERROR STATES ===== */
+.error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray-500);
+}
+
+.error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.error-details {
+    font-size: 0.875rem;
+    color: var(--gray-400);
+    margin: 1rem 0;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}

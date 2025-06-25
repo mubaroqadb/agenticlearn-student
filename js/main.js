@@ -232,6 +232,12 @@ class StudentPortal {
                 activeNavItem.classList.add('active');
             }
 
+            // Update page title in header
+            const pageTitle = document.getElementById('page-title');
+            if (pageTitle) {
+                pageTitle.textContent = this.getPageTitle(pageName);
+            }
+
             // Hide all pages
             document.querySelectorAll('.page-content').forEach(page => {
                 page.classList.remove('active');
@@ -312,6 +318,24 @@ class StudentPortal {
             console.error(`❌ Failed to start assessment ${assessmentType}:`, error);
             UIComponents.showNotification(`Failed to start assessment: ${error.message}`, 'error');
         }
+    }
+
+    /**
+     * Get page title for header
+     */
+    getPageTitle(pageName) {
+        const titles = {
+            'dashboard': 'Dashboard',
+            'courses': 'My Courses',
+            'assignments': 'Assignments',
+            'assessment': 'Assessment',
+            'grades': 'Grades & Progress',
+            'goals': 'Learning Goals',
+            'study-planner': 'Study Planner',
+            'ai-tutor': 'AI Tutor - ARIA',
+            'profile': 'My Profile'
+        };
+        return titles[pageName] || 'AgenticLearn Student';
     }
 
     /**
