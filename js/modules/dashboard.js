@@ -92,6 +92,109 @@ export class DashboardModule {
 
 
     /**
+     * Render assessment status cards
+     */
+    renderAssessmentStatus() {
+        // Get assessment data from localStorage or API
+        const assessmentData = this.getAssessmentData();
+
+        return `
+            <div class="assessment-grid">
+                <div class="assessment-card ${assessmentData.digitalSkills.completed ? 'completed' : 'pending'}">
+                    <div class="assessment-icon">💻</div>
+                    <div class="assessment-info">
+                        <div class="assessment-title">Digital Skills Assessment</div>
+                        <div class="assessment-status">
+                            ${assessmentData.digitalSkills.completed ?
+                                `✅ Completed (${assessmentData.digitalSkills.score}%)` :
+                                '⏳ Pending'
+                            }
+                        </div>
+                        ${assessmentData.digitalSkills.completed ?
+                            `<div class="assessment-result">${assessmentData.digitalSkills.level}</div>
+                             <div class="assessment-actions" style="margin-top: 0.5rem;">
+                                 <button class="btn-secondary btn-sm" onclick="window.assessmentModule.viewResults('digital-skills')" style="margin-right: 0.5rem;">📊 View Results</button>
+                                 <button class="btn-primary btn-sm" onclick="window.assessmentModule.retakeAssessment('digital-skills')">🔄 Retake</button>
+                             </div>` :
+                            '<button class="btn-primary btn-sm" onclick="window.studentPortal.startAssessment(\'digital-skills\')">Start Assessment</button>'
+                        }
+                    </div>
+                </div>
+
+                <div class="assessment-card ${assessmentData.learningStyle.completed ? 'completed' : 'pending'}">
+                    <div class="assessment-icon">🧠</div>
+                    <div class="assessment-info">
+                        <div class="assessment-title">Learning Style Assessment</div>
+                        <div class="assessment-status">
+                            ${assessmentData.learningStyle.completed ?
+                                `✅ Completed` :
+                                '⏳ Pending'
+                            }
+                        </div>
+                        ${assessmentData.learningStyle.completed ?
+                            `<div class="assessment-result">${assessmentData.learningStyle.style}</div>
+                             <div class="assessment-actions" style="margin-top: 0.5rem;">
+                                 <button class="btn-secondary btn-sm" onclick="window.assessmentModule.viewResults('learning-style')" style="margin-right: 0.5rem;">📊 View Results</button>
+                                 <button class="btn-primary btn-sm" onclick="window.assessmentModule.retakeAssessment('learning-style')">🔄 Retake</button>
+                             </div>` :
+                            '<button class="btn-primary btn-sm" onclick="window.studentPortal.startAssessment(\'learning-style\')">Start Assessment</button>'
+                        }
+                    </div>
+                </div>
+
+                ${assessmentData.digitalSkills.completed && assessmentData.learningStyle.completed ?
+                    `<div class="assessment-card completed profile-ready">
+                        <div class="assessment-icon">👤</div>
+                        <div class="assessment-info">
+                            <div class="assessment-title">Learning Profile</div>
+                            <div class="assessment-status">✅ Profile Created</div>
+                            <div class="assessment-result">Personalized recommendations active</div>
+                        </div>
+                    </div>` :
+                    `<div class="assessment-card pending">
+                        <div class="assessment-icon">👤</div>
+                        <div class="assessment-info">
+                            <div class="assessment-title">Learning Profile</div>
+                            <div class="assessment-status">⏳ Complete assessments to create profile</div>
+                        </div>
+                    </div>`
+                }
+            </div>
+        `;
+    }
+
+    /**
+     * Get assessment data from localStorage or API
+     */
+    getAssessmentData() {
+        // Try to get from localStorage first
+        const stored = localStorage.getItem('agenticlearn_assessments');
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch (e) {
+                console.warn('Failed to parse stored assessment data');
+            }
+        }
+
+        // Default assessment data structure
+        return {
+            digitalSkills: {
+                completed: false,
+                score: 0,
+                level: '',
+                completedAt: null
+            },
+            learningStyle: {
+                completed: false,
+                style: '',
+                preferences: [],
+                completedAt: null
+            }
+        };
+    }
+
+    /**
      * Transform recent achievements to activity format
      */
     transformRecentActivity(achievements) {
@@ -220,6 +323,25 @@ export class DashboardModule {
                             <span class="gpa-label">Current GPA:</span>
                             <span class="gpa-value">${overview.currentGPA.toFixed(2)}</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Status Section -->
+            <div class="assessment-status-section">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon">🎯</div>
+                        <div>
+                            <div class="card-title">Assessment Status</div>
+                            <div class="card-subtitle">Complete assessments to personalize your learning</div>
+                        </div>
+                        <button class="btn-secondary" onclick="window.studentPortal.loadPage('assessment')">
+                            Take Assessment
+                        </button>
+                    </div>
+                    <div class="assessment-cards">
+                        ${this.renderAssessmentStatus()}
                     </div>
                 </div>
             </div>

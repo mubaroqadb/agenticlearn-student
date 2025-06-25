@@ -110,8 +110,12 @@ class StudentPortal {
                 api: this.api,
                 state: this.state,
                 loadPage: this.loadPage.bind(this),
-                refreshData: this.refreshData.bind(this)
+                refreshData: this.refreshData.bind(this),
+                modules: this.state.modules
             };
+
+            // 9. Expose assessment module globally for HTML onclick handlers
+            window.assessmentModule = this.state.modules.assessment;
 
             // 9. Expose global functions for modules
             window.renderHeader = this.renderHeader.bind(this);
@@ -235,17 +239,43 @@ class StudentPortal {
     async refreshData() {
         try {
             console.log('🔄 Refreshing data...');
-            
+
             // Refresh current module
             const currentModule = this.state.modules[this.state.currentPage];
             if (currentModule && typeof currentModule.refresh === 'function') {
                 await currentModule.refresh();
             }
-            
+
             UIComponents.showNotification('Data refreshed successfully', 'success');
         } catch (error) {
             console.error('❌ Failed to refresh data:', error);
             UIComponents.showNotification('Failed to refresh data: ' + error.message, 'error');
+        }
+    }
+
+    /**
+     * Start specific assessment from dashboard
+     */
+    async startAssessment(assessmentType) {
+        try {
+            console.log(`🎯 Starting assessment: ${assessmentType}`);
+
+            // Navigate to assessment page
+            await this.loadPage('assessment');
+
+            // Wait for assessment module to load, then start specific assessment
+            setTimeout(() => {
+                if (this.state.modules.assessment && this.state.modules.assessment.startSpecificAssessment) {
+                    this.state.modules.assessment.startSpecificAssessment(assessmentType);
+                } else {
+                    console.warn('Assessment module not ready or method not available');
+                    UIComponents.showNotification('Assessment module is loading, please try again in a moment', 'info');
+                }
+            }, 500);
+
+        } catch (error) {
+            console.error(`❌ Failed to start assessment ${assessmentType}:`, error);
+            UIComponents.showNotification(`Failed to start assessment: ${error.message}`, 'error');
         }
     }
 
@@ -357,9 +387,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         const portal = new StudentPortal();
         await portal.initialize();
+
+        // Make portal globally accessible for debugging and external calls
+        window.studentPortal = portal;
+
+        // Make specific methods globally accessible for HTML onclick handlers
+        window.startAssessment = (assessmentType) => portal.startAssessment(assessmentType);
+        window.loadPage = (pageName) => portal.loadPage(pageName);
+        window.refreshData = () => portal.refreshData();
+
+        console.log('🎉 Student Portal initialization complete with global methods exposed!');
+
     } catch (error) {
         console.error('💥 Critical error during startup:', error);
-        
+
         // Show error state in UI
         document.body.innerHTML = `
             <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; text-align: center; padding: 2rem;">

@@ -24,6 +24,49 @@ export class AssessmentModule {
     }
 
     /**
+     * Start specific assessment from dashboard
+     */
+    async startSpecificAssessment(assessmentType) {
+        try {
+            console.log(`🎯 Starting specific assessment: ${assessmentType}`);
+
+            // Load assessment data if not already loaded
+            if (!this.assessmentData) {
+                await this.loadAssessmentData();
+            }
+
+            // Find the specific assessment
+            let assessment = null;
+            if (assessmentType === 'digital-skills') {
+                assessment = this.assessmentData.digitalSkills;
+            } else if (assessmentType === 'learning-style') {
+                assessment = this.assessmentData.learningStyle;
+            }
+
+            if (!assessment) {
+                throw new Error(`Assessment type ${assessmentType} not found`);
+            }
+
+            // Start the assessment
+            this.currentAssessment = assessment;
+            this.currentQuestion = 0;
+            this.answers = {};
+
+            // Render the assessment
+            const container = document.getElementById('assessment-content');
+            if (container) {
+                this.renderAssessmentQuiz(container, assessment);
+            }
+
+            UIComponents.showNotification(`Starting ${assessment.title}`, 'info');
+
+        } catch (error) {
+            console.error(`❌ Failed to start specific assessment:`, error);
+            UIComponents.showNotification(`Failed to start assessment: ${error.message}`, 'error');
+        }
+    }
+
+    /**
      * Render assessment content
      */
     async render() {
@@ -68,31 +111,7 @@ export class AssessmentModule {
 
         } catch (error) {
             console.error('❌ Failed to load assessment data:', error);
-            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
-
-            // TEMPORARY fallback data - will be removed after backend deployment
-            this.assessmentData = {
-                digitalSkills: {
-                    completed: true,
-                    score: 85,
-                    level: 'intermediate',
-                    completedAt: '2025-06-10T14:30:00Z'
-                },
-                learningStyle: {
-                    completed: true,
-                    style: 'visual',
-                    preferences: ['visual', 'interactive'],
-                    completedAt: '2025-06-11T10:15:00Z'
-                },
-                techComfort: {
-                    completed: false,
-                    level: null,
-                    areas: [],
-                    completedAt: null
-                },
-                overallProgress: 67,
-                recommendations: []
-            };
+            throw error; // Let the error bubble up - no fallback data
         }
     }
 
@@ -291,10 +310,267 @@ export class AssessmentModule {
     /**
      * Start assessment
      */
-    startAssessment(type) {
-        console.log(`🚀 Starting assessment: ${type}`);
-        // For now, show coming soon message
-        UIComponents.showNotification(`🚧 ${type} assessment is under development. Coming soon!`, 'info');
+    async startAssessment(type) {
+        try {
+            console.log(`🚀 Starting assessment: ${type}`);
+
+            // Load assessment data if not already loaded
+            if (!this.assessmentData) {
+                await this.loadAssessmentData();
+            }
+
+            // Start the specific assessment
+            await this.startSpecificAssessment(type);
+
+        } catch (error) {
+            console.error(`❌ Failed to start assessment ${type}:`, error);
+            UIComponents.showNotification(`Failed to start assessment: ${error.message}`, 'error');
+        }
+    }
+
+    /**
+     * View assessment results
+     */
+    viewResults(type) {
+        console.log(`📊 Viewing results for: ${type}`);
+
+        if (!this.assessmentData) {
+            UIComponents.showNotification('Assessment data not loaded', 'error');
+            return;
+        }
+
+        let data = null;
+        if (type === 'digital-skills') {
+            data = this.assessmentData.digitalSkills;
+        } else if (type === 'learning-style') {
+            data = this.assessmentData.learningStyle;
+        } else if (type === 'tech-comfort') {
+            data = this.assessmentData.techComfort;
+        }
+
+        if (!data || !data.completed) {
+            UIComponents.showNotification('No results available for this assessment', 'warning');
+            return;
+        }
+
+        // Show results modal
+        this.showResultsModal(type, data);
+    }
+
+    /**
+     * Retake assessment
+     */
+    async retakeAssessment(type) {
+        const confirmed = confirm(`Are you sure you want to retake the ${type} assessment? This will overwrite your previous results.`);
+
+        if (confirmed) {
+            console.log(`🔄 Retaking assessment: ${type}`);
+            await this.startAssessment(type);
+        }
+    }
+
+    /**
+     * Show results modal
+     */
+    showResultsModal(type, data) {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📊 ${this.getAssessmentTitle(type)} Results</h3>
+                    <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    ${this.renderDetailedResults(type, data)}
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Close</button>
+                    <button class="btn btn-primary" onclick="window.assessmentModule.retakeAssessment('${type}'); this.closest('.modal-overlay').remove();">
+                        🔄 Retake Assessment
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+    }
+
+    /**
+     * Get assessment title
+     */
+    getAssessmentTitle(type) {
+        const titles = {
+            'digital-skills': 'Digital Skills Assessment',
+            'learning-style': 'Learning Style Assessment',
+            'tech-comfort': 'Technology Comfort Survey'
+        };
+        return titles[type] || type;
+    }
+
+    /**
+     * Render detailed results
+     */
+    renderDetailedResults(type, data) {
+        if (type === 'digital-skills') {
+            return `
+                <div class="result-details">
+                    <div class="result-score-large">${data.score || data.level}%</div>
+                    <div class="result-level">Level: ${data.level || 'Intermediate'}</div>
+                    <div class="result-description">
+                        ${this.getDigitalSkillsDescription(data.level)}
+                    </div>
+                    <div class="result-recommendations">
+                        <h4>📚 Recommendations:</h4>
+                        <ul>
+                            ${(data.recommendations || []).map(rec => `<li>${rec}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        } else if (type === 'learning-style') {
+            return `
+                <div class="result-details">
+                    <div class="result-score-large">🧠</div>
+                    <div class="result-level">Learning Style: ${data.style || 'Visual'}</div>
+                    <div class="result-description">
+                        ${this.getLearningStyleDescription(data.style)}
+                    </div>
+                    <div class="result-preferences">
+                        <h4>📋 Your Preferences:</h4>
+                        <ul>
+                            ${(data.preferences || []).map(pref => `<li>${pref}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="result-details">
+                    <div class="result-score-large">✅</div>
+                    <div class="result-level">Completed</div>
+                    <div class="result-description">
+                        Assessment completed successfully. Thank you for your participation!
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Get digital skills description
+     */
+    getDigitalSkillsDescription(level) {
+        const descriptions = {
+            'Beginner': 'You have basic digital skills. Focus on fundamental computer operations and basic software usage.',
+            'Intermediate': 'You have good digital skills. Continue developing advanced software skills and digital literacy.',
+            'Advanced': 'You have excellent digital skills. Consider mentoring others and exploring cutting-edge technologies.',
+            'Expert': 'You are a digital expert! Your skills are exceptional and you can lead digital transformation initiatives.'
+        };
+        return descriptions[level] || 'Your digital skills assessment has been completed.';
+    }
+
+    /**
+     * Get learning style description
+     */
+    getLearningStyleDescription(style) {
+        const descriptions = {
+            'Visual': 'You learn best through visual aids like diagrams, charts, and images. Use mind maps and visual organizers.',
+            'Auditory': 'You learn best through listening and discussion. Use audio materials and group discussions.',
+            'Kinesthetic': 'You learn best through hands-on activities and movement. Use practical exercises and simulations.',
+            'Reading': 'You learn best through reading and writing. Use text-based materials and note-taking.'
+        };
+        return descriptions[style] || 'Your learning style has been identified to help personalize your learning experience.';
+    }
+
+    /**
+     * Save assessment results to localStorage
+     */
+    saveAssessmentResults(type, results) {
+        try {
+            const stored = localStorage.getItem('agenticlearn_assessments') || '{}';
+            const assessmentData = JSON.parse(stored);
+
+            if (type === 'digital-skills') {
+                assessmentData.digitalSkills = {
+                    completed: true,
+                    score: results.score || results.level,
+                    level: results.level || 'Intermediate',
+                    completedAt: new Date().toISOString(),
+                    recommendations: results.recommendations || []
+                };
+            } else if (type === 'learning-style') {
+                assessmentData.learningStyle = {
+                    completed: true,
+                    style: results.style || 'Visual',
+                    preferences: results.preferences || [],
+                    completedAt: new Date().toISOString()
+                };
+            } else if (type === 'tech-comfort') {
+                assessmentData.techComfort = {
+                    completed: true,
+                    level: results.level || 'Intermediate',
+                    areas: results.areas || [],
+                    completedAt: new Date().toISOString()
+                };
+            }
+
+            localStorage.setItem('agenticlearn_assessments', JSON.stringify(assessmentData));
+            console.log(`✅ Assessment results saved for ${type}:`, assessmentData);
+
+            // Trigger dashboard refresh to show updated assessment status
+            if (window.studentPortal && window.studentPortal.modules && window.studentPortal.modules.dashboard) {
+                setTimeout(() => {
+                    window.studentPortal.modules.dashboard.refresh();
+                }, 500);
+            }
+
+        } catch (error) {
+            console.error('❌ Failed to save assessment results:', error);
+        }
+    }
+
+    /**
+     * Complete assessment and save results
+     */
+    async completeAssessment(type, answers) {
+        try {
+            console.log(`📤 Completing ${type} assessment with answers:`, answers);
+
+            // Submit to backend
+            let result;
+            switch(type) {
+                case 'digital-skills':
+                    result = await this.api.submitDigitalSkillsAssessment(answers);
+                    break;
+                case 'learning-style':
+                    result = await this.api.submitLearningStyleAssessment(answers);
+                    break;
+                case 'tech-comfort':
+                    result = await this.api.submitTechComfortSurvey(answers);
+                    break;
+                default:
+                    throw new Error(`Unknown assessment type: ${type}`);
+            }
+
+            console.log('✅ Assessment submitted successfully:', result);
+
+            // Save results locally
+            this.saveAssessmentResults(type, result);
+
+            // Show success notification
+            UIComponents.showNotification(`✅ ${this.getAssessmentTitle(type)} completed successfully!`, 'success');
+
+            // Show results modal
+            this.showResultsModal(type, result);
+
+            return result;
+
+        } catch (error) {
+            console.error(`❌ Failed to complete ${type} assessment:`, error);
+            UIComponents.showNotification(`Failed to complete assessment: ${error.message}`, 'error');
+            throw error;
+        }
     }
 
     /**
