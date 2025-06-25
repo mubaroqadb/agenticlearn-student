@@ -83,8 +83,46 @@ export class StudyPlannerModule {
             }
         } catch (error) {
             console.error('❌ Failed to load study data:', error);
-            // Show error to user instead of using fallback data
-            throw new Error('Unable to load study data. Please check your connection and try again.');
+            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
+
+            // TEMPORARY fallback data - will be removed after backend deployment
+            this.studyPlans = [
+                {
+                    id: 'temp_plan1',
+                    title: 'Backend Deployment Pending',
+                    course: 'SYSTEM',
+                    courseName: 'System Status',
+                    startDate: '2025-06-25',
+                    endDate: '2025-06-26',
+                    priority: 'high',
+                    status: 'pending',
+                    progress: 0,
+                    totalHours: 1,
+                    completedHours: 0,
+                    sessions: []
+                }
+            ];
+
+            this.studySessions = [];
+
+            this.analytics = {
+                totalStudyTime: 0,
+                averageSessionLength: 0,
+                productivityScore: 0,
+                streakDays: 0,
+                preferredStudyTime: 'TBD',
+                mostProductiveSubject: 'TBD',
+                weeklyGoal: 0,
+                weeklyProgress: 0,
+                recommendations: [
+                    {
+                        type: 'system',
+                        title: 'Backend Deployment Required',
+                        description: 'Study analytics will be available after backend deployment',
+                        priority: 'high'
+                    }
+                ]
+            };
         } finally {
             this.isLoading = false;
         }

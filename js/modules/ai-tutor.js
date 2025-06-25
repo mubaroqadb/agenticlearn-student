@@ -78,8 +78,41 @@ export class AITutorModule {
             }
         } catch (error) {
             console.error('❌ Failed to load AI data:', error);
-            // Show error to user instead of using fallback data
-            throw new Error('Unable to load AI data. Please check your connection and try again.');
+            console.warn('⚠️ Using temporary fallback data - backend deployment pending');
+
+            // TEMPORARY fallback data - will be removed after backend deployment
+            this.chatHistory = [
+                {
+                    id: 'temp_msg1',
+                    type: 'ai',
+                    message: 'Hello! I\'m ARIA, your AI learning assistant. Backend deployment is pending.',
+                    timestamp: new Date().toISOString(),
+                    avatar: '🤖'
+                }
+            ];
+
+            this.insights = [
+                {
+                    id: 'temp_insight1',
+                    title: 'Backend Deployment Pending',
+                    description: 'AI insights will be available after backend deployment',
+                    type: 'system',
+                    priority: 'medium',
+                    icon: '⚠️'
+                }
+            ];
+
+            this.recommendations = [
+                {
+                    id: 'temp_rec1',
+                    title: 'Backend Deployment Required',
+                    description: 'AI recommendations will be available after backend deployment',
+                    action: 'Wait for Deployment',
+                    priority: 'medium',
+                    category: 'system',
+                    icon: '⚠️'
+                }
+            ];
         } finally {
             this.isLoading = false;
         }
