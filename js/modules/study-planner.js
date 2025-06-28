@@ -87,19 +87,19 @@ export class StudyPlannerModule {
                 throw new Error('API client not available');
             }
 
-            // Load study plans
+            // Load study plans (handle both 'data' and 'plans' response formats)
             const plansResponse = await this.api.getStudyPlans();
             if (!plansResponse.success) {
                 throw new Error(`Failed to load study plans: ${plansResponse.error || 'Unknown error'}`);
             }
-            this.studyPlans = plansResponse.data || [];
+            this.studyPlans = plansResponse.data || plansResponse.plans || [];
 
-            // Load study sessions
+            // Load study sessions (handle both 'data' and 'sessions' response formats)
             const sessionsResponse = await this.api.getStudySessions();
             if (!sessionsResponse.success) {
                 throw new Error(`Failed to load study sessions: ${sessionsResponse.error || 'Unknown error'}`);
             }
-            this.studySessions = sessionsResponse.data || [];
+            this.studySessions = sessionsResponse.data || sessionsResponse.sessions || [];
 
             // Load study analytics
             const analyticsResponse = await this.api.getStudyAnalytics();
