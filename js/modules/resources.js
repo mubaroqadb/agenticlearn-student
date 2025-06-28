@@ -359,7 +359,5 @@ class ResourcesModule {
     }
 }
 
-// Export for use in main application
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = ResourcesModule;
-}
+// Export for ES6 modules
+export { ResourcesModule };
