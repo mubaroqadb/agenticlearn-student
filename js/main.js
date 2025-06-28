@@ -64,30 +64,6 @@ class StudentPortal {
 
             // 3. Initialize UI
             this.renderHeader();
-            
-            // 3.1. Robust sidebar update with retry mechanism
-            let retryCount = 0;
-            const maxRetries = 10;
-            const updateSidebar = () => {
-                const sidebarName = document.getElementById('sidebar-student-name');
-                if (sidebarName && this.state.student?.name) {
-                    sidebarName.textContent = this.state.student.name;
-                    console.log('✅ Sidebar name updated:', this.state.student.name);
-                    return true;
-                } else {
-                    retryCount++;
-                    if (retryCount < maxRetries) {
-                        console.log(`⏳ Retry ${retryCount}/${maxRetries} - Sidebar element not ready`);
-                        setTimeout(updateSidebar, 50);
-                    } else {
-                        console.error('❌ Failed to update sidebar after', maxRetries, 'retries');
-                    }
-                    return false;
-                }
-            };
-            
-            // Start sidebar update process
-            setTimeout(updateSidebar, 50);
 
             // 4. Initialize modules
             await this.initializeModules();
@@ -429,13 +405,22 @@ class StudentPortal {
                 }
             }
 
-            // Update sidebar footer name
-            const sidebarName = document.getElementById('sidebar-student-name');
-            if (sidebarName) {
-                sidebarName.textContent = this.state.student.name;
-                console.log('✅ Sidebar name updated:', this.state.student.name);
-            } else {
-                console.warn('⚠️ Sidebar name element not found');
+            // Update sidebar footer name with retry mechanism
+            const updateSidebarName = () => {
+                const sidebarName = document.getElementById('sidebar-student-name');
+                if (sidebarName) {
+                    sidebarName.textContent = this.state.student.name;
+                    console.log('✅ Sidebar name updated:', this.state.student.name);
+                    return true;
+                } else {
+                    console.warn('⚠️ Sidebar name element not found, will retry...');
+                    return false;
+                }
+            };
+
+            // Try immediate update, if fails, retry after DOM is ready
+            if (!updateSidebarName()) {
+                setTimeout(updateSidebarName, 100);
             }
 
             // Update page subtitle with personalized greeting
