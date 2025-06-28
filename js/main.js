@@ -151,7 +151,8 @@ class StudentPortal {
             assessment: new AssessmentModule(this.api),
             goals: new GoalsModule(this.api),
             'ai-tutor': new AITutorModule(this.api),
-            'study-planner': new StudyPlannerModule(this.api)
+            'study-planner': new StudyPlannerModule(this.api),
+            resources: new ResourcesModule(this.api)
         };
 
         // Initialize each module
