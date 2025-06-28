@@ -19,6 +19,7 @@ import { AssessmentModule } from './modules/assessment.js';
 import { GoalsModule } from './modules/goals.js';
 import { AITutorModule } from './modules/ai-tutor.js';
 import { StudyPlannerModule } from './modules/study-planner.js';
+import { ResourcesModule } from './modules/resources.js';
 
 /**
  * Student Portal Application Class
